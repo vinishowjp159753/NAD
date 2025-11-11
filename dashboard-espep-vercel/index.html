@@ -10,15 +10,13 @@
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
   <rect x='12' y='18' width='76' height='64' rx='8' fill='%23003366'/>
   <path d='M24 28 C44 36, 56 36, 76 28' stroke='%23ffffff' stroke-width='3' fill='none' stroke-linecap='round'/>
+  <path d='M24 40 C44 48, 56 48, 76 40' stroke='%23ffffff' stroke-width='3' fill='none' stroke-linecap='round'/>
 </svg>">
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- SheetJS (XLSX) CDN for real .xlsx export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- Bootstrap 5 CSS & JS (for modal) -->
+<!-- Bootstrap 5 (CSS via inline minimal reset + used components in CSS) -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
   :root{
@@ -29,24 +27,34 @@
     --card: #fff;
     --muted: #6c757d;
   }
+
   @media (prefers-color-scheme: dark){
-    :root{ --bg:#071122; --card:#0f1724; --muted:#9aa6b2; }
+    :root{
+      --bg:#071122;
+      --card:#0f1724;
+      --muted:#9aa6b2;
+    }
   }
-  html,body{ height:100%; margin:0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#1f2937; -webkit-font-smoothing:antialiased;}
+
+  html,body{ height:100%; margin:0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color: #1f2937; -webkit-font-smoothing:antialiased;}
   header{ background: linear-gradient(90deg,var(--espep-blue),var(--espep-blue-2)); color:white; padding:12px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 18px rgba(0,0,0,0.08);}
   .brand { display:flex; align-items:center; gap:8px; font-weight:700; }
   .brand svg{ border-radius:6px; }
   .top-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
 
+  /* Layout grid */
   .main-wrap { padding:16px; display:grid; grid-template-columns: 240px 1fr; gap:16px; align-items:start; }
   @media (max-width: 992px){ .main-wrap { grid-template-columns: 1fr; } }
 
+  /* Sidebar */
   .sidebar { background:linear-gradient(180deg,var(--espep-blue),var(--espep-blue-2)); color:white; border-radius:10px; padding:12px; min-height:280px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
   .sidebar a{ color:rgba(255,255,255,0.95); display:block; padding:10px; border-radius:8px; text-decoration:none; margin-bottom:6px; font-weight:600;}
   .sidebar a.active, .sidebar a:hover { background: rgba(255,255,255,0.06); transform: translateX(6px); }
 
+  /* Content area */
   .content { display:flex; flex-direction:column; gap:12px; }
 
+  /* cards grid */
   .grid { display:grid; gap:12px; grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 1200px){ .grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 768px){ .grid { grid-template-columns: 1fr; } }
@@ -73,21 +81,26 @@
 
   .small-muted { font-size:0.85rem; color:var(--muted); }
 
+  /* mobile specific controls */
   .mobile-row { display:none; }
   @media (max-width: 576px){ .desktop-row { display:none; } .mobile-row { display:flex; gap:8px; } .filters select { min-width:120px; } }
 
+  /* modal mapping styling (simple) */
   .mapping-grid { display:flex; gap:8px; flex-direction:column; }
   .mapping-row { display:flex; gap:8px; align-items:center; }
   .mapping-row select { flex:1; padding:8px; border-radius:6px; }
 
+  /* small helpers */
   .btn-espep { background:var(--espep-blue); color:white; border-radius:8px; padding:8px 12px; border:none; }
   .btn-outline-espep { background:transparent; color:var(--espep-blue); border:1px solid var(--espep-blue); border-radius:8px; padding:8px 12px; }
+
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
+    <!-- inline simplified logo -->
     <svg width="36" height="36" viewBox="0 0 100 100" aria-hidden="true">
       <rect x="12" y="18" width="76" height="64" rx="8" fill="#003366"/>
       <path d="M24 28 C44 36, 56 36, 76 28" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
@@ -97,13 +110,14 @@
 
   <div class="top-actions">
     <button id="btn-import-top" class="btn-outline-espep btn-sm">Importar .CSV</button>
-    <button id="btn-export-top" class="btn-espep btn-sm">Exportar Excel (.xlsx)</button>
+    <button id="btn-export-top" class="btn-espep btn-sm">Exportar CSV</button>
     <div style="width:8px"></div>
     <div class="small-muted" id="user-info">Protótipo • usuário: admin</div>
   </div>
 </header>
 
 <div class="main-wrap">
+  <!-- SIDEBAR -->
   <aside class="sidebar" aria-label="Navegação">
     <nav>
       <a href="#" class="active" data-section="overview">Visão Geral</a>
@@ -116,8 +130,9 @@
     <div class="small-muted">Dica: importe CSV com colunas nomeadas (Empresa, Valor, Objeto, Pac, Categoria, Data)</div>
   </aside>
 
+  <!-- CONTENT -->
   <main class="content">
-    <!-- CONTROLS -->
+    <!-- CONTROLS / FILTERS -->
     <div class="card">
       <div class="card-header">
         <div style="display:flex;gap:12px;align-items:center;">
@@ -145,6 +160,7 @@
           </div>
         </div>
 
+        <!-- mobile compact controls -->
         <div class="filters mobile-row">
           <select id="category-filter-mob"><option value="all">Categorias</option></select>
           <button id="btn-open-file-mob" class="btn-outline-espep">Importar</button>
@@ -179,6 +195,7 @@
         </div>
       </div>
 
+      <!-- Charts area: overview -->
       <div class="card">
         <div class="card-header">
           <div>Distribuição por Categoria</div>
@@ -204,7 +221,7 @@
       </div>
       <div class="grid" style="margin-top:10px;">
         <div class="card">
-          <div class="card-header">Top Empresas (Ranking Horizontal)</div>
+          <div class="card-header">Top 10 Empresas (Ranking Horizontal)</div>
           <div class="chart-box"><canvas id="chart-ranking"></canvas></div>
         </div>
         <div class="card">
@@ -212,7 +229,7 @@
           <div class="chart-box"><canvas id="chart-pac-cat"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-header">Radar: Valores por Categoria</div>
+          <div class="card-header">Radar: Valores por Categoria (proporção)</div>
           <div class="chart-box"><canvas id="chart-radar"></canvas></div>
         </div>
       </div>
@@ -246,9 +263,7 @@
       <div style="margin-top:8px;">
         <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
           <input id="table-search" type="text" placeholder="Pesquisar..." style="padding:8px; border-radius:8px; flex:1;">
-          <!-- Export Excel placed above the table, as requested -->
-          <button id="btn-export-excel" class="btn-espep">Exportar Excel (.xlsx)</button>
-          <button id="btn-export-table" class="btn-outline-espep">Exportar CSV</button>
+          <button id="btn-export-table" class="btn-espep">Exportar Tabela</button>
         </div>
 
         <div class="table-wrap">
@@ -283,7 +298,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        <p class="small-muted">Selecione qual coluna corresponde a cada campo do dashboard. Campo <strong>Data</strong> é opcional.</p>
+        <p class="small-muted">Selecione qual coluna corresponde a cada campo do dashboard. Campo <strong>Data</strong> é opcional (para evolução mensal).</p>
         <div class="mapping-grid">
           <div class="mapping-row"><label style="width:120px">Empresa</label><select id="map-empresa"></select></div>
           <div class="mapping-row"><label style="width:120px">Valor</label><select id="map-valor"></select></div>
@@ -291,10 +306,6 @@
           <div class="mapping-row"><label style="width:120px">PAC</label><select id="map-pac"></select></div>
           <div class="mapping-row"><label style="width:120px">Categoria</label><select id="map-categoria"></select></div>
           <div class="mapping-row"><label style="width:120px">Data (opcional)</label><select id="map-data"></select></div>
-        </div>
-        <div class="mt-3">
-          <div class="small-muted">Preview (primeiras 5 linhas):</div>
-          <pre id="csv-preview" style="max-height:160px; overflow:auto; background:#f8fafc; padding:8px; border-radius:6px;"></pre>
         </div>
       </div>
       <div class="modal-footer">
@@ -305,96 +316,124 @@
   </div>
 </div>
 
+<!-- Hidden file input used by top buttons -->
 <input id="hidden-file" type="file" accept=".csv" style="display:none">
 
-<script>
-/* ========= Dashboard final (single file) ========= */
-/* Includes XLSX export via SheetJS (already loaded via CDN) */
+<!-- Bootstrap JS (used for modal only) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-/* ---------- Sample data (initial) ---------- */
+<script>
+/* ============================
+   Dashboard ESPEP — single file
+   Features:
+   - Import CSV (mapping modal)
+   - Export CSV
+   - Multiple charts: category, pac, ranking, evolution, radar, stacked
+   - Responsive layout + mobile controls
+   - Table with pagination and search
+   ============================ */
+
+// ---------- Sample data (initial) ----------
 const sampleData = [
   {empresa: "A.G. COMÉRCIO DE ALIMENTO", valor: 31613.11, objeto: "AQUISIÇÃO DE GÊNEROS ALIMENTICÍOS", pac: "33903007 GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação", data: "2024-01-15"},
   {empresa: "ADM COMERCIO E SERVIÇOS", valor: 21717.67, objeto: "INSTALAÇÃO ...", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços", data: "2024-02-07"},
   {empresa: "PLENITUDE SEGURANÇA", valor: 311423.80, objeto: "SEGURANÇA PRIVADA", pac: "33903999 - OUTROS SERVICOS", categoria: "Segurança", data: "2024-03-21"},
   {empresa: "COMERCIAL V. DE MAT. SILVA", valor: 52800.00, objeto: "CARTEIRAS ESCOLARES", pac: "44905242 - MOBILIARIO", categoria: "Mobiliário", data: "2024-04-10"},
-  {empresa: "PADARIA PONTES LTDA", valor: 42603.60, objeto: "REFEIÇÕES PARA A ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação", data: "2024-05-05"}
+  {empresa: "PADARIA PONTES LTDA", valor: 42603.60, objeto: "REFEIÇÕES PARA A ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação", data: "2024-05-05"},
+  // ... (restante omitido para brevidade, você pode manter sampleData conforme quiser)
 ];
 
-/* ---------- State ---------- */
-let loadedBase = [...sampleData];
-let filtered = [...loadedBase];
+// ---------- Estado ----------
+let loadedBase = [...sampleData]; // dataset base (substituído no import)
+let filtered = [...loadedBase];   // dataset após filtros
 let currentPage = 1;
 const pageSize = 12;
 
+// Chart references
 let chCategory, chPac, chRanking, chPacCat, chRadar, chCompanies, chEvolution;
-let lastParsedRows = null;
 
-/* ---------- Utilities ---------- */
+// ---------- Utils ----------
 function fmtBRL(v){ return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', {minimumFractionDigits:2}); }
-function isPac(val){ if(!val) return false; const s = String(val).toUpperCase(); return !(s.includes('NÃO') || s.includes('NAO') || s.includes('N/A') || s.includes('NÃOP') || s.includes('NÃ O')); }
-function normalizeHeader(h){ return String(h||'').trim().toLowerCase(); }
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function isPac(val){ if(!val) return false; const s = String(val).toUpperCase(); return !(s.includes('NÃO') || s.includes('NAO') || s.includes('N/A') || s.includes('Não')); }
 function parseDateFlexible(s){
   if(!s) return null;
   s = String(s).trim();
+  // Try ISO first
   let d = new Date(s);
   if(!isNaN(d)) return d;
+  // Try DD/MM/YYYY
   const m = s.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
   if(m) return new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00`);
+  // Try YYYYMMDD
   const m2 = s.match(/(\d{4})(\d{2})(\d{2})/);
   if(m2) return new Date(`${m2[1]}-${m2[2]}-${m2[3]}T00:00:00`);
   return null;
 }
 
-/* CSV parser (handles quoted fields) */
+// CSV parser (handles quotes and commas)
 function parseCSV(text){
   const rows = [];
-  let cur = '', row = [], inQuotes = false;
-  for (let i=0;i<text.length;i++){
-    const ch = text[i], nxt = text[i+1];
+  let cur = '';
+  let row = [];
+  let inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    const nxt = text[i+1];
     if(ch === '"'){
       if(inQuotes && nxt === '"'){ cur += '"'; i++; } else { inQuotes = !inQuotes; }
     } else if(ch === ',' && !inQuotes){
-      row.push(cur); cur=''; 
+      row.push(cur);
+      cur = '';
     } else if((ch === '\n' || ch === '\r') && !inQuotes){
       if(ch === '\r' && nxt === '\n'){ i++; }
-      row.push(cur); rows.push(row); row=[]; cur='';
-    } else { cur += ch; }
+      row.push(cur);
+      rows.push(row);
+      row = [];
+      cur = '';
+    } else {
+      cur += ch;
+    }
   }
   if(cur !== '' || row.length > 0){ row.push(cur); rows.push(row); }
+  // trim empty trailing rows
   if(rows.length && rows[rows.length-1].length === 1 && rows[rows.length-1][0] === '') rows.pop();
   return rows;
 }
 
-/* Build data from mapped CSV rows */
+// guess header names (simple)
+function normalizeHeader(h){ return String(h||'').trim().toLowerCase(); }
+
+// Build dataset after mapping
 function buildDataFromRows(rows, mapping){
+  const header = rows[0].map(h => String(h||'').trim());
   const data = [];
   for(let r=1;r<rows.length;r++){
     const row = rows[r];
-    if(!row || row.join('').trim()==='') continue;
-    const empresa = mapping.empresa !== null && row[mapping.empresa] !== undefined ? String(row[mapping.empresa]).trim() : '';
+    if(!row || row.join('').trim() === '') continue;
+    const empresa = row[mapping.empresa] ? String(row[mapping.empresa]).trim() : '';
     if(!empresa) continue;
-    let rawVal = mapping.valor !== null && row[mapping.valor] !== undefined ? String(row[mapping.valor]).trim() : '0';
-    rawVal = rawVal.replace(/\./g,'').replace(',', '.').replace(/\s/g,'');
-    let valor = Number(rawVal); if(isNaN(valor)) valor = 0;
+    let valorRaw = mapping.valor !== null && row[mapping.valor] !== undefined ? String(row[mapping.valor]).trim() : '0';
+    valorRaw = valorRaw.replace(/\./g,'').replace(',', '.').replace(/\s/g,'');
+    let valor = Number(valorRaw);
+    if(isNaN(valor)) valor = 0;
     const objeto = mapping.objeto !== null && row[mapping.objeto] !== undefined ? String(row[mapping.objeto]).trim() : '';
     const pac = mapping.pac !== null && row[mapping.pac] !== undefined ? String(row[mapping.pac]).trim() : '';
     const categoria = mapping.categoria !== null && row[mapping.categoria] !== undefined ? String(row[mapping.categoria]).trim() : 'Outros';
-    const dateRaw = mapping.data !== null && row[mapping.data] !== undefined ? String(row[mapping.data]).trim() : '';
-    const dt = parseDateFlexible(dateRaw);
-    const dateISO = dt ? dt.toISOString().slice(0,10) : '';
+    const dataRaw = mapping.data !== null && row[mapping.data] !== undefined ? String(row[mapping.data]).trim() : '';
+    const dateObj = parseDateFlexible(dataRaw);
+    const dateISO = dateObj ? dateObj.toISOString().slice(0,10) : '';
     data.push({ empresa, valor, objeto, pac: pac || 'NÃO CONSTA NO PAC 2024', categoria: categoria || 'Outros', data: dateISO });
   }
   return data;
 }
 
-/* ---------- UI updates ---------- */
+// ---------- UI update functions ----------
 function updateMetrics(){
-  const totalVal = filtered.reduce((s,i)=>s + Number(i.valor||0), 0);
+  const total = filtered.reduce((s,i)=>s + Number(i.valor||0), 0);
   const count = filtered.length;
   const pacCount = filtered.filter(i => isPac(i.pac)).length;
   document.getElementById('metric-count').textContent = count;
-  document.getElementById('metric-total').textContent = fmtBRL(totalVal);
+  document.getElementById('metric-total').textContent = fmtBRL(total);
   document.getElementById('metric-pac').textContent = pacCount;
 }
 
@@ -402,6 +441,7 @@ function updateCategoryFilter(){
   const sel = document.getElementById('category-filter');
   const selMob = document.getElementById('category-filter-mob');
   const cats = [...new Set(loadedBase.map(i => i.categoria || 'Outros'))].sort();
+  // clear
   sel.innerHTML = '<option value="all">Todas as categorias</option>';
   selMob.innerHTML = '<option value="all">Todas</option>';
   cats.forEach(c => {
@@ -411,90 +451,127 @@ function updateCategoryFilter(){
 }
 
 function populateTable(){
-  const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  // pagination
   const start = (currentPage-1)*pageSize;
   const page = filtered.slice(start, start + pageSize);
-  for(const r of page){
-    const tr = document.createElement('tr'); if(isPac(r.pac)) tr.classList.add('highlight');
-    tr.innerHTML = `<td>${escapeHtml(r.empresa)}</td><td>${fmtBRL(r.valor)}</td><td>${escapeHtml(r.objeto)}</td><td>${escapeHtml(r.pac)}</td><td>${escapeHtml(r.categoria)}</td><td>${r.data||''}</td>`;
+  for(const row of page){
+    const tr = document.createElement('tr');
+    if(isPac(row.pac)) tr.classList.add('highlight');
+    tr.innerHTML = `<td>${escapeHtml(row.empresa)}</td>
+      <td>${fmtBRL(row.valor)}</td>
+      <td>${escapeHtml(row.objeto)}</td>
+      <td>${escapeHtml(row.pac)}</td>
+      <td>${escapeHtml(row.categoria)}</td>
+      <td>${row.data ? row.data : ''}</td>`;
     tbody.appendChild(tr);
   }
-  document.getElementById('table-info').textContent = `Mostrando ${Math.min(pageSize, filtered.length - start)} de ${filtered.length} linhas`;
+  document.getElementById('table-info').textContent = `Mostrando ${Math.min(pageSize, filtered.length - (start))} de ${filtered.length} linhas`;
   document.getElementById('page-indicator').textContent = currentPage;
 }
 
-/* ---------- Charts ---------- */
-function safeDestroy(c){ if(c){ try{ c.destroy(); } catch(e){} } }
+// escape HTML
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ---------- Chart updates ----------
+function safeDestroy(ch){ if(ch){ try{ ch.destroy(); }catch(e){} } }
 
 function updateCharts(){
-  // aggregate by category
-  const catAgg = {}; for(const it of filtered){ const c = it.categoria || 'Outros'; catAgg[c] = (catAgg[c]||0) + Number(it.valor||0); }
-  const catLabels = Object.keys(catAgg); const catValues = Object.values(catAgg);
+  // Category pie/bar (values)
+  const catAgg = {};
+  for(const it of filtered){ catAgg[it.categoria = (it.categoria||'Outros')] = (catAgg[it.categoria]||0) + Number(it.valor||0); }
+  const catLabels = Object.keys(catAgg);
+  const catValues = Object.values(catAgg);
 
-  // pac counts
-  const pacYes = filtered.filter(i => isPac(i.pac)).length; const pacNo = filtered.length - pacYes;
+  // PAC counts
+  const pacYes = filtered.filter(i => isPac(i.pac)).length;
+  const pacNo = filtered.length - pacYes;
 
-  // top companies
-  const top = [...filtered].sort((a,b) => b.valor - a.valor);
+  // Top companies ranking
+  const top = [...filtered].sort((a,b) => b.valor - a.valor).slice(0, 50); // keep top50 for chart building
 
-  // pac by category values
-  const pacByCat = {}; for(const it of filtered){ const c = it.categoria || 'Outros'; if(!pacByCat[c]) pacByCat[c] = {pac:0, nonPac:0}; if(isPac(it.pac)) pacByCat[c].pac += Number(it.valor||0); else pacByCat[c].nonPac += Number(it.valor||0); }
-  const pacCatLabels = Object.keys(pacByCat); const pacCatPac = pacCatLabels.map(l => pacByCat[l].pac); const pacCatNon = pacCatLabels.map(l => pacByCat[l].nonPac);
+  // Radar uses category proportion
+  const radarLabels = catLabels;
+  const radarValues = catValues;
 
-  // radar
-  const radarLabels = catLabels; const radarValues = catValues;
+  // Pac by category stacked
+  const pacByCat = {};
+  for(const it of filtered){
+    const c = it.categoria || 'Outros';
+    if(!pacByCat[c]) pacByCat[c] = {pac:0, nonPac:0};
+    if(isPac(it.pac)) pacByCat[c].pac += Number(it.valor || 0);
+    else pacByCat[c].nonPac += Number(it.valor || 0);
+  }
+  const pacCatLabels = Object.keys(pacByCat);
+  const pacCatPac = pacCatLabels.map(l => pacByCat[l].pac);
+  const pacCatNon = pacCatLabels.map(l => pacByCat[l].nonPac);
 
-  // evolution monthly grouping (YYYY-MM)
+  // Companies chart data (top N)
+  const topLimit = Number(document.getElementById('ranking-limit').value || 10);
+  const topLimited = top.slice(0, topLimit);
+
+  // Evolution monthly: group by month if data present
   const hasDate = filtered.some(i => i.data);
-  const evoLabels = [], evoValues = [];
+  const evolutionLabels = [];
+  const evolutionValues = [];
   if(hasDate){
     const monthly = {};
-    for(const it of filtered){ if(!it.data) continue; const mm = it.data.slice(0,7); monthly[mm] = (monthly[mm]||0) + Number(it.valor||0); }
+    for(const it of filtered){
+      if(!it.data) continue;
+      const mm = it.data.slice(0,7); // YYYY-MM
+      monthly[mm] = (monthly[mm]||0) + Number(it.valor||0);
+    }
+    // sort months ascending
     const months = Object.keys(monthly).sort();
-    for(const m of months){ evoLabels.push(m); evoValues.push(monthly[m]); }
+    for(const m of months){ evolutionLabels.push(m); evolutionValues.push(monthly[m]); }
   }
 
-  // destroy
+  // Destroy old charts
   safeDestroy(chCategory); safeDestroy(chPac); safeDestroy(chRanking); safeDestroy(chPacCat); safeDestroy(chRadar); safeDestroy(chCompanies); safeDestroy(chEvolution);
 
-  // category bar
+  // Category chart (bar)
   const ctxCat = document.getElementById('chart-category').getContext('2d');
-  chCategory = new Chart(ctxCat, { type: 'bar', data:{ labels: catLabels, datasets:[{ label:'Valor (R$)', data: catValues, backgroundColor: generatePalette(catLabels.length) }]}, options:{ responsive:true, plugins:{ tooltip:{ callbacks:{ label: ctx => fmtBRL(ctx.raw) } } }, scales:{ y:{ beginAtZero:true } } } });
+  chCategory = new Chart(ctxCat, {
+    type: 'bar',
+    data: { labels: catLabels, datasets: [{ label:'Valor (R$)', data: catValues, backgroundColor: generatePalette(catLabels.length) }]},
+    options: { responsive:true, plugins:{ title:{display:false}, tooltip:{ callbacks:{ label: ctx => fmtBRL(ctx.raw)}}, legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+  });
 
-  // pac doughnut
+  // PAC doughnut
   const ctxPac = document.getElementById('chart-pac').getContext('2d');
   chPac = new Chart(ctxPac, { type:'doughnut', data:{ labels:['Atendido no PAC','Não Atendido'], datasets:[{ data:[pacYes,pacNo], backgroundColor:['#2ecc71','#e74c3c'] }]}, options:{ responsive:true } });
 
-  // ranking horizontal (top N)
-  const limit = Number(document.getElementById('ranking-limit').value || 10);
-  const topLimited = top.slice(0, limit);
+  // Ranking horizontal
   const ctxRank = document.getElementById('chart-ranking').getContext('2d');
-  chRanking = new Chart(ctxRank, { type:'bar', data:{ labels: topLimited.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: topLimited.map(i=>i.valor), backgroundColor: generatePalette(topLimited.length) }]}, options:{ indexAxis:'y', responsive:true, scales:{ x:{ beginAtZero:true } } } });
+  chRanking = new Chart(ctxRank, { type:'bar', data:{ labels: topLimited.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: topLimited.map(i=>i.valor), backgroundColor: generatePalette(topLimited.length) }] }, options:{ indexAxis:'y', responsive:true, scales:{ x:{ beginAtZero:true } } } });
 
-  // pac by cat stacked
+  // PAC by category stacked
   const ctxPacCat = document.getElementById('chart-pac-cat').getContext('2d');
-  chPacCat = new Chart(ctxPacCat, { type:'bar', data:{ labels: pacCatLabels, datasets:[ { label:'Atendido', data: pacCatPac, backgroundColor:'#2ecc71' }, { label:'Não Atendido', data: pacCatNon, backgroundColor:'#e74c3c' } ] }, options:{ responsive:true, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } } } });
+  chPacCat = new Chart(ctxPacCat, { type:'bar', data:{ labels: pacCatLabels, datasets:[ { label:'Atendido no PAC', data: pacCatPac, backgroundColor:'#2ecc71' }, { label:'Não Atendido', data: pacCatNon, backgroundColor:'#e74c3c' } ] }, options:{ responsive:true, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } } } });
 
-  // radar
+  // Radar
   const ctxRadar = document.getElementById('chart-radar').getContext('2d');
-  chRadar = new Chart(ctxRadar, { type:'radar', data:{ labels: radarLabels, datasets:[{ label:'Valor (R$)', data: radarValues, backgroundColor:'rgba(52,144,221,0.18)', borderColor:'#3490dc' }] }, options:{ responsive:true } });
+  chRadar = new Chart(ctxRadar, { type:'radar', data:{ labels: radarLabels, datasets:[{ label:'Valor (R$)', data: radarValues, fill:true, backgroundColor:'rgba(52,144,221,0.2)', borderColor:'#3490dc' }] }, options:{ responsive:true } });
 
-  // companies chart (top)
+  // Companies bar (top)
   const ctxCompanies = document.getElementById('chart-companies').getContext('2d');
-  chCompanies = new Chart(ctxCompanies, { type:'bar', data:{ labels: topLimited.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: topLimited.map(i=>i.valor), backgroundColor: generatePalette(topLimited.length) }]}, options:{ responsive:true, scales:{ y:{ beginAtZero:true } } } });
+  chCompanies = new Chart(ctxCompanies, { type:'bar', data:{ labels: topLimited.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: topLimited.map(i=>i.valor), backgroundColor: generatePalette(topLimited.length) }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true } } } });
 
-  // evolution
+  // Evolution line (only if has data)
   const ctxEvo = document.getElementById('chart-evolution').getContext('2d');
-  if(hasDate && evoLabels.length){
-    chEvolution = new Chart(ctxEvo, { type:'line', data:{ labels: evoLabels, datasets:[{ label:'Valor Mensal (R$)', data: evoValues, fill:true, backgroundColor:'rgba(52,144,221,0.15)', borderColor:'#00509e', tension:0.2 }]}, options:{ responsive:true, plugins:{ tooltip:{ callbacks:{ label: ctx => fmtBRL(ctx.raw) } } }, scales:{ y:{ beginAtZero:true } } } });
+  if(hasDate && evolutionLabels.length){
+    chEvolution = new Chart(ctxEvo, { type:'line', data:{ labels: evolutionLabels, datasets:[{ label:'Valor Mensal (R$)', data: evolutionValues, fill:true, backgroundColor:'rgba(52,144,221,0.15)', borderColor:'#00509e', tension:0.2 }] }, options:{ responsive:true, plugins:{ tooltip:{ callbacks:{ label: ctx => fmtBRL(ctx.raw) } } }, scales:{ y:{ beginAtZero:true } } } });
     document.getElementById('evolution-note').style.display = 'none';
   } else {
-    ctxEvo.clearRect(0,0,ctxEvo.canvas.width, ctxEvo.canvas.height);
+    // clear canvas and show note
+    const ctx = document.getElementById('chart-evolution').getContext('2d');
+    ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
     document.getElementById('evolution-note').style.display = 'block';
   }
 }
 
-/* palette */
+// palette helper
 function generatePalette(n){
   const base = ['#003366','#00509e','#3498db','#2ecc71','#f39c12','#9b59b6','#e74c3c','#16a085','#8e44ad','#f1c40f'];
   const out = [];
@@ -502,7 +579,7 @@ function generatePalette(n){
   return out;
 }
 
-/* ---------- Filters & interactions ---------- */
+// ---------- Filtering logic ----------
 function applyFilters(){
   const cat = (document.getElementById('category-filter').value || document.getElementById('category-filter-mob').value || 'all');
   const pac = document.getElementById('pac-filter').value;
@@ -527,11 +604,16 @@ function applyFilters(){
   populateTable();
 }
 
-/* ---------- CSV import and mapping modal ---------- */
-function openFileDialog(){ document.getElementById('hidden-file').click(); }
+// ---------- CSV Import with mapping modal ----------
+let lastParsedRows = null; // store rows to map
+
+function openFileDialog(){
+  document.getElementById('hidden-file').click();
+}
 
 document.getElementById('hidden-file').addEventListener('change', function(e){
-  const f = e.target.files[0]; e.target.value='';
+  const f = e.target.files[0];
+  e.target.value = '';
   if(!f) return;
   if(!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas arquivos .csv são aceitos.');
   const reader = new FileReader();
@@ -540,21 +622,26 @@ document.getElementById('hidden-file').addEventListener('change', function(e){
       const rows = parseCSV(String(ev.target.result));
       if(!rows || rows.length < 2) return alert('CSV inválido ou sem dados.');
       lastParsedRows = rows;
-      openMappingModal(rows[0], rows.slice(1,6)); // pass header and preview
-    } catch(err){ console.error(err); alert('Erro ao ler CSV: ' + err.message); }
+      openMappingModal(rows[0]);
+    } catch(err){
+      console.error(err); alert('Erro ao ler CSV: ' + err.message);
+    }
   };
   reader.readAsText(f, 'UTF-8');
 });
 
-function openMappingModal(headerRow, previewRows){
+// open mapping modal and populate selects
+function openMappingModal(headerRow){
   const fields = ['(ignorar)'].concat(headerRow.map(h => h || '(vazio)'));
   ['map-empresa','map-valor','map-objeto','map-pac','map-categoria','map-data'].forEach(id => {
-    const sel = document.getElementById(id); sel.innerHTML = '';
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
     fields.forEach((f, idx) => {
       const o = document.createElement('option'); o.value = idx-1; o.textContent = f; sel.appendChild(o);
     });
   });
 
+  // try auto-detect by header names
   headerRow.forEach((h, idx) => {
     const norm = normalizeHeader(h);
     if(norm.includes('empresa') || norm.includes('fornecedor') || norm.includes('nome')) document.getElementById('map-empresa').value = idx;
@@ -565,45 +652,91 @@ function openMappingModal(headerRow, previewRows){
     if(norm.includes('data') || norm.includes('date') || norm.includes('mes')) document.getElementById('map-data').value = idx;
   });
 
-  // preview
-  const preview = previewRows || [];
-  document.getElementById('csv-preview').textContent = preview.map(r => r.join(' | ')).join('\n') || '(sem pré-visualização)';
-
-  new bootstrap.Modal(document.getElementById('mappingModal')).show();
+  const modal = new bootstrap.Modal(document.getElementById('mappingModal'));
+  modal.show();
 }
 
+// confirm mapping
 document.getElementById('btn-confirm-map').addEventListener('click', function(){
-  const getSel = id => Number(document.getElementById(id).value);
-  const mapping = { empresa: getSel('map-empresa'), valor: getSel('map-valor'), objeto: getSel('map-objeto'), pac: getSel('map-pac'), categoria: getSel('map-categoria'), data: getSel('map-data') };
+  const sel = i => Number(document.getElementById(i).value);
+  const mapping = {
+    empresa: sel('map-empresa'),
+    valor: sel('map-valor'),
+    objeto: sel('map-objeto'),
+    pac: sel('map-pac'),
+    categoria: sel('map-categoria'),
+    data: sel('map-data')
+  };
+  // convert -1 to null
   Object.keys(mapping).forEach(k => { if(mapping[k] < 0) mapping[k] = null; });
+  // build
   const data = buildDataFromRows(lastParsedRows, mapping);
   if(!data || data.length === 0) { alert('Nenhum registro válido encontrado após o mapeamento.'); return; }
-  loadedBase = data; filtered = [...loadedBase];
-  updateCategoryFilter(); applyFilters();
+  loadedBase = data;
+  filtered = [...loadedBase];
+  // update UI
+  updateCategoryFilter();
+  applyFilters(); // will call updateCharts, table, metrics
+  // hide modal
   bootstrap.Modal.getInstance(document.getElementById('mappingModal')).hide();
   alert('CSV importado com sucesso: ' + data.length + ' linhas.');
 });
 
-/* ---------- Export to XLSX (SheetJS) ---------- */
-function exportToXLSX(){
-  if(!filtered || filtered.length === 0) return alert('Sem dados para exportar.');
-  // build sheet data (array of arrays)
-  const header = ['Empresa','Valor','Objeto','PAC','Categoria','Data'];
-  const aoa = [header];
-  for(const r of filtered){
-    aoa.push([ r.empresa, Number(r.valor || 0), r.objeto, r.pac, r.categoria, r.data || '' ]);
-  }
-  // create workbook & worksheet
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Compras');
-  // style: set column widths (basic)
-  ws['!cols'] = [{wpx:240},{wpx:120},{wpx:320},{wpx:160},{wpx:160},{wpx:100}];
-  // write file
-  XLSX.writeFile(wb, 'compras_espep.xlsx');
-}
+// cancel mapping -> do nothing (modal closes automatically)
 
-/* ---------- CSV export (aux) ---------- */
+// ---------- File open top & button wiring ----------
+document.getElementById('btn-open-file').addEventListener('click', openFileDialog);
+document.getElementById('btn-open-file-mob').addEventListener('click', openFileDialog);
+document.getElementById('btn-import-top').addEventListener('click', openFileDialog);
+document.getElementById('btn-export-top').addEventListener('click', exportCSV);
+document.getElementById('btn-export-top').addEventListener('click', exportCSV); // top export
+
+// hidden file binds to the same input
+document.getElementById('file-input').addEventListener('change', function(e){
+  document.getElementById('hidden-file').files = e.target.files;
+  // trigger mapping flow
+  const ev = new Event('change'); document.getElementById('hidden-file').dispatchEvent(ev);
+  e.target.value = '';
+});
+
+// ---------- Basic user interactions ----------
+document.getElementById('btn-apply').addEventListener('click', applyFilters);
+document.getElementById('btn-apply-mob').addEventListener('click', applyFilters);
+document.getElementById('btn-reset').addEventListener('click', () => { document.getElementById('category-filter').value='all'; document.getElementById('pac-filter').value='all'; document.getElementById('value-max').value=''; document.getElementById('search').value=''; applyFilters(); });
+document.getElementById('search').addEventListener('input', applyFilters);
+document.getElementById('table-search').addEventListener('input', function(){ document.getElementById('search').value = this.value; applyFilters(); });
+
+// page prev/next
+document.getElementById('prev-page').addEventListener('click', () => { if(currentPage>1){ currentPage--; populateTable(); }});
+document.getElementById('next-page').addEventListener('click', () => { if(currentPage * pageSize < filtered.length){ currentPage++; populateTable(); }});
+
+// ranking limit
+document.getElementById('btn-update-ranking').addEventListener('click', updateCharts);
+
+// export table
+document.getElementById('btn-export-table').addEventListener('click', exportCSV);
+
+// sidebar navigation
+document.querySelectorAll('aside nav a').forEach(a => {
+  a.addEventListener('click', function(ev){
+    ev.preventDefault();
+    document.querySelectorAll('aside nav a').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    const sec = this.getAttribute('data-section');
+    // hide all sections
+    document.querySelectorAll('#analytics-section, #ranking-section, #evolution-section, #table-section, #analytics-section').forEach(el => el.classList.add('d-none'));
+    // show selected
+    if(sec === 'overview'){ /* default visible area - do nothing (cards are top-level) */ }
+    if(sec === 'analytics') document.getElementById('analytics-section').classList.remove('d-none');
+    if(sec === 'ranking') document.getElementById('ranking-section').classList.remove('d-none');
+    if(sec === 'evolution') document.getElementById('evolution-section').classList.remove('d-none');
+    if(sec === 'table') document.getElementById('table-section').classList.remove('d-none');
+    // if table shown, ensure paginated view updates
+    populateTable();
+  });
+});
+
+// ---------- Export CSV ----------
 function exportCSV(){
   if(!filtered || filtered.length === 0) return alert('Sem dados para exportar.');
   const headers = ['Empresa','Valor','Objeto','Pac','Categoria','Data'];
@@ -615,99 +748,63 @@ function exportCSV(){
       `"${String(r.objeto||'').replace(/"/g,'""')}"`,
       `"${String(r.pac||'').replace(/"/g,'""')}"`,
       `"${String(r.categoria||'').replace(/"/g,'""')}"`,
-      `"${String(r.data||'').replace(/"/g,'""')}"`
+      `"${String(r.data||'')}"`,
     ];
     lines.push(row.join(','));
   }
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'compras_espep_export.csv'; a.click(); URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href = url; a.download = 'compras_espep_export.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
-/* ---------- Wiring UI ---------- */
+// ---------- Initial render ----------
 function init(){
-  loadedBase = [...sampleData]; filtered = [...loadedBase];
-  updateCategoryFilter(); updateCharts(); updateMetrics(); populateTable();
+  // initial dataset
+  loadedBase = [...sampleData];
+  filtered = [...loadedBase];
+  updateCategoryFilter();
+  updateCharts();
+  updateMetrics();
+  populateTable();
+  // Wire top export to export function
+  document.getElementById('btn-export-top').addEventListener('click', exportCSV);
+}
 
-  // buttons & events
-  document.getElementById('btn-open-file').addEventListener('click', openFileDialog);
-  document.getElementById('btn-open-file-mob').addEventListener('click', openFileDialog);
-  document.getElementById('btn-import-top').addEventListener('click', openFileDialog);
-  document.getElementById('btn-export-top').addEventListener('click', exportToXLSX);
-  document.getElementById('btn-export-excel').addEventListener('click', exportToXLSX);
-  document.getElementById('btn-export-table').addEventListener('click', exportCSV);
-
-  document.getElementById('hidden-file').addEventListener('change', function(e){ const ev = new Event('change'); document.getElementById('hidden-file').dispatchEvent(ev); });
-  // the hidden-file change is handled above; wire file input to same input
-  document.getElementById('file-input').addEventListener('change', function(e){
-    document.getElementById('hidden-file').files = e.target.files;
-    document.getElementById('hidden-file').dispatchEvent(new Event('change'));
-    e.target.value = '';
-  });
-
-  document.getElementById('btn-apply').addEventListener('click', applyFilters);
-  document.getElementById('btn-apply-mob').addEventListener('click', applyFilters);
-  document.getElementById('btn-reset').addEventListener('click', () => { document.getElementById('category-filter').value='all'; document.getElementById('pac-filter').value='all'; document.getElementById('value-max').value=''; document.getElementById('search').value=''; applyFilters(); });
-
-  document.getElementById('search').addEventListener('input', applyFilters);
-  document.getElementById('table-search').addEventListener('input', function(){ document.getElementById('search').value = this.value; applyFilters(); });
-
-  document.getElementById('prev-page').addEventListener('click', () => { if(currentPage>1){ currentPage--; populateTable(); }});
-  document.getElementById('next-page').addEventListener('click', () => { if(currentPage * pageSize < filtered.length){ currentPage++; populateTable(); }});
-
-  document.getElementById('btn-update-ranking').addEventListener('click', updateCharts);
-
-  // wire hidden-file to parseCSV flow (already configured above)
-  document.getElementById('hidden-file').addEventListener('change', function(e){
-    const f = e.target.files[0]; e.target.value='';
-    if(!f) return;
-    if(!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas arquivos .csv são aceitos.');
+// ---------- Small helper: allow drag/drop CSV onto body ----------
+document.body.addEventListener('dragover', e => { e.preventDefault(); });
+document.body.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if(f && f.name && f.name.toLowerCase().endsWith('.csv')){
     const reader = new FileReader();
-    reader.onload = function(ev){
-      try{
-        const rows = parseCSV(String(ev.target.result));
-        if(!rows || rows.length < 2) return alert('CSV inválido ou sem dados.');
-        lastParsedRows = rows;
-        openMappingModal(rows[0], rows.slice(1,6));
-      } catch(err){ console.error(err); alert('Erro ao ler CSV: ' + err.message); }
+    reader.onload = ev => {
+      const rows = parseCSV(String(ev.target.result));
+      lastParsedRows = rows;
+      openMappingModal(rows[0]);
     };
     reader.readAsText(f, 'UTF-8');
-  });
+  } else {
+    // ignore
+  }
+});
 
-  // sidebar navigation
-  document.querySelectorAll('aside nav a').forEach(a => {
-    a.addEventListener('click', function(ev){
-      ev.preventDefault();
-      document.querySelectorAll('aside nav a').forEach(x => x.classList.remove('active'));
-      this.classList.add('active');
-      const sec = this.getAttribute('data-section');
-      document.getElementById('analytics-section').classList.add('d-none');
-      document.getElementById('ranking-section').classList.add('d-none');
-      document.getElementById('evolution-section').classList.add('d-none');
-      document.getElementById('table-section').classList.add('d-none');
-      if(sec === 'analytics') document.getElementById('analytics-section').classList.remove('d-none');
-      if(sec === 'ranking') document.getElementById('ranking-section').classList.remove('d-none');
-      if(sec === 'evolution') document.getElementById('evolution-section').classList.remove('d-none');
-      if(sec === 'table') document.getElementById('table-section').classList.remove('d-none');
-      populateTable();
-    });
-  });
-
-  // Drag & drop CSV (optional)
-  document.body.addEventListener('dragover', e => e.preventDefault());
-  document.body.addEventListener('drop', e => {
-    e.preventDefault();
-    const f = e.dataTransfer.files[0];
-    if(f && f.name && f.name.toLowerCase().endsWith('.csv')){
-      const reader = new FileReader();
-      reader.onload = ev => { const rows = parseCSV(String(ev.target.result)); lastParsedRows = rows; openMappingModal(rows[0], rows.slice(1,6)); };
-      reader.readAsText(f, 'UTF-8');
-    }
-  });
+// ---------- Helper: importCSV for older snippet flow (not used but kept) ----------
+function importCSV(event){
+  const f = event.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const rows = parseCSV(String(ev.target.result));
+    lastParsedRows = rows;
+    openMappingModal(rows[0]);
+  };
+  reader.readAsText(f, 'UTF-8');
 }
 
-/* ---------- Initialize ---------- */
+// initialize
 init();
+
 </script>
 
 </body>
