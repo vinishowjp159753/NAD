@@ -1,811 +1,1000 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Dashboard ESPEP — Compras (Tudo em 1 arquivo)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard ESPEP - Compras</title>
 
-<!-- Favicon SVG (livro simplificado) embutido -->
-<link rel="icon" href="data:image/svg+xml;utf8,
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <rect x='12' y='18' width='76' height='64' rx='8' fill='%23003366'/>
-  <path d='M24 28 C44 36, 56 36, 76 28' stroke='%23ffffff' stroke-width='3' fill='none' stroke-linecap='round'/>
-  <path d='M24 40 C44 48, 56 48, 76 40' stroke='%23ffffff' stroke-width='3' fill='none' stroke-linecap='round'/>
-</svg>">
+  <!-- Favicon SVG simplificado (ícone livro) embutido como data URL -->
+  <link rel="icon" href="data:image/svg+xml;utf8,
+  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+    <rect x='10' y='18' width='80' height='64' rx='8' fill='%23003366'/>
+    <path d='M22 26 C40 34, 60 34, 78 26' stroke='%23ffffff' stroke-width='3' fill='none' stroke-linecap='round'/>
+    <path d='M22 38 C40 46, 60 46, 78 38' stroke='%23ffffff' stroke-width='3' fill='none' stroke-linecap='round'/>
+  </svg>">
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Bootstrap 5 (CSS via inline minimal reset + used components in CSS) -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap & Chart.js -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<style>
-  :root{
-    --espep-blue: #003366;
-    --espep-blue-2: #00509e;
-    --accent: #f1c40f;
-    --bg: #f6f8fb;
-    --card: #fff;
-    --muted: #6c757d;
-  }
-
-  @media (prefers-color-scheme: dark){
+  <style>
     :root{
-      --bg:#071122;
-      --card:#0f1724;
-      --muted:#9aa6b2;
+      --espep-blue: #003366;
+      --espep-blue-2: #00509e;
+      --accent: #f1c40f;
+      --muted: #6c757d;
+      --bg: #f8f9fa;
+      --card-bg: #fff;
+      --text: #222;
     }
-  }
 
-  html,body{ height:100%; margin:0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color: #1f2937; -webkit-font-smoothing:antialiased;}
-  header{ background: linear-gradient(90deg,var(--espep-blue),var(--espep-blue-2)); color:white; padding:12px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 18px rgba(0,0,0,0.08);}
-  .brand { display:flex; align-items:center; gap:8px; font-weight:700; }
-  .brand svg{ border-radius:6px; }
-  .top-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
+    /* Support dark mode */
+    @media (prefers-color-scheme: dark) {
+      :root{
+        --bg: #0b1220;
+        --card-bg: #0f1724;
+        --text: #e6eef8;
+        --muted: #9aa6b2;
+      }
+    }
 
-  /* Layout grid */
-  .main-wrap { padding:16px; display:grid; grid-template-columns: 240px 1fr; gap:16px; align-items:start; }
-  @media (max-width: 992px){ .main-wrap { grid-template-columns: 1fr; } }
+    html,body{
+      height:100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
 
-  /* Sidebar */
-  .sidebar { background:linear-gradient(180deg,var(--espep-blue),var(--espep-blue-2)); color:white; border-radius:10px; padding:12px; min-height:280px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
-  .sidebar a{ color:rgba(255,255,255,0.95); display:block; padding:10px; border-radius:8px; text-decoration:none; margin-bottom:6px; font-weight:600;}
-  .sidebar a.active, .sidebar a:hover { background: rgba(255,255,255,0.06); transform: translateX(6px); }
+    /* Top navbar */
+    .navbar-espep{
+      background: linear-gradient(90deg, var(--espep-blue), var(--espep-blue-2));
+      color: white;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .navbar-espep .navbar-brand { color: #fff; font-weight:700; letter-spacing:0.2px; }
 
-  /* Content area */
-  .content { display:flex; flex-direction:column; gap:12px; }
+    /* Layout: sidebar + main */
+    .sidebar {
+      background: var(--espep-blue);
+      color: #fff;
+      min-height: calc(100vh - 56px);
+      padding-top: 20px;
+    }
+    .sidebar a {
+      color: rgba(255,255,255,0.92);
+      text-decoration:none;
+      display:block;
+      padding:10px 16px;
+      border-radius:8px;
+      margin:4px 8px;
+      transition: all .15s ease;
+      font-weight:600;
+    }
+    .sidebar a:hover{ background: rgba(255,255,255,0.06); transform: translateX(4px); }
+    .sidebar a.active{ background: rgba(0,0,0,0.15); }
 
-  /* cards grid */
-  .grid { display:grid; gap:12px; grid-template-columns: repeat(3, 1fr); }
-  @media (max-width: 1200px){ .grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 768px){ .grid { grid-template-columns: 1fr; } }
+    .card {
+      border: none;
+      border-radius: 12px;
+      background: var(--card-bg);
+      box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+      transition: transform .18s ease;
+    }
+    .card:hover { transform: translateY(-4px); }
 
-  .card { background:var(--card); border-radius:10px; padding:12px; box-shadow:0 6px 18px rgba(16,24,40,0.06); }
-  .card-header { font-weight:700; color:var(--espep-blue); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .card-header{
+      background: linear-gradient(90deg,var(--espep-blue),var(--espep-blue-2));
+      color:white;
+      border-radius: 12px 12px 0 0 !important;
+      font-weight:700;
+    }
 
-  .metrics { display:flex; gap:8px; }
-  .metric { flex:1; padding:10px; border-radius:8px; background:linear-gradient(90deg,#fff,#f5f7fb); text-align:center; }
-  .metric .value { font-size:1.25rem; font-weight:800; color:var(--espep-blue); }
-  .metric .label { font-size:0.85rem; color:var(--muted); }
+    .metric-card { text-align:center; padding:18px; }
+    .metric-value { font-size:1.6rem; font-weight:800; color:var(--espep-blue); }
+    .metric-label { color:var(--muted); font-size:0.85rem; }
 
-  .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-  .filters select, .filters input[type="range"], .filters input[type="number"], .filters input[type="text"]{ padding:8px; border-radius:8px; border:1px solid #e2e8f0; min-width:160px; }
+    .chart-container { position:relative; height:300px; width:100%; }
 
-  .chart-box { height:280px; position:relative; }
-  .chart-box canvas { width:100% !important; height:100% !important; }
+    .filter-section{
+      background:var(--card-bg);
+      padding:14px;
+      border-radius:12px;
+      margin-bottom:18px;
+      box-shadow: 0 3px 10px rgba(16,24,40,0.04);
+    }
 
-  .table-wrap { max-height:420px; overflow:auto; }
-  table{ width:100%; border-collapse:collapse; }
-  thead th { position:sticky; top:0; background:var(--espep-blue); color:white; z-index:2; }
-  td, th { padding:8px; border-bottom:1px solid #e6eef8; text-align:left; font-size:0.92rem; }
-  tr.highlight { background: rgba(0,80,150,0.05); }
+    .data-table { font-size:0.92rem; }
 
-  .small-muted { font-size:0.85rem; color:var(--muted); }
+    .highlight-pac { background: rgba(0,80,150,0.06); }
 
-  /* mobile specific controls */
-  .mobile-row { display:none; }
-  @media (max-width: 576px){ .desktop-row { display:none; } .mobile-row { display:flex; gap:8px; } .filters select { min-width:120px; } }
+    /* small screens adjustments */
+    @media (max-width: 991px) {
+      .sidebar { min-height: auto; padding-bottom:12px; }
+      .chart-container { height:260px; }
+      .metric-value { font-size:1.2rem; }
+    }
 
-  /* modal mapping styling (simple) */
-  .mapping-grid { display:flex; gap:8px; flex-direction:column; }
-  .mapping-row { display:flex; gap:8px; align-items:center; }
-  .mapping-row select { flex:1; padding:8px; border-radius:6px; }
+    /* subtle accessibility focus */
+    a:focus, button:focus, input:focus, select:focus {
+      outline: 3px solid rgba(0,48,102,0.18);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
 
-  /* small helpers */
-  .btn-espep { background:var(--espep-blue); color:white; border-radius:8px; padding:8px 12px; border:none; }
-  .btn-outline-espep { background:transparent; color:var(--espep-blue); border:1px solid var(--espep-blue); border-radius:8px; padding:8px 12px; }
+    /* file input hidden (we use a styled button) */
+    #csv-file-input { display:none; }
 
-</style>
+    /* small helper */
+    .small-muted { font-size:0.85rem; color:var(--muted); }
+  </style>
 </head>
 <body>
+  <!-- LOGIN PAGE -->
+  <div id="login-page" class="container py-5" aria-hidden="false">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-4">
+        <div class="card p-4">
+          <div class="text-center mb-3">
+            <!-- simplified logo in header -->
+            <svg width="48" height="48" viewBox="0 0 100 100" aria-hidden="true">
+              <rect x="10" y="18" width="80" height="64" rx="8" fill="#003366"/>
+              <path d="M22 26 C40 34, 60 34, 78 26" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+            <h3 class="mt-2">Dashboard ESPEP</h3>
+            <p class="small-muted mb-0">Painel de Compras — protótipo</p>
+          </div>
 
-<header>
-  <div class="brand">
-    <!-- inline simplified logo -->
-    <svg width="36" height="36" viewBox="0 0 100 100" aria-hidden="true">
-      <rect x="12" y="18" width="76" height="64" rx="8" fill="#003366"/>
-      <path d="M24 28 C44 36, 56 36, 76 28" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
-    </svg>
-    <div>ESPEP • Dashboard de Compras</div>
+          <form id="login-form" novalidate>
+            <div class="mb-3">
+              <label for="username" class="form-label">Usuário</label>
+              <input id="username" class="form-control" required aria-required="true" autocomplete="username">
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Senha</label>
+              <input id="password" type="password" class="form-control" required aria-required="true" autocomplete="current-password">
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn" style="background:linear-gradient(90deg,#003366,#00509e);color:#fff;">Entrar</button>
+            </div>
+          </form>
+
+          <div id="login-error" class="alert alert-danger mt-3 d-none" role="alert" aria-live="polite">Credenciais inválidas.</div>
+          <div class="mt-3 small text-center small-muted">Use <strong>admin/admin</strong> para acessar (apenas protótipo).</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="top-actions">
-    <button id="btn-import-top" class="btn-outline-espep btn-sm">Importar .CSV</button>
-    <button id="btn-export-top" class="btn-espep btn-sm">Exportar CSV</button>
-    <div style="width:8px"></div>
-    <div class="small-muted" id="user-info">Protótipo • usuário: admin</div>
-  </div>
-</header>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="d-none" aria-hidden="true">
+    <nav class="navbar navbar-expand-lg navbar-espep">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">ESPEP • Compras</a>
+        <button class="navbar-toggler btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#navTop">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-<div class="main-wrap">
-  <!-- SIDEBAR -->
-  <aside class="sidebar" aria-label="Navegação">
-    <nav>
-      <a href="#" class="active" data-section="overview">Visão Geral</a>
-      <a href="#" data-section="analytics">Análises</a>
-      <a href="#" data-section="ranking">Ranking & Empresas</a>
-      <a href="#" data-section="evolution">Evolução Mensal</a>
-      <a href="#" data-section="table">Tabela de Dados</a>
+        <div class="collapse navbar-collapse" id="navTop">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item me-3">
+              <span id="user-name" class="text-white small-muted">Usuário</span>
+            </li>
+            <li class="nav-item dropdown me-2">
+              <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">Ações</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" id="open-import">Importar .CSV</a></li>
+                <li><a class="dropdown-item" href="#" id="export-btn">Exportar CSV</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" id="logout-btn">Sair</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
-    <hr style="border-color: rgba(255,255,255,0.07); margin:12px 0;">
-    <div class="small-muted">Dica: importe CSV com colunas nomeadas (Empresa, Valor, Objeto, Pac, Categoria, Data)</div>
-  </aside>
 
-  <!-- CONTENT -->
-  <main class="content">
-    <!-- CONTROLS / FILTERS -->
-    <div class="card">
-      <div class="card-header">
-        <div style="display:flex;gap:12px;align-items:center;">
-          <div><strong>Controles</strong></div>
-          <div class="small-muted">Filtros rápidos</div>
-        </div>
-        <div class="small-muted">Use filtros combinados — importação com mapeamento permite detectar colunas automaticamente.</div>
-      </div>
-
-      <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px;">
-        <div class="filters desktop-row">
-          <select id="category-filter"><option value="all">Todas as categorias</option></select>
-          <select id="pac-filter">
-            <option value="all">Todos (PAC / Não PAC)</option>
-            <option value="yes">Atendido no PAC</option>
-            <option value="no">Não atendido no PAC</option>
-          </select>
-          <input id="value-max" type="number" placeholder="Valor máximo (R$)">
-          <input id="search" type="text" placeholder="Buscar empresa ou objeto..." style="min-width:220px;">
-          <button id="btn-apply" class="btn-espep">Aplicar</button>
-          <button id="btn-reset" class="btn-outline-espep">Resetar</button>
-          <div style="margin-left:auto;display:flex;gap:8px;">
-            <input id="file-input" type="file" accept=".csv" style="display:none">
-            <button id="btn-open-file" class="btn-outline-espep">Importar CSV</button>
+    <div class="container-fluid mt-3 mb-5">
+      <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 d-none d-lg-block">
+          <div class="sidebar p-2">
+            <nav aria-label="Seções do painel">
+              <a href="#" class="active" data-section="overview" id="link-overview">Visão Geral</a>
+              <a href="#" data-section="categories" id="link-categories">Por Categoria</a>
+              <a href="#" data-section="pac-analysis" id="link-pac">Análise PAC 2024</a>
+              <a href="#" data-section="companies" id="link-companies">Por Empresa</a>
+              <a href="#" data-section="data-table" id="link-table">Tabela de Dados</a>
+            </nav>
           </div>
         </div>
 
-        <!-- mobile compact controls -->
-        <div class="filters mobile-row">
-          <select id="category-filter-mob"><option value="all">Categorias</option></select>
-          <button id="btn-open-file-mob" class="btn-outline-espep">Importar</button>
-          <button id="btn-apply-mob" class="btn-espep">Ok</button>
-        </div>
-      </div>
-    </div>
+        <!-- Main content -->
+        <div class="col-lg-10">
+          <!-- Filters -->
+          <div class="filter-section d-flex flex-column flex-md-row gap-3 align-items-center">
+            <div class="flex-grow-1 d-flex gap-2">
+              <div style="min-width:180px;">
+                <label class="form-label mb-1 small-muted">Categoria</label>
+                <select id="category-filter" class="form-select" aria-label="Filtro de categoria">
+                  <option value="all">Todas as Categorias</option>
+                </select>
+              </div>
 
-    <!-- METRICS -->
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <div>Principais Métricas</div>
-          <div class="small-muted">Resumo rápido</div>
-        </div>
-        <div style="margin-top:8px;" class="metrics" role="region" aria-label="Métricas">
-          <div class="metric">
-            <div class="label">Contratos</div>
-            <div class="value" id="metric-count">0</div>
-            <div class="small-muted">Total de contratos</div>
+              <div style="min-width:200px;">
+                <label class="form-label mb-1 small-muted">Status PAC 2024</label>
+                <select id="pac-filter" class="form-select" aria-label="Filtro PAC">
+                  <option value="all">Todos</option>
+                  <option value="yes">Atendido no PAC</option>
+                  <option value="no">Não Atendido no PAC</option>
+                </select>
+              </div>
+
+              <div style="min-width:240px;">
+                <label class="form-label mb-1 small-muted">Valor máximo (R$)</label>
+                <input type="range" id="value-range" class="form-range" min="0" max="500000" step="1000" value="500000" aria-label="Filtro de valor máximo">
+                <div class="d-flex justify-content-between small-muted">
+                  <span id="min-value">R$ 0</span>
+                  <span id="max-value">R$ 500.000</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 align-items-center">
+              <button id="btn-reset-filters" class="btn btn-outline-secondary btn-sm">Reset</button>
+              <button id="btn-toggle-theme" class="btn btn-sm btn-secondary">Tema</button>
+              <button id="btn-open-file" class="btn btn-sm" style="background:var(--espep-blue); color:#fff;">Importar .CSV</button>
+              <input id="csv-file-input" type="file" accept=".csv" aria-label="Upload CSV">
+            </div>
           </div>
-          <div class="metric">
-            <div class="label">Valor Total</div>
-            <div class="value" id="metric-total">R$ 0,00</div>
-            <div class="small-muted">Soma dos valores</div>
+
+          <!-- Metrics -->
+          <div class="row mt-3" id="metrics-section" role="region" aria-label="Métricas principais">
+            <div class="col-sm-6 col-md-3">
+              <div class="card metric-card p-3">
+                <div class="metric-value" id="total-value">R$ 0</div>
+                <div class="metric-label">Valor Total Gasto</div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <div class="card metric-card p-3">
+                <div class="metric-value" id="pac-percentage">0%</div>
+                <div class="metric-label">Atendido no PAC 2024</div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <div class="card metric-card p-3">
+                <div class="metric-value" id="total-companies">0</div>
+                <div class="metric-label">Empresas Contratadas</div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <div class="card metric-card p-3">
+                <div class="metric-value" id="avg-value">R$ 0</div>
+                <div class="metric-label">Valor Médio por Contrato</div>
+              </div>
+            </div>
           </div>
-          <div class="metric">
-            <div class="label">Atendido no PAC</div>
-            <div class="value" id="metric-pac">0</div>
-            <div class="small-muted">Quantidade</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Charts area: overview -->
-      <div class="card">
-        <div class="card-header">
-          <div>Distribuição por Categoria</div>
-          <div class="small-muted">Totais por categoria</div>
-        </div>
-        <div class="chart-box"><canvas id="chart-category"></canvas></div>
-      </div>
+          <!-- Content Sections -->
+          <div id="content-sections" class="mt-3">
+            <!-- Overview -->
+            <div class="section" id="overview-section">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header">Distribuição por Categoria</div>
+                    <div class="card-body">
+                      <div class="chart-container">
+                        <canvas id="category-chart" aria-label="Gráfico de pizza por categoria"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div>PAC vs Não PAC</div>
-          <div class="small-muted">Contagem</div>
-        </div>
-        <div class="chart-box"><canvas id="chart-pac"></canvas></div>
-      </div>
-    </div>
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header">Comparação PAC 2024</div>
+                    <div class="card-body">
+                      <div class="chart-container">
+                        <canvas id="pac-comparison-chart" aria-label="Gráfico de barras PAC"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-    <!-- Analytics: more charts -->
-    <div id="analytics-section" class="card d-none">
-      <div class="card-header">
-        <div>Análises</div>
-        <div class="small-muted">Gráficos complementares</div>
-      </div>
-      <div class="grid" style="margin-top:10px;">
-        <div class="card">
-          <div class="card-header">Top 10 Empresas (Ranking Horizontal)</div>
-          <div class="chart-box"><canvas id="chart-ranking"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-header">PAC vs Não PAC por Categoria (Empilhado)</div>
-          <div class="chart-box"><canvas id="chart-pac-cat"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-header">Radar: Valores por Categoria (proporção)</div>
-          <div class="chart-box"><canvas id="chart-radar"></canvas></div>
-        </div>
-      </div>
-    </div>
+              <div class="row mt-4">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header">Top 10 Empresas por Valor</div>
+                    <div class="card-body">
+                      <div class="chart-container">
+                        <canvas id="top-companies-chart" aria-label="Top empresas"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <!-- Ranking & Companies -->
-    <div id="ranking-section" class="card d-none">
-      <div class="card-header"><div>Ranking de Empresas</div><div class="small-muted">Ordene e investigue</div></div>
-      <div style="margin-top:6px;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="ranking-limit"><option value="5">Top 5</option><option value="10" selected>Top 10</option><option value="20">Top 20</option></select>
-          <button id="btn-update-ranking" class="btn-espep">Atualizar Ranking</button>
-        </div>
-        <div style="margin-top:10px;" class="chart-box"><canvas id="chart-companies"></canvas></div>
-      </div>
-    </div>
+            <!-- Categories -->
+            <div class="section d-none" id="categories-section">
+              <div class="card">
+                <div class="card-header">Valor Total por Categoria</div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="category-bar-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <!-- Evolution monthly -->
-    <div id="evolution-section" class="card d-none">
-      <div class="card-header"><div>Evolução Mensal</div><div class="small-muted">Baseada na coluna Data (formato: YYYY-MM-DD ou DD/MM/YYYY)</div></div>
-      <div style="margin-top:10px;" class="chart-box"><canvas id="chart-evolution"></canvas></div>
-      <div class="small-muted" id="evolution-note" style="margin-top:6px; display:block;">Observação: para exibir evolução mensal, importe CSV com coluna Data (nome 'data', 'Data' ou 'date').</div>
-    </div>
+            <!-- PAC Analysis -->
+            <div class="section d-none" id="pac-analysis-section">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header">Distribuição PAC vs Não PAC</div>
+                    <div class="card-body">
+                      <div class="chart-container">
+                        <canvas id="pac-pie-chart"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header">Valor por Categoria (PAC vs Não PAC)</div>
+                    <div class="card-body">
+                      <div class="chart-container">
+                        <canvas id="pac-category-chart"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <!-- Table -->
-    <div id="table-section" class="card d-none">
-      <div class="card-header">
-        <div>Tabela de Dados</div>
-        <div class="small-muted">Pesquise, filtre e exporte</div>
-      </div>
-      <div style="margin-top:8px;">
-        <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-          <input id="table-search" type="text" placeholder="Pesquisar..." style="padding:8px; border-radius:8px; flex:1;">
-          <button id="btn-export-table" class="btn-espep">Exportar Tabela</button>
-        </div>
+            <!-- Companies -->
+            <div class="section d-none" id="companies-section">
+              <div class="card">
+                <div class="card-header">Empresas e Valores</div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="companies-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div class="table-wrap">
-          <table aria-label="Tabela de compras">
-            <thead>
-              <tr><th>Empresa</th><th>Valor (R$)</th><th>Objeto</th><th>PAC</th><th>Categoria</th><th>Data</th></tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
+            <!-- Data table -->
+            <div class="section d-none" id="data-table-section">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <span>Tabela de Dados Completa</span>
+                  <div class="d-flex gap-2 align-items-center">
+                    <input id="search-input" class="form-control form-control-sm" placeholder="Buscar empresa ou objeto..." style="min-width:220px;">
+                    <button id="export-table-btn" class="btn btn-sm btn-outline-light">Exportar CSV</button>
+                    <button id="btn-open-file-2" class="btn btn-sm" style="background:var(--espep-blue); color:#fff;">Importar .CSV</button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive" style="max-height:520px; overflow:auto;">
+                    <table class="table table-striped table-hover data-table mb-0" aria-describedby="Tabela de compras">
+                      <thead>
+                        <tr>
+                          <th scope="col">Empresa</th>
+                          <th scope="col">Valor Total</th>
+                          <th scope="col">Objeto do Contrato</th>
+                          <th scope="col">Atendido no PAC 2024</th>
+                          <th scope="col">Categoria</th>
+                        </tr>
+                      </thead>
+                      <tbody id="data-table-body"></tbody>
+                    </table>
+                  </div>
+                  <div class="mt-2 small text-muted">Importe um arquivo CSV com colunas: Empresa,Valor,Objeto,Pac,Categoria</div>
+                </div>
+              </div>
+            </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-          <div class="small-muted" id="table-info">Mostrando 0 linhas</div>
-          <div>
-            <button id="prev-page" class="btn-outline-espep">Anterior</button>
-            <span id="page-indicator" class="small-muted">1</span>
-            <button id="next-page" class="btn-outline-espep">Próxima</button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </div> <!-- content sections -->
+        </div> <!-- main col -->
+      </div> <!-- row -->
+    </div> <!-- container -->
+  </div> <!-- dashboard -->
 
-  </main>
-</div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Modal: Mapear colunas após importar -->
-<div class="modal fade" id="mappingModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Mapear colunas do CSV</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <p class="small-muted">Selecione qual coluna corresponde a cada campo do dashboard. Campo <strong>Data</strong> é opcional (para evolução mensal).</p>
-        <div class="mapping-grid">
-          <div class="mapping-row"><label style="width:120px">Empresa</label><select id="map-empresa"></select></div>
-          <div class="mapping-row"><label style="width:120px">Valor</label><select id="map-valor"></select></div>
-          <div class="mapping-row"><label style="width:120px">Objeto</label><select id="map-objeto"></select></div>
-          <div class="mapping-row"><label style="width:120px">PAC</label><select id="map-pac"></select></div>
-          <div class="mapping-row"><label style="width:120px">Categoria</label><select id="map-categoria"></select></div>
-          <div class="mapping-row"><label style="width:120px">Data (opcional)</label><select id="map-data"></select></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="btn-cancel-map" class="btn-outline-espep" data-bs-dismiss="modal">Cancelar</button>
-        <button id="btn-confirm-map" class="btn-espep">Confirmar e Carregar</button>
-      </div>
-    </div>
-  </div>
-</div>
+  <script>
+  /*************************************************************************
+   * Dashboard ESPEP - Tudo em um arquivo
+   * - Mantive tudo inline como você pediu.
+   * - Import CSV (apenas .csv), export CSV, filtros combinados, gráfico.
+   * - Comentários explicativos em pontos importantes.
+   *************************************************************************/
 
-<!-- Hidden file input used by top buttons -->
-<input id="hidden-file" type="file" accept=".csv" style="display:none">
+  // ---------- Dados iniciais de exemplo (mantidos aqui) ----------
+  const sampleData = [
+    { empresa: "A.G. COMÉRCIO DE ALIMENTO", valor: 31613.11, objeto: "AQUISIÇÃO DE GÊNEROS ALIMENTICÍOS", pac: "33903007 GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+    { empresa: "ADM COMERCIO E SERVIÇOS", valor: 21717.67, objeto: "INSTALAÇÃO DE EXAUSTORES, FOGÕES E FORNO/ FORNECIMENTO DE UTENSÍLIOS DE COZINHA", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+    { empresa: "EQUIPA INCÊNDIO COM DE EQUIP C/INC LTDA", valor: 11700, objeto: "AQUISIÇÃO DE EXTINTORES DE INCÊNDIO / PLACAS DE SINALIZAÇÃO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Segurança" },
+    { empresa: "EZAU DA SILVA", valor: 1011, objeto: "HORTIFRUTIGRANGEIROS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+    { empresa: "BRUNA JOARA DE FARIAS", valor: 5989, objeto: "MONTAGEM E DESMONTAGEM DO ARQUIVO DESLIZANTE DO SETOR FINANCEIRO", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "CODATA REPAD", valor: 32105.44, objeto: "SERVIÇO TÉCNICO ESPECIALIZADO EM INSTALAÇÃO DE ACESSO À REDE PARAIBANA DE ALTO DESEMPENHO (REPAD)", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+    { empresa: "CODATA SIAF", valor: 35602.56, objeto: "SISTEMA INTEGRADO DE ADMINISTRAÇÃO FINANCEIRA", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+    { empresa: "COMERCIAL V. DE MAT. SILVA LTDA ( C. ESCOLARES)", valor: 52800, objeto: "CARTEIRAS ESCOLARES", pac: "44905242 - MOBILIARIO EM GERAL", categoria: "Mobiliário" },
+    { empresa: "CONGRESSO CONSAD", valor: 1500, objeto: "XIV CONGRESSO CONSAD", pac: "NÃO CONSTA NO PAC 2024", categoria: "Eventos" },
+    { empresa: "COSTA GODIM E CIA", valor: 2750, objeto: "10 RESMAS DE PAPEL A4", pac: "33903016 - MATERIAL DE EXPEDIENTE", categoria: "Material de Expediente" },
+    { empresa: "DELTA SOLUÇÕES", valor: 42816, objeto: "CÂMERAS / CENTRAL TE L EÔNICA", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Segurança" },
+    { empresa: "DETEC END SOLUÇÕES", valor: 1465.78, objeto: "ANÁLISE DE VAZAMENTO DE ÁGUA NA ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+    { empresa: "ECCOSERV", valor: 24712.64, objeto: "MATERIAL DE LIMPEZA", pac: "33903022 MATERIAL DE LIMPEZA E PROD. DE HIGIENIZACAO", categoria: "Material de Limpeza" },
+    { empresa: "EMPRESA CAPITAL", valor: 4055, objeto: "MANUTENÇÃO DE FILTROS", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "EMPRESA GARNDE NORDESTE", valor: 10490, objeto: "PAGAMENTO DOS SOFÁS, POLTRONAS E MESAS", pac: "44905242 - MOBILIARIO EM GERAL", categoria: "Mobiliário" },
+    { empresa: "EMPRESA MARIOSA RECEPÇÕES", valor: 31200, objeto: "FORNECIMENTO DE COFFEE BREAK", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação" },
+    { empresa: "EMPRESA NP TECNOLOGIA E GESTÃO DE DADOS LTDA", valor: 10910, objeto: "BANCO DE PREÇO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+    { empresa: "EPC", valor: 105764, objeto: "EMPRESA PARAIBANA DE COMUNICAÇÃO - EPC", pac: "NÃO CONSTA NO PAC 2024", categoria: "Comunicação" },
+    { empresa: "EXTISIN EXTINTORES NORDESTE SERVIÇO LTDA", valor: 5357.5, objeto: "EXTINTORES", pac: "NÃO CONSTA NO PAC 2024", categoria: "Segurança" },
+    { empresa: "FC ENVIDRAÇAMENTO COM TECNOLOGIA", valor: 3500, objeto: "INSTALAÇÃO DE VIDROS", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "HC DISTRIBUIDORA LTDA", valor: 1707.08, objeto: "AQUISIÇÃO DE MATERIAL DE EXPEDIENTE", pac: "33903016 - MATERIAL DE EXPEDIENTE", categoria: "Material de Expediente" },
+    { empresa: "JXF AUTO PEÇAS LTDA", valor: 11400, objeto: "SERVIÇO NA VAN DUCATO", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "LS SERVIÇOS", valor: 10300, objeto: "MANUTENÇÃO PREVENTIVA E CORRETIVA EM APARELHOS DE AR-CONDICIONADO DA ESPEP", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "MAQ-LAREM", valor: 21706.78, objeto: "LOCAÇÃO DE IMPRESSORAS E GESTÃO DOCUMENTAL", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+    { empresa: "MARCUS SERGIO RUFFO", valor: 4233.3, objeto: "GÊNEROS ALIMENTÍCIOS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+    { empresa: "MARIA DO SOCORRO OLIVEIRA MARINHO", valor: 4400, objeto: "CONSERTO DE APARELHOS DE AR-CONDICIONADO", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "MARIOSA RECEPÇÕES", valor: 1560, objeto: "COFFEE BREAK", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação" },
+    { empresa: "NEXUS COMÉRCIO E SERVIÇOS LTDA", valor: 1867, objeto: "LIMPEZA DE SOFÁS E CADEIRAS GIRATÓRIAS", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+    { empresa: "O ESCOLAR COMERCIO E SERVIÇO LTDA", valor: 9023.41, objeto: "MATERIAL DE EXPEDIENTE", pac: "33903016 - MATERIAL DE EXPEDIENTE", categoria: "Material de Expediente" },
+    { empresa: "PADARIA PONTES LTDA", valor: 42603.6, objeto: "REFEIÇÕES PARA A ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação" },
+    { empresa: "PEDRO HENRIQUE HIPOLITO LEITE", valor: 13827.86, objeto: "HORTIFRUTIGRANJEIROS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+    { empresa: "PLENITUDE SEGURANÇA", valor: 311423.8, objeto: "SEGURANÇA PRIVADA", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Segurança" },
+    { empresa: "POLPA NORDESTE", valor: 6949.85, objeto: "HORTIFRUTIGRANJEIROS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+    { empresa: "R. DOS SANTOS COMERCIAL LTDA", valor: 1098.6, objeto: "FORNECIMENTO DE AGUA MINERAL", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+    { empresa: "RBIM E ENGENHARIA", valor: 8000, objeto: "PROJETO DE INSTALAÇÕES DE PROTEÇÃO CONTRA INCÊNDIO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+    { empresa: "REAL ACTION", valor: 28910, objeto: "FORNECIMENTO DE MATERIAL DE CONSUMO PARA ATENDER AO CURSO DE ATENDIMENTO PRÉ-HOSPITALAR TÁTICO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Material de Consumo" },
+    { empresa: "ROMILDO DIAS DE ARAUJO", valor: 23000, objeto: "SERVIÇOS DE INSTALAÇÕES ELÉTRICAS", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+    { empresa: "SERVIÇOS PARA COM. DO BRASIL S/A", valor: 230.13, objeto: "CERTIFICADO DIGITAL DO SPC", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+    { empresa: "VBC GÁS", valor: 4560, objeto: "FORNECIMENTO DE CARGA DE GÁS LIQUEFEITO", pac: "33903004 - GAS ENGARRAFADO", categoria: "Gás" },
+    { empresa: "VENTISOL DA AMAZONIA", valor: 26200, objeto: "AQUISIÇÃO DE APARELHOS DE AR-CONDICIONADO", pac: "44905234 - MAQUINAS, UTENSILIOS E EQUIPAMENTOS DIVERSOS", categoria: "Equipamentos" }
+  ];
 
-<!-- Bootstrap JS (used for modal only) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  // ---------- Estado global ----------
+  let currentData = [...sampleData]; // data filtrada/atualizada usada pelo dashboard
+  let charts = {};                  // guarda instâncias Chart.js
+  let themeManual = null;           // 'dark'|'light' or null = auto
 
-<script>
-/* ============================
-   Dashboard ESPEP — single file
-   Features:
-   - Import CSV (mapping modal)
-   - Export CSV
-   - Multiple charts: category, pac, ranking, evolution, radar, stacked
-   - Responsive layout + mobile controls
-   - Table with pagination and search
-   ============================ */
-
-// ---------- Sample data (initial) ----------
-const sampleData = [
-  {empresa: "A.G. COMÉRCIO DE ALIMENTO", valor: 31613.11, objeto: "AQUISIÇÃO DE GÊNEROS ALIMENTICÍOS", pac: "33903007 GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação", data: "2024-01-15"},
-  {empresa: "ADM COMERCIO E SERVIÇOS", valor: 21717.67, objeto: "INSTALAÇÃO ...", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços", data: "2024-02-07"},
-  {empresa: "PLENITUDE SEGURANÇA", valor: 311423.80, objeto: "SEGURANÇA PRIVADA", pac: "33903999 - OUTROS SERVICOS", categoria: "Segurança", data: "2024-03-21"},
-  {empresa: "COMERCIAL V. DE MAT. SILVA", valor: 52800.00, objeto: "CARTEIRAS ESCOLARES", pac: "44905242 - MOBILIARIO", categoria: "Mobiliário", data: "2024-04-10"},
-  {empresa: "PADARIA PONTES LTDA", valor: 42603.60, objeto: "REFEIÇÕES PARA A ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação", data: "2024-05-05"},
-  // ... (restante omitido para brevidade, você pode manter sampleData conforme quiser)
-];
-
-// ---------- Estado ----------
-let loadedBase = [...sampleData]; // dataset base (substituído no import)
-let filtered = [...loadedBase];   // dataset após filtros
-let currentPage = 1;
-const pageSize = 12;
-
-// Chart references
-let chCategory, chPac, chRanking, chPacCat, chRadar, chCompanies, chEvolution;
-
-// ---------- Utils ----------
-function fmtBRL(v){ return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', {minimumFractionDigits:2}); }
-function isPac(val){ if(!val) return false; const s = String(val).toUpperCase(); return !(s.includes('NÃO') || s.includes('NAO') || s.includes('N/A') || s.includes('Não')); }
-function parseDateFlexible(s){
-  if(!s) return null;
-  s = String(s).trim();
-  // Try ISO first
-  let d = new Date(s);
-  if(!isNaN(d)) return d;
-  // Try DD/MM/YYYY
-  const m = s.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
-  if(m) return new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00`);
-  // Try YYYYMMDD
-  const m2 = s.match(/(\d{4})(\d{2})(\d{2})/);
-  if(m2) return new Date(`${m2[1]}-${m2[2]}-${m2[3]}T00:00:00`);
-  return null;
-}
-
-// CSV parser (handles quotes and commas)
-function parseCSV(text){
-  const rows = [];
-  let cur = '';
-  let row = [];
-  let inQuotes = false;
-  for(let i=0;i<text.length;i++){
-    const ch = text[i];
-    const nxt = text[i+1];
-    if(ch === '"'){
-      if(inQuotes && nxt === '"'){ cur += '"'; i++; } else { inQuotes = !inQuotes; }
-    } else if(ch === ',' && !inQuotes){
-      row.push(cur);
-      cur = '';
-    } else if((ch === '\n' || ch === '\r') && !inQuotes){
-      if(ch === '\r' && nxt === '\n'){ i++; }
+  // ---------- Util: parse CSV (robusta o suficiente para a maioria dos CSVs) ----------
+  // Retorna array de arrays (linhas -> colunas)
+  function parseCSV(text) {
+    const rows = [];
+    let cur = '';
+    let row = [];
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const nxt = text[i+1];
+      if (ch === '"' ) {
+        if (inQuotes && nxt === '"') { // escaped quote
+          cur += '"';
+          i++; // skip next
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === ',' && !inQuotes) {
+        row.push(cur);
+        cur = '';
+      } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+        // handle crlf
+        if (ch === '\r' && nxt === '\n') { i++; }
+        row.push(cur);
+        rows.push(row);
+        row = [];
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    // push last
+    if (cur !== '' || row.length > 0) {
       row.push(cur);
       rows.push(row);
-      row = [];
-      cur = '';
-    } else {
-      cur += ch;
     }
-  }
-  if(cur !== '' || row.length > 0){ row.push(cur); rows.push(row); }
-  // trim empty trailing rows
-  if(rows.length && rows[rows.length-1].length === 1 && rows[rows.length-1][0] === '') rows.pop();
-  return rows;
-}
-
-// guess header names (simple)
-function normalizeHeader(h){ return String(h||'').trim().toLowerCase(); }
-
-// Build dataset after mapping
-function buildDataFromRows(rows, mapping){
-  const header = rows[0].map(h => String(h||'').trim());
-  const data = [];
-  for(let r=1;r<rows.length;r++){
-    const row = rows[r];
-    if(!row || row.join('').trim() === '') continue;
-    const empresa = row[mapping.empresa] ? String(row[mapping.empresa]).trim() : '';
-    if(!empresa) continue;
-    let valorRaw = mapping.valor !== null && row[mapping.valor] !== undefined ? String(row[mapping.valor]).trim() : '0';
-    valorRaw = valorRaw.replace(/\./g,'').replace(',', '.').replace(/\s/g,'');
-    let valor = Number(valorRaw);
-    if(isNaN(valor)) valor = 0;
-    const objeto = mapping.objeto !== null && row[mapping.objeto] !== undefined ? String(row[mapping.objeto]).trim() : '';
-    const pac = mapping.pac !== null && row[mapping.pac] !== undefined ? String(row[mapping.pac]).trim() : '';
-    const categoria = mapping.categoria !== null && row[mapping.categoria] !== undefined ? String(row[mapping.categoria]).trim() : 'Outros';
-    const dataRaw = mapping.data !== null && row[mapping.data] !== undefined ? String(row[mapping.data]).trim() : '';
-    const dateObj = parseDateFlexible(dataRaw);
-    const dateISO = dateObj ? dateObj.toISOString().slice(0,10) : '';
-    data.push({ empresa, valor, objeto, pac: pac || 'NÃO CONSTA NO PAC 2024', categoria: categoria || 'Outros', data: dateISO });
-  }
-  return data;
-}
-
-// ---------- UI update functions ----------
-function updateMetrics(){
-  const total = filtered.reduce((s,i)=>s + Number(i.valor||0), 0);
-  const count = filtered.length;
-  const pacCount = filtered.filter(i => isPac(i.pac)).length;
-  document.getElementById('metric-count').textContent = count;
-  document.getElementById('metric-total').textContent = fmtBRL(total);
-  document.getElementById('metric-pac').textContent = pacCount;
-}
-
-function updateCategoryFilter(){
-  const sel = document.getElementById('category-filter');
-  const selMob = document.getElementById('category-filter-mob');
-  const cats = [...new Set(loadedBase.map(i => i.categoria || 'Outros'))].sort();
-  // clear
-  sel.innerHTML = '<option value="all">Todas as categorias</option>';
-  selMob.innerHTML = '<option value="all">Todas</option>';
-  cats.forEach(c => {
-    const opt = document.createElement('option'); opt.value = c; opt.textContent = c; sel.appendChild(opt);
-    const opt2 = opt.cloneNode(true); selMob.appendChild(opt2);
-  });
-}
-
-function populateTable(){
-  const tbody = document.getElementById('table-body');
-  tbody.innerHTML = '';
-  // pagination
-  const start = (currentPage-1)*pageSize;
-  const page = filtered.slice(start, start + pageSize);
-  for(const row of page){
-    const tr = document.createElement('tr');
-    if(isPac(row.pac)) tr.classList.add('highlight');
-    tr.innerHTML = `<td>${escapeHtml(row.empresa)}</td>
-      <td>${fmtBRL(row.valor)}</td>
-      <td>${escapeHtml(row.objeto)}</td>
-      <td>${escapeHtml(row.pac)}</td>
-      <td>${escapeHtml(row.categoria)}</td>
-      <td>${row.data ? row.data : ''}</td>`;
-    tbody.appendChild(tr);
-  }
-  document.getElementById('table-info').textContent = `Mostrando ${Math.min(pageSize, filtered.length - (start))} de ${filtered.length} linhas`;
-  document.getElementById('page-indicator').textContent = currentPage;
-}
-
-// escape HTML
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ---------- Chart updates ----------
-function safeDestroy(ch){ if(ch){ try{ ch.destroy(); }catch(e){} } }
-
-function updateCharts(){
-  // Category pie/bar (values)
-  const catAgg = {};
-  for(const it of filtered){ catAgg[it.categoria = (it.categoria||'Outros')] = (catAgg[it.categoria]||0) + Number(it.valor||0); }
-  const catLabels = Object.keys(catAgg);
-  const catValues = Object.values(catAgg);
-
-  // PAC counts
-  const pacYes = filtered.filter(i => isPac(i.pac)).length;
-  const pacNo = filtered.length - pacYes;
-
-  // Top companies ranking
-  const top = [...filtered].sort((a,b) => b.valor - a.valor).slice(0, 50); // keep top50 for chart building
-
-  // Radar uses category proportion
-  const radarLabels = catLabels;
-  const radarValues = catValues;
-
-  // Pac by category stacked
-  const pacByCat = {};
-  for(const it of filtered){
-    const c = it.categoria || 'Outros';
-    if(!pacByCat[c]) pacByCat[c] = {pac:0, nonPac:0};
-    if(isPac(it.pac)) pacByCat[c].pac += Number(it.valor || 0);
-    else pacByCat[c].nonPac += Number(it.valor || 0);
-  }
-  const pacCatLabels = Object.keys(pacByCat);
-  const pacCatPac = pacCatLabels.map(l => pacByCat[l].pac);
-  const pacCatNon = pacCatLabels.map(l => pacByCat[l].nonPac);
-
-  // Companies chart data (top N)
-  const topLimit = Number(document.getElementById('ranking-limit').value || 10);
-  const topLimited = top.slice(0, topLimit);
-
-  // Evolution monthly: group by month if data present
-  const hasDate = filtered.some(i => i.data);
-  const evolutionLabels = [];
-  const evolutionValues = [];
-  if(hasDate){
-    const monthly = {};
-    for(const it of filtered){
-      if(!it.data) continue;
-      const mm = it.data.slice(0,7); // YYYY-MM
-      monthly[mm] = (monthly[mm]||0) + Number(it.valor||0);
-    }
-    // sort months ascending
-    const months = Object.keys(monthly).sort();
-    for(const m of months){ evolutionLabels.push(m); evolutionValues.push(monthly[m]); }
+    // Trim possible empty final row
+    if (rows.length && rows[rows.length-1].length === 1 && rows[rows.length-1][0] === '') rows.pop();
+    return rows;
   }
 
-  // Destroy old charts
-  safeDestroy(chCategory); safeDestroy(chPac); safeDestroy(chRanking); safeDestroy(chPacCat); safeDestroy(chRadar); safeDestroy(chCompanies); safeDestroy(chEvolution);
-
-  // Category chart (bar)
-  const ctxCat = document.getElementById('chart-category').getContext('2d');
-  chCategory = new Chart(ctxCat, {
-    type: 'bar',
-    data: { labels: catLabels, datasets: [{ label:'Valor (R$)', data: catValues, backgroundColor: generatePalette(catLabels.length) }]},
-    options: { responsive:true, plugins:{ title:{display:false}, tooltip:{ callbacks:{ label: ctx => fmtBRL(ctx.raw)}}, legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
-  });
-
-  // PAC doughnut
-  const ctxPac = document.getElementById('chart-pac').getContext('2d');
-  chPac = new Chart(ctxPac, { type:'doughnut', data:{ labels:['Atendido no PAC','Não Atendido'], datasets:[{ data:[pacYes,pacNo], backgroundColor:['#2ecc71','#e74c3c'] }]}, options:{ responsive:true } });
-
-  // Ranking horizontal
-  const ctxRank = document.getElementById('chart-ranking').getContext('2d');
-  chRanking = new Chart(ctxRank, { type:'bar', data:{ labels: topLimited.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: topLimited.map(i=>i.valor), backgroundColor: generatePalette(topLimited.length) }] }, options:{ indexAxis:'y', responsive:true, scales:{ x:{ beginAtZero:true } } } });
-
-  // PAC by category stacked
-  const ctxPacCat = document.getElementById('chart-pac-cat').getContext('2d');
-  chPacCat = new Chart(ctxPacCat, { type:'bar', data:{ labels: pacCatLabels, datasets:[ { label:'Atendido no PAC', data: pacCatPac, backgroundColor:'#2ecc71' }, { label:'Não Atendido', data: pacCatNon, backgroundColor:'#e74c3c' } ] }, options:{ responsive:true, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } } } });
-
-  // Radar
-  const ctxRadar = document.getElementById('chart-radar').getContext('2d');
-  chRadar = new Chart(ctxRadar, { type:'radar', data:{ labels: radarLabels, datasets:[{ label:'Valor (R$)', data: radarValues, fill:true, backgroundColor:'rgba(52,144,221,0.2)', borderColor:'#3490dc' }] }, options:{ responsive:true } });
-
-  // Companies bar (top)
-  const ctxCompanies = document.getElementById('chart-companies').getContext('2d');
-  chCompanies = new Chart(ctxCompanies, { type:'bar', data:{ labels: topLimited.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: topLimited.map(i=>i.valor), backgroundColor: generatePalette(topLimited.length) }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true } } } });
-
-  // Evolution line (only if has data)
-  const ctxEvo = document.getElementById('chart-evolution').getContext('2d');
-  if(hasDate && evolutionLabels.length){
-    chEvolution = new Chart(ctxEvo, { type:'line', data:{ labels: evolutionLabels, datasets:[{ label:'Valor Mensal (R$)', data: evolutionValues, fill:true, backgroundColor:'rgba(52,144,221,0.15)', borderColor:'#00509e', tension:0.2 }] }, options:{ responsive:true, plugins:{ tooltip:{ callbacks:{ label: ctx => fmtBRL(ctx.raw) } } }, scales:{ y:{ beginAtZero:true } } } });
-    document.getElementById('evolution-note').style.display = 'none';
-  } else {
-    // clear canvas and show note
-    const ctx = document.getElementById('chart-evolution').getContext('2d');
-    ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
-    document.getElementById('evolution-note').style.display = 'block';
-  }
-}
-
-// palette helper
-function generatePalette(n){
-  const base = ['#003366','#00509e','#3498db','#2ecc71','#f39c12','#9b59b6','#e74c3c','#16a085','#8e44ad','#f1c40f'];
-  const out = [];
-  for(let i=0;i<n;i++) out.push(base[i % base.length]);
-  return out;
-}
-
-// ---------- Filtering logic ----------
-function applyFilters(){
-  const cat = (document.getElementById('category-filter').value || document.getElementById('category-filter-mob').value || 'all');
-  const pac = document.getElementById('pac-filter').value;
-  const maxVal = Number(document.getElementById('value-max').value || Infinity);
-  const q = (document.getElementById('search').value || document.getElementById('table-search')?.value || '').trim().toLowerCase();
-
-  filtered = loadedBase.filter(it => {
-    if(cat !== 'all' && (it.categoria || '') !== cat) return false;
-    if(pac === 'yes' && !isPac(it.pac)) return false;
-    if(pac === 'no' && isPac(it.pac)) return false;
-    if(Number(it.valor || 0) > maxVal) return false;
-    if(q){
-      const hay = (it.empresa + ' ' + it.objeto + ' ' + (it.categoria||'')).toLowerCase();
-      if(!hay.includes(q)) return false;
-    }
-    return true;
-  });
-
-  currentPage = 1;
-  updateMetrics();
-  updateCharts();
-  populateTable();
-}
-
-// ---------- CSV Import with mapping modal ----------
-let lastParsedRows = null; // store rows to map
-
-function openFileDialog(){
-  document.getElementById('hidden-file').click();
-}
-
-document.getElementById('hidden-file').addEventListener('change', function(e){
-  const f = e.target.files[0];
-  e.target.value = '';
-  if(!f) return;
-  if(!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas arquivos .csv são aceitos.');
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    try{
-      const rows = parseCSV(String(ev.target.result));
-      if(!rows || rows.length < 2) return alert('CSV inválido ou sem dados.');
-      lastParsedRows = rows;
-      openMappingModal(rows[0]);
-    } catch(err){
-      console.error(err); alert('Erro ao ler CSV: ' + err.message);
-    }
-  };
-  reader.readAsText(f, 'UTF-8');
-});
-
-// open mapping modal and populate selects
-function openMappingModal(headerRow){
-  const fields = ['(ignorar)'].concat(headerRow.map(h => h || '(vazio)'));
-  ['map-empresa','map-valor','map-objeto','map-pac','map-categoria','map-data'].forEach(id => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = '';
-    fields.forEach((f, idx) => {
-      const o = document.createElement('option'); o.value = idx-1; o.textContent = f; sel.appendChild(o);
+  // ---------- Util: interpretar CSV para nosso formato de dados ----------
+  // Espera colunas: Empresa,Valor,Objeto,Pac,Categoria  (nomes flexíveis, aceita variações)
+  function csvToData(rows) {
+    if (!rows || rows.length === 0) return [];
+    // Normalize header row
+    const header = rows[0].map(h => String(h || '').trim().toLowerCase());
+    const map = {};
+    header.forEach((h, idx) => {
+      if (h.includes('empresa')) map.empresa = idx;
+      else if (h.includes('valor') || h.includes('vlor')) map.valor = idx;
+      else if (h.includes('objeto') || h.includes('descr')) map.objeto = idx;
+      else if (h.includes('pac')) map.pac = idx;
+      else if (h.includes('categoria')) map.categoria = idx;
     });
-  });
 
-  // try auto-detect by header names
-  headerRow.forEach((h, idx) => {
-    const norm = normalizeHeader(h);
-    if(norm.includes('empresa') || norm.includes('fornecedor') || norm.includes('nome')) document.getElementById('map-empresa').value = idx;
-    if(norm.includes('valor') || norm.includes('vlor') || norm.includes('total')) document.getElementById('map-valor').value = idx;
-    if(norm.includes('objeto') || norm.includes('descr')) document.getElementById('map-objeto').value = idx;
-    if(norm.includes('pac')) document.getElementById('map-pac').value = idx;
-    if(norm.includes('categoria') || norm.includes('cat')) document.getElementById('map-categoria').value = idx;
-    if(norm.includes('data') || norm.includes('date') || norm.includes('mes')) document.getElementById('map-data').value = idx;
-  });
+    // If header doesn't match, try positional mapping
+    // We'll attempt best-effort
+    if (Object.keys(map).length < 3) {
+      // assume order: Empresa,Valor,Objeto,Pac,Categoria
+      map.empresa = map.empresa ?? 0;
+      map.valor = map.valor ?? 1;
+      map.objeto = map.objeto ?? 2;
+      map.pac = map.pac ?? 3;
+      map.categoria = map.categoria ?? 4;
+    }
 
-  const modal = new bootstrap.Modal(document.getElementById('mappingModal'));
-  modal.show();
-}
-
-// confirm mapping
-document.getElementById('btn-confirm-map').addEventListener('click', function(){
-  const sel = i => Number(document.getElementById(i).value);
-  const mapping = {
-    empresa: sel('map-empresa'),
-    valor: sel('map-valor'),
-    objeto: sel('map-objeto'),
-    pac: sel('map-pac'),
-    categoria: sel('map-categoria'),
-    data: sel('map-data')
-  };
-  // convert -1 to null
-  Object.keys(mapping).forEach(k => { if(mapping[k] < 0) mapping[k] = null; });
-  // build
-  const data = buildDataFromRows(lastParsedRows, mapping);
-  if(!data || data.length === 0) { alert('Nenhum registro válido encontrado após o mapeamento.'); return; }
-  loadedBase = data;
-  filtered = [...loadedBase];
-  // update UI
-  updateCategoryFilter();
-  applyFilters(); // will call updateCharts, table, metrics
-  // hide modal
-  bootstrap.Modal.getInstance(document.getElementById('mappingModal')).hide();
-  alert('CSV importado com sucesso: ' + data.length + ' linhas.');
-});
-
-// cancel mapping -> do nothing (modal closes automatically)
-
-// ---------- File open top & button wiring ----------
-document.getElementById('btn-open-file').addEventListener('click', openFileDialog);
-document.getElementById('btn-open-file-mob').addEventListener('click', openFileDialog);
-document.getElementById('btn-import-top').addEventListener('click', openFileDialog);
-document.getElementById('btn-export-top').addEventListener('click', exportCSV);
-document.getElementById('btn-export-top').addEventListener('click', exportCSV); // top export
-
-// hidden file binds to the same input
-document.getElementById('file-input').addEventListener('change', function(e){
-  document.getElementById('hidden-file').files = e.target.files;
-  // trigger mapping flow
-  const ev = new Event('change'); document.getElementById('hidden-file').dispatchEvent(ev);
-  e.target.value = '';
-});
-
-// ---------- Basic user interactions ----------
-document.getElementById('btn-apply').addEventListener('click', applyFilters);
-document.getElementById('btn-apply-mob').addEventListener('click', applyFilters);
-document.getElementById('btn-reset').addEventListener('click', () => { document.getElementById('category-filter').value='all'; document.getElementById('pac-filter').value='all'; document.getElementById('value-max').value=''; document.getElementById('search').value=''; applyFilters(); });
-document.getElementById('search').addEventListener('input', applyFilters);
-document.getElementById('table-search').addEventListener('input', function(){ document.getElementById('search').value = this.value; applyFilters(); });
-
-// page prev/next
-document.getElementById('prev-page').addEventListener('click', () => { if(currentPage>1){ currentPage--; populateTable(); }});
-document.getElementById('next-page').addEventListener('click', () => { if(currentPage * pageSize < filtered.length){ currentPage++; populateTable(); }});
-
-// ranking limit
-document.getElementById('btn-update-ranking').addEventListener('click', updateCharts);
-
-// export table
-document.getElementById('btn-export-table').addEventListener('click', exportCSV);
-
-// sidebar navigation
-document.querySelectorAll('aside nav a').forEach(a => {
-  a.addEventListener('click', function(ev){
-    ev.preventDefault();
-    document.querySelectorAll('aside nav a').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-    const sec = this.getAttribute('data-section');
-    // hide all sections
-    document.querySelectorAll('#analytics-section, #ranking-section, #evolution-section, #table-section, #analytics-section').forEach(el => el.classList.add('d-none'));
-    // show selected
-    if(sec === 'overview'){ /* default visible area - do nothing (cards are top-level) */ }
-    if(sec === 'analytics') document.getElementById('analytics-section').classList.remove('d-none');
-    if(sec === 'ranking') document.getElementById('ranking-section').classList.remove('d-none');
-    if(sec === 'evolution') document.getElementById('evolution-section').classList.remove('d-none');
-    if(sec === 'table') document.getElementById('table-section').classList.remove('d-none');
-    // if table shown, ensure paginated view updates
-    populateTable();
-  });
-});
-
-// ---------- Export CSV ----------
-function exportCSV(){
-  if(!filtered || filtered.length === 0) return alert('Sem dados para exportar.');
-  const headers = ['Empresa','Valor','Objeto','Pac','Categoria','Data'];
-  const lines = [headers.join(',')];
-  for(const r of filtered){
-    const row = [
-      `"${String(r.empresa||'').replace(/"/g,'""')}"`,
-      Number(r.valor||0),
-      `"${String(r.objeto||'').replace(/"/g,'""')}"`,
-      `"${String(r.pac||'').replace(/"/g,'""')}"`,
-      `"${String(r.categoria||'').replace(/"/g,'""')}"`,
-      `"${String(r.data||'')}"`,
-    ];
-    lines.push(row.join(','));
+    const data = [];
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row || row.length === 0) continue;
+      const empresa = (row[map.empresa] || '').trim();
+      if (!empresa) continue; // ignore empty lines
+      let valorRaw = (row[map.valor] || '').trim().replace(/\./g, '').replace(',', '.');
+      let valor = parseFloat(valorRaw);
+      if (isNaN(valor)) valor = 0;
+      const objeto = (row[map.objeto] || '').trim();
+      const pac = (row[map.pac] || '').trim();
+      const categoria = (row[map.categoria] || '').trim() || 'Outros';
+      data.push({ empresa, valor, objeto, pac: pac || 'NÃO CONSTA NO PAC 2024', categoria });
+    }
+    return data;
   }
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'compras_espep_export.csv'; a.click();
-  URL.revokeObjectURL(url);
-}
 
-// ---------- Initial render ----------
-function init(){
-  // initial dataset
-  loadedBase = [...sampleData];
-  filtered = [...loadedBase];
-  updateCategoryFilter();
-  updateCharts();
-  updateMetrics();
-  populateTable();
-  // Wire top export to export function
-  document.getElementById('btn-export-top').addEventListener('click', exportCSV);
-}
+  // ---------- Util: formata moeda BRL ----------
+  function fmtBRL(val) {
+    return 'R$ ' + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 
-// ---------- Small helper: allow drag/drop CSV onto body ----------
-document.body.addEventListener('dragover', e => { e.preventDefault(); });
-document.body.addEventListener('drop', e => {
-  e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if(f && f.name && f.name.toLowerCase().endsWith('.csv')){
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const rows = parseCSV(String(ev.target.result));
-      lastParsedRows = rows;
-      openMappingModal(rows[0]);
+  // ---------- Inicialização: DOM eventos (apenas 1x) ----------
+  document.addEventListener('DOMContentLoaded', () => {
+    // Login
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      // protótipo: admin/admin
+      if (u === 'admin' && p === 'admin') {
+        localStorage.setItem('espep_user', u);
+        showDashboard();
+      } else {
+        const err = document.getElementById('login-error');
+        err.classList.remove('d-none');
+      }
+    });
+
+    // If already logged
+    const stored = localStorage.getItem('espep_user');
+    if (stored) showDashboard();
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('espep_user');
+      showLogin();
+    });
+
+    // Sidebar navigation
+    document.querySelectorAll('[data-section]').forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        document.querySelectorAll('.sidebar a, .sidebar nav a').forEach(x => x.classList && x.classList.remove('active'));
+        // support both large sidebar and top nav links
+        document.querySelectorAll('[data-section]').forEach(x => x.classList && x.classList.remove('active'));
+        a.classList.add('active');
+        const section = a.getAttribute('data-section');
+        document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
+        const el = document.getElementById(section + '-section');
+        if (el) el.classList.remove('d-none');
+      });
+    });
+
+    // Filters & controls
+    document.getElementById('value-range').addEventListener('input', (e) => {
+      document.getElementById('max-value').textContent = 'R$ ' + Number(e.target.value).toLocaleString('pt-BR');
+      applyFiltersAndUpdate();
+    });
+    document.getElementById('category-filter').addEventListener('change', applyFiltersAndUpdate);
+    document.getElementById('pac-filter').addEventListener('change', applyFiltersAndUpdate);
+    document.getElementById('btn-reset-filters').addEventListener('click', resetFilters);
+
+    // Import buttons open hidden file input
+    const fileInput = document.getElementById('csv-file-input');
+    document.getElementById('btn-open-file').addEventListener('click', () => fileInput.click());
+    document.getElementById('btn-open-file-2').addEventListener('click', () => fileInput.click());
+    document.getElementById('open-import').addEventListener('click', (e) => { e.preventDefault(); fileInput.click(); });
+
+    // When a file is selected
+    fileInput.addEventListener('change', handleFileUpload);
+
+    // Export CSV
+    document.getElementById('export-btn').addEventListener('click', exportToCSV);
+    document.getElementById('export-table-btn').addEventListener('click', exportToCSV);
+
+    // Search table
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      applySearchFilter(e.target.value);
+    });
+
+    // Toggle manual theme
+    document.getElementById('btn-toggle-theme').addEventListener('click', () => {
+      themeManual = (themeManual === 'dark') ? 'light' : 'dark';
+      applyTheme();
+      // store preference
+      localStorage.setItem('espep_theme', themeManual);
+    });
+
+    // quick open import from dashboard menu
+    document.getElementById('btn-open-file').addEventListener('click', () => fileInput.click());
+
+    // init dashboard visuals
+    initDashboardOnce();
+  });
+
+  // ---------- Show / hide pages ----------
+  function showDashboard() {
+    document.getElementById('login-page').classList.add('d-none');
+    document.getElementById('dashboard').classList.remove('d-none');
+    document.getElementById('dashboard').setAttribute('aria-hidden', 'false');
+    document.getElementById('login-page').setAttribute('aria-hidden', 'true');
+    document.getElementById('user-name').textContent = localStorage.getItem('espep_user') || 'Usuário';
+    // initial render
+    currentData = [...sampleData];
+    populateCategoryFilter();
+    updateAll();
+    applyTheme(); // theme might be saved
+  }
+  function showLogin() {
+    document.getElementById('login-page').classList.remove('d-none');
+    document.getElementById('dashboard').classList.add('d-none');
+    document.getElementById('dashboard').setAttribute('aria-hidden', 'true');
+  }
+
+  // ---------- Theme ----------
+  function applyTheme() {
+    const manual = localStorage.getItem('espep_theme') || themeManual;
+    if (manual === 'dark') {
+      document.documentElement.style.background = '#071122';
+      document.documentElement.style.color = '#e6eef8';
+      document.body.classList.add('espep-dark');
+    } else if (manual === 'light') {
+      document.documentElement.style.background = '';
+      document.documentElement.style.color = '';
+      document.body.classList.remove('espep-dark');
+    } else {
+      // auto: use prefers-color-scheme
+      document.body.classList.remove('espep-dark');
+    }
+  }
+
+  // ---------- Init charts only once & keep references ----------
+  function initDashboardOnce() {
+    // create empty charts placeholders (Chart.js will be created in updateCharts)
+    charts = {};
+  }
+
+  // ---------- Aggregation helpers ----------
+  function aggregateByCategory(data) {
+    const out = {};
+    data.forEach(it => {
+      const cat = it.categoria || 'Outros';
+      out[cat] = (out[cat] || 0) + Number(it.valor || 0);
+    });
+    return out;
+  }
+
+  // ---------- Update metrics, charts, table ----------
+  function updateAll() {
+    updateMetrics();
+    updateCharts();
+    populateDataTable();
+  }
+
+  function updateMetrics() {
+    const totalValue = currentData.reduce((sum, it) => sum + Number(it.valor || 0), 0);
+    const pacCount = currentData.filter(it => !(String(it.pac||'').toUpperCase().includes('NÃO') || String(it.pac||'').toUpperCase().includes('NAO'))).length;
+    const pacPercentage = currentData.length ? ((pacCount / currentData.length) * 100).toFixed(1) : 0;
+    const avgValue = currentData.length ? totalValue / currentData.length : 0;
+
+    document.getElementById('total-value').textContent = fmtBRL(totalValue);
+    document.getElementById('pac-percentage').textContent = pacPercentage + '%';
+    document.getElementById('total-companies').textContent = currentData.length;
+    document.getElementById('avg-value').textContent = fmtBRL(avgValue);
+  }
+
+  function destroyChartIfExists(key) {
+    if (charts[key]) {
+      try { charts[key].destroy(); } catch(e){}
+      charts[key] = null;
+    }
+  }
+
+  function updateCharts() {
+    // Prepare data
+    const categoryAgg = aggregateByCategory(currentData);
+    const categoryLabels = Object.keys(categoryAgg);
+    const categoryValues = Object.values(categoryAgg);
+
+    // Category pie
+    destroyChartIfExists('category');
+    charts.category = new Chart(document.getElementById('category-chart'), {
+      type: 'pie',
+      data: {
+        labels: categoryLabels,
+        datasets: [{ data: categoryValues,
+          backgroundColor: generatePalette(categoryLabels.length)
+        }]
+      },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins: {
+          legend: { position: 'right' },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.label}: ${fmtBRL(ctx.raw)} (${(ctx.raw / (categoryValues.reduce((a,b)=>a+b,0)||1) * 100).toFixed(1)}%)`
+            }
+          },
+          title: { display:true, text:'Distribuição por Categoria' }
+        }
+      }
+    });
+
+    // PAC comparison (counts)
+    destroyChartIfExists('pacComparison');
+    const pacCounts = {
+      'Atendido no PAC': currentData.filter(i => !(String(i.pac||'').toUpperCase().includes('NÃO') || String(i.pac||'').toUpperCase().includes('NAO'))).length,
+      'Não Atendido no PAC': currentData.filter(i => (String(i.pac||'').toUpperCase().includes('NÃO') || String(i.pac||'').toUpperCase().includes('NAO'))).length
     };
-    reader.readAsText(f, 'UTF-8');
-  } else {
-    // ignore
+    charts.pacComparison = new Chart(document.getElementById('pac-comparison-chart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(pacCounts),
+        datasets: [{ label: 'Quantidade de Contratos', data: Object.values(pacCounts), backgroundColor: ['#2ecc71','#e74c3c'] }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ title:{ display:true, text:'Contratos Atendidos vs Não Atendidos no PAC 2024' } } }
+    });
+
+    // Top companies by value
+    destroyChartIfExists('topCompanies');
+    const topCompanies = [...currentData].sort((a,b) => b.valor - a.valor).slice(0,10);
+    charts.topCompanies = new Chart(document.getElementById('top-companies-chart'), {
+      type: 'bar',
+      data: {
+        labels: topCompanies.map(i=>i.empresa),
+        datasets: [{ label: 'Valor (R$)', data: topCompanies.map(i=>i.valor), backgroundColor: generatePalette(topCompanies.length) }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ title:{ display:true, text:'Top 10 Empresas por Valor de Contrato' } }, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    // Category bar chart
+    destroyChartIfExists('categoryBar');
+    charts.categoryBar = new Chart(document.getElementById('category-bar-chart'), {
+      type: 'bar',
+      data: { labels: categoryLabels, datasets: [{ label:'Valor Total (R$)', data: categoryValues, backgroundColor: generatePalette(categoryLabels.length) }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ title:{ display:true, text:'Valor Total por Categoria' } }, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    // PAC pie
+    destroyChartIfExists('pacPie');
+    charts.pacPie = new Chart(document.getElementById('pac-pie-chart'), {
+      type:'pie',
+      data: { labels: Object.keys(pacCounts), datasets:[{ data: Object.values(pacCounts), backgroundColor:['#2ecc71','#e74c3c'] }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ title:{ display:true, text:'Distribuição PAC 2024' } } }
+    });
+
+    // PAC by category stacked bars (valor)
+    destroyChartIfExists('pacCategory');
+    const pacByCategory = {};
+    currentData.forEach(it => {
+      const cat = it.categoria || 'Outros';
+      if (!pacByCategory[cat]) pacByCategory[cat] = { pac:0, nonPac:0 };
+      if (String(it.pac||'').toUpperCase().includes('NÃO') || String(it.pac||'').toUpperCase().includes('NAO')) pacByCategory[cat].nonPac += Number(it.valor||0);
+      else pacByCategory[cat].pac += Number(it.valor||0);
+    });
+    charts.pacCategory = new Chart(document.getElementById('pac-category-chart'), {
+      type:'bar',
+      data: {
+        labels: Object.keys(pacByCategory),
+        datasets: [
+          { label: 'Atendido no PAC', data: Object.values(pacByCategory).map(x=>x.pac), backgroundColor:'#2ecc71' },
+          { label: 'Não Atendido no PAC', data: Object.values(pacByCategory).map(x=>x.nonPac), backgroundColor:'#e74c3c' }
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ title:{ display:true, text:'Valor por Categoria (PAC vs Não PAC)' } }, scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } } }
+    });
+
+    // Companies chart
+    destroyChartIfExists('companies');
+    charts.companies = new Chart(document.getElementById('companies-chart'), {
+      type:'bar',
+      data: { labels: currentData.map(i=>i.empresa), datasets:[{ label:'Valor (R$)', data: currentData.map(i=>i.valor), backgroundColor: generatePalette(currentData.length) }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ title:{ display:true, text:'Valor por Empresa' } }, scales:{ y:{ beginAtZero:true } } }
+    });
   }
-});
 
-// ---------- Helper: importCSV for older snippet flow (not used but kept) ----------
-function importCSV(event){
-  const f = event.target.files[0];
-  if(!f) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const rows = parseCSV(String(ev.target.result));
-    lastParsedRows = rows;
-    openMappingModal(rows[0]);
-  };
-  reader.readAsText(f, 'UTF-8');
-}
+  // ---------- Palette generator (nice distinct colors) ----------
+  function generatePalette(n) {
+    const base = ['#003366','#00509e','#3498db','#2ecc71','#f39c12','#9b59b6','#e74c3c','#16a085','#8e44ad','#f1c40f'];
+    const out = [];
+    for (let i=0;i<n;i++) out.push(base[i % base.length]);
+    return out;
+  }
 
-// initialize
-init();
+  // ---------- Table population ----------
+  function populateDataTable() {
+    const tbody = document.getElementById('data-table-body');
+    tbody.innerHTML = '';
+    currentData.forEach(it => {
+      const tr = document.createElement('tr');
+      if (!(String(it.pac||'').toUpperCase().includes('NÃO') || String(it.pac||'').toUpperCase().includes('NAO'))) tr.classList.add('highlight-pac');
+      tr.innerHTML = `
+        <td>${escapeHtml(it.empresa)}</td>
+        <td>${fmtBRL(it.valor)}</td>
+        <td>${escapeHtml(it.objeto)}</td>
+        <td>${(String(it.pac||'').toUpperCase().includes('NÃO') || String(it.pac||'').toUpperCase().includes('NAO')) ? 'Não' : 'Sim'}</td>
+        <td>${escapeHtml(it.categoria)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-</script>
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 
+  // ---------- Filters ----------
+  function populateCategoryFilter() {
+    const filter = document.getElementById('category-filter');
+    const cats = [...new Set(currentData.map(i => i.categoria || 'Outros'))].sort();
+    // clear nested options except first
+    while (filter.children.length > 1) filter.removeChild(filter.lastChild);
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      filter.appendChild(opt);
+    });
+  }
+
+  function resetFilters() {
+    document.getElementById('category-filter').value = 'all';
+    document.getElementById('pac-filter').value = 'all';
+    document.getElementById('value-range').value = 500000;
+    document.getElementById('max-value').textContent = 'R$ 500.000';
+    applyFiltersAndUpdate();
+  }
+
+  function applyFiltersAndUpdate() {
+    const cat = document.getElementById('category-filter').value;
+    const pac = document.getElementById('pac-filter').value;
+    const maxVal = Number(document.getElementById('value-range').value || 500000);
+
+    // always filter from original sampleData to avoid incremental stacking unless data imported
+    // but if user imported, currentData already points to imported set; so we keep currentDataBase variable
+    // For simplicity: we apply filters over the last loaded dataset (which is in 'loadedDataBase')
+    const base = window.loadedDataBase || sampleData;
+
+    let filtered = base.filter(item => {
+      const catMatch = (cat === 'all') || (item.categoria === cat);
+      let pacMatch = true;
+      if (pac === 'yes') pacMatch = !(String(item.pac||'').toUpperCase().includes('NÃO') || String(item.pac||'').toUpperCase().includes('NAO'));
+      else if (pac === 'no') pacMatch = (String(item.pac||'').toUpperCase().includes('NÃO') || String(item.pac||'').toUpperCase().includes('NAO'));
+      const valMatch = Number(item.valor || 0) <= maxVal;
+      return catMatch && pacMatch && valMatch;
+    });
+
+    currentData = filtered;
+    populateCategoryFilter();
+    updateAll();
+  }
+
+  // ---------- Search in table (client-side) ----------
+  function applySearchFilter(q) {
+    q = (q || '').trim().toLowerCase();
+    if (!q) {
+      populateDataTable();
+      return;
+    }
+    const filtered = currentData.filter(it => {
+      return (it.empresa || '').toLowerCase().includes(q) || (it.objeto || '').toLowerCase().includes(q) || (it.categoria || '').toLowerCase().includes(q);
+    });
+    const tbody = document.getElementById('data-table-body');
+    tbody.innerHTML = '';
+    filtered.forEach(it => {
+      const tr = document.createElement('tr');
+      if (!(String(it.pac||'').toUpperCase().includes('NÃO') || String(it.pac||'').toUpperCase().includes('NAO'))) tr.classList.add('highlight-pac');
+      tr.innerHTML = `
+        <td>${escapeHtml(it.empresa)}</td>
+        <td>${fmtBRL(it.valor)}</td>
+        <td>${escapeHtml(it.objeto)}</td>
+        <td>${(String(it.pac||'').toUpperCase().includes('NÃO') || String(it.pac||'').toUpperCase().includes('NAO')) ? 'Não' : 'Sim'}</td>
+        <td>${escapeHtml(it.categoria)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- CSV Export ----------
+  function exportToCSV() {
+    if (!currentData || currentData.length === 0) return alert('Sem dados para exportar.');
+    const headers = ['Empresa','Valor','Objeto','Pac','Categoria'];
+    const rows = currentData.map(i => [
+      `"${(i.empresa||'').replace(/"/g,'""')}"`,
+      i.valor,
+      `"${(i.objeto||'').replace(/"/g,'""')}"`,
+      `"${(i.pac||'').replace(/"/g,'""')}"`,
+      `"${(i.categoria||'').replace(/"/g,'""')}"`
+    ].join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compras_espep_export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- File upload handler (CSV only) ----------
+  function handleFileUpload(evt) {
+    const file = evt.target.files[0];
+    evt.target.value = ''; // reset so same file can be loaded again
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      return alert('Apenas arquivos .csv são aceitos no momento.');
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const txt = e.target.result;
+        const rows = parseCSV(txt);
+        const data = csvToData(rows);
+        if (!data || data.length === 0) return alert('Arquivo CSV não contém dados válidos.');
+        // set loaded base (used by filters)
+        window.loadedDataBase = data;
+        currentData = [...data];
+        // update UI
+        populateCategoryFilter();
+        updateAll();
+        // switch to table view
+        document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
+        document.getElementById('data-table-section').classList.remove('d-none');
+        alert('CSV importado com sucesso! Foram carregadas ' + data.length + ' linhas.');
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao processar o CSV: ' + err.message);
+      }
+    };
+    reader.onerror = () => alert('Erro lendo o arquivo.');
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  // ---------- Helper: update category filter from current loaded base ----------
+  // (Called after imports)
+  // Note: populateCategoryFilter() already uses currentData; we've set loadedDataBase on import.
+
+  // ---------- Small security helper ----------
+  function sanitizeNumber(n) { return Number(n) || 0; }
+
+  // ---------- Utility: escape sorts, etc ----------
+  // (nothing else for now)
+
+  // ---------- First render with sample data ----------
+  // Ensure loadedDataBase is sampleData initially
+  window.loadedDataBase = sampleData;
+
+  // Expose updateAll to console for quick debug
+  window.updateAll = updateAll;
+
+  </script>
 </body>
 </html>
