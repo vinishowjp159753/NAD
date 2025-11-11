@@ -1,17 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard ESPEP</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard ESPEP</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f8ff;
+      margin: 0;
+      padding: 0;
+      color: #0a2b4e;
+    }
+
+    header {
+      background: #003366;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 30px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 300px !important;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: #003366;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Dashboard de Compras - ESPEP</h1>
-    <div id="graficoEmpresas"></div>
-    <div id="graficoPac"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/data-handler.js"></script>
-    <script src="js/dashboard.js"></script>
+  <header>📊 Dashboard de Compras — ESPEP</header>
+
+  <main>
+    <div class="card">
+      <h3>Valores por Empresa</h3>
+      <canvas id="graficoEmpresas"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Atendidos no PAC 2024</h3>
+      <canvas id="graficoPAC"></canvas>
+    </div>
+  </main>
+
+  <footer>© 2025 ESPEP — Escola de Serviço Público do Estado da Paraíba</footer>
+
+  <script src="dashboard.js"></script>
 </body>
 </html>
