@@ -1,85 +1,910 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard ESPEP</title>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f5f8ff;
-      margin: 0;
-      padding: 0;
-      color: #0a2b4e;
-    }
-
-    header {
-      background: #003366;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: bold;
-    }
-
-    main {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      padding: 30px;
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-
-    canvas {
-      width: 100% !important;
-      height: 300px !important;
-    }
-
-    footer {
-      text-align: center;
-      padding: 10px;
-      background: #003366;
-      color: white;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ESPEP - Compras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        
+        .sidebar {
+            background-color: var(--dark-color);
+            color: white;
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+        
+        .sidebar a {
+            color: var(--light-color);
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .data-table {
+            font-size: 0.9rem;
+        }
+        
+        .data-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .highlight-pac {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+    </style>
 </head>
-
 <body>
-  <header>📊 Dashboard de Compras — ESPEP</header>
-
-  <main>
-    <div class="card">
-      <h3>Valores por Empresa</h3>
-      <canvas id="graficoEmpresas"></canvas>
+    <!-- Página de Login -->
+    <div id="login-page" class="container">
+        <div class="login-container">
+            <h2 class="text-center mb-4">Dashboard ESPEP</h2>
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            </form>
+            <div id="login-error" class="alert alert-danger mt-3 d-none" role="alert">
+                Credenciais inválidas. Tente novamente.
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-      <h3>Atendidos no PAC 2024</h3>
-      <canvas id="graficoPAC"></canvas>
+    <!-- Dashboard (inicialmente oculto) -->
+    <div id="dashboard" class="d-none">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Dashboard ESPEP</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <span id="user-name">Usuário</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" id="update-data-btn">Atualizar Dados</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn">Sair</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-2 sidebar">
+                    <ul class="nav flex-column">
+                        <li><a href="#" class="active" data-section="overview">Visão Geral</a></li>
+                        <li><a href="#" data-section="categories">Por Categoria</a></li>
+                        <li><a href="#" data-section="pac-analysis">Análise PAC 2024</a></li>
+                        <li><a href="#" data-section="companies">Por Empresa</a></li>
+                        <li><a href="#" data-section="data-table">Tabela de Dados</a></li>
+                    </ul>
+                </div>
+
+                <!-- Conteúdo Principal -->
+                <div class="col-md-10">
+                    <!-- Seção de Filtros -->
+                    <div class="filter-section">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="category-filter" class="form-label">Categoria</label>
+                                <select class="form-select" id="category-filter">
+                                    <option value="all">Todas as Categorias</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pac-filter" class="form-label">Status PAC 2024</label>
+                                <select class="form-select" id="pac-filter">
+                                    <option value="all">Todos</option>
+                                    <option value="yes">Atendido no PAC</option>
+                                    <option value="no">Não Atendido no PAC</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="value-range" class="form-label">Valor (R$)</label>
+                                <input type="range" class="form-range" id="value-range" min="0" max="500000" step="1000">
+                                <div class="d-flex justify-content-between">
+                                    <span id="min-value">R$ 0</span>
+                                    <span id="max-value">R$ 500.000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Métricas Principais -->
+                    <div class="row" id="metrics-section">
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value" id="total-value">R$ 0</div>
+                                <div class="metric-label">Valor Total Gasto</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value" id="pac-percentage">0%</div>
+                                <div class="metric-label">Atendido no PAC 2024</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value" id="total-companies">0</div>
+                                <div class="metric-label">Empresas Contratadas</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="metric-value" id="avg-value">R$ 0</div>
+                                <div class="metric-label">Valor Médio por Contrato</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seções de Conteúdo -->
+                    <div id="content-sections">
+                        <!-- Visão Geral -->
+                        <div class="section" id="overview-section">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Distribuição por Categoria
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="category-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Comparação PAC 2024
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="pac-comparison-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Top 10 Empresas por Valor
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="top-companies-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Por Categoria -->
+                        <div class="section d-none" id="categories-section">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Valor Total por Categoria
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="category-bar-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Análise PAC 2024 -->
+                        <div class="section d-none" id="pac-analysis-section">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Distribuição PAC vs Não PAC
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="pac-pie-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Valor por Categoria (PAC vs Não PAC)
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="pac-category-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Por Empresa -->
+                        <div class="section d-none" id="companies-section">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            Empresas e Valores
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="companies-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabela de Dados -->
+                        <div class="section d-none" id="data-table-section">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span>Tabela de Dados Completa</span>
+                                    <button class="btn btn-sm btn-primary" id="export-btn">Exportar CSV</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Empresa</th>
+                                                    <th>Valor Total</th>
+                                                    <th>Objeto do Contrato</th>
+                                                    <th>Atendido no PAC 2024</th>
+                                                    <th>Categoria</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="data-table-body">
+                                                <!-- Dados serão preenchidos via JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </main>
 
-  <footer>© 2025 ESPEP — Escola de Serviço Público do Estado da Paraíba</footer>
+    <!-- Modal para Atualização de Dados -->
+    <div class="modal fade" id="updateDataModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Atualizar Dados</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Faça upload de uma nova planilha para atualizar os dados do dashboard.</p>
+                    <div class="mb-3">
+                        <label for="file-upload" class="form-label">Selecionar arquivo</label>
+                        <input class="form-control" type="file" id="file-upload" accept=".xlsx, .xls, .csv">
+                    </div>
+                    <div class="alert alert-info">
+                        <small>Formatos suportados: Excel (.xlsx, .xls) e CSV (.csv)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirm-update">Atualizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <script src="dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dados de exemplo (seriam carregados de um arquivo JSON ou banco de dados)
+        const sampleData = [
+            { empresa: "A.G. COMÉRCIO DE ALIMENTO", valor: 31613.11, objeto: "AQUISIÇÃO DE GÊNEROS ALIMENTICÍOS", pac: "33903007 GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+            { empresa: "ADM COMERCIO E SERVIÇOS", valor: 21717.67, objeto: "INSTALAÇÃO DE EXAUSTORES, FOGÕES E FORNO/ FORNECIMENTO DE UTENSÍLIOS DE COZINHA", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+            { empresa: "EQUIPA INCÊNDIO COM DE EQUIP C/INC LTDA", valor: 11700, objeto: "AQUISIÇÃO DE EXTINTORES DE INCÊNDIO / PLACAS DE SINALIZAÇÃO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Segurança" },
+            { empresa: "EZAU DA SILVA", valor: 1011, objeto: "HORTIFRUTIGRANGEIROS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+            { empresa: "BRUNA JOARA DE FARIAS", valor: 5989, objeto: "MONTAGEM E DESMONTAGEM DO ARQUIVO DESLIZANTE DO SETOR FINANCEIRO", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "CODATA REPAD", valor: 32105.44, objeto: "SERVIÇO TÉCNICO ESPECIALIZADO EM INSTALAÇÃO DE ACESSO À REDE PARAIBANA DE ALTO DESEMPENHO (REPAD)", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+            { empresa: "CODATA SIAF", valor: 35602.56, objeto: "SISTEMA INTEGRADO DE ADMINISTRAÇÃO FINANCEIRA", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+            { empresa: "COMERCIAL V. DE MAT. SILVA LTDA ( C. ESCOLARES)", valor: 52800, objeto: "CARTEIRAS ESCOLARES", pac: "44905242 - MOBILIARIO EM GERAL", categoria: "Mobiliário" },
+            { empresa: "CONGRESSO CONSAD", valor: 1500, objeto: "XIV CONGRESSO CONSAD", pac: "NÃO CONSTA NO PAC 2024", categoria: "Eventos" },
+            { empresa: "COSTA GODIM E CIA", valor: 2750, objeto: "10 RESMAS DE PAPEL A4", pac: "33903016 - MATERIAL DE EXPEDIENTE", categoria: "Material de Expediente" },
+            { empresa: "DELTA SOLUÇÕES", valor: 42816, objeto: "CÂMERAS / CENTRAL T ELEÔNICA", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Segurança" },
+            { empresa: "DETEC END SOLUÇÕES", valor: 1465.78, objeto: "ANÁLISE DE VAZAMENTO DE ÁGUA NA ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+            { empresa: "ECCOSERV", valor: 24712.64, objeto: "MATERIAL DE LIMPEZA", pac: "33903022 MATERIAL DE LIMPEZA E PROD. DE HIGIENIZACAO", categoria: "Material de Limpeza" },
+            { empresa: "EMPRESA CAPITAL", valor: 4055, objeto: "MANUTENÇÃO DE FILTROS", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "EMPRESA GARNDE NORDESTE", valor: 10490, objeto: "PAGAMENTO DOS SOFÁS, POLTRONAS E MESAS", pac: "44905242 - MOBILIARIO EM GERAL", categoria: "Mobiliário" },
+            { empresa: "EMPRESA MARIOSA RECEPÇÕES", valor: 31200, objeto: "FORNECIMENTO DE COFFEE BREAK", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação" },
+            { empresa: "EMPRESA NP TECNOLOGIA E GESTÃO DE DADOS LTDA", valor: 10910, objeto: "BANCO DE PREÇO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+            { empresa: "EPC", valor: 105764, objeto: "EMPRESA PARAIBANA DE COMUNICAÇÃO - EPC", pac: "NÃO CONSTA NO PAC 2024", categoria: "Comunicação" },
+            { empresa: "EXTISIN EXTINTORES NORDESTE SERVIÇO LTDA", valor: 5357.5, objeto: "EXTINTORES", pac: "NÃO CONSTA NO PAC 2024", categoria: "Segurança" },
+            { empresa: "FC ENVIDRAÇAMENTO COM TECNOLOGIA", valor: 3500, objeto: "INSTALAÇÃO DE VIDROS", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "HC DISTRIBUIDORA LTDA", valor: 1707.08, objeto: "AQUISIÇÃO DE MATERIAL DE EXPEDIENTE", pac: "33903016 - MATERIAL DE EXPEDIENTE", categoria: "Material de Expediente" },
+            { empresa: "JXF AUTO PEÇAS LTDA", valor: 11400, objeto: "SERVIÇO NA VAN DUCATO", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "LS SERVIÇOS", valor: 10300, objeto: "MANUTENÇÃO PREVENTIVA E CORRETIVA EM APARELHOS DE AR-CONDICIONADO DA ESPEP", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "MAQ-LAREM", valor: 21706.78, objeto: "LOCAÇÃO DE IMPRESSORAS E GESTÃO DOCUMENTAL", pac: "NÃO CONSTA NO PAC 2024", categoria: "Tecnologia" },
+            { empresa: "MARCUS SERGIO RUFFO", valor: 4233.3, objeto: "GÊNEROS ALIMENTÍCIOS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+            { empresa: "MARIA DO SOCORRO OLIVEIRA MARINHO", valor: 4400, objeto: "CONSERTO DE APARELHOS DE AR-CONDICIONADO", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "MARIOSA RECEPÇÕES", valor: 1560, objeto: "COFFEE BREAK", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação" },
+            { empresa: "NEXUS COMÉRCIO E SERVIÇOS LTDA", valor: 1867, objeto: "LIMPEZA DE SOFÁS E CADEIRAS GIRATÓRIAS", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+            { empresa: "O ESCOLAR COMERCIO E SERVIÇO LTDA", valor: 9023.41, objeto: "MATERIAL DE EXPEDIENTE", pac: "33903016 - MATERIAL DE EXPEDIENTE", categoria: "Material de Expediente" },
+            { empresa: "PADARIA PONTES LTDA", valor: 42603.6, objeto: "REFEIÇÕES PARA A ESPEP", pac: "NÃO CONSTA NO PAC 2024", categoria: "Alimentação" },
+            { empresa: "PEDRO HENRIQUE HIPOLITO LEITE", valor: 13827.86, objeto: "HORTIFRUTIGRANJEIROS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+            { empresa: "PLENITUDE SEGURANÇA", valor: 311423.8, objeto: "SEGURANÇA PRIVADA", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Segurança" },
+            { empresa: "POLPA NORDESTE", valor: 6949.85, objeto: "HORTIFRUTIGRANJEIROS", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+            { empresa: "R. DOS SANTOS COMERCIAL LTDA", valor: 1098.6, objeto: "FORNECIMENTO DE AGUA MINERAL", pac: "33903007 - GENEROS DE ALIMENTACAO", categoria: "Gêneros de Alimentação" },
+            { empresa: "RBIM E ENGENHARIA", valor: 8000, objeto: "PROJETO DE INSTALAÇÕES DE PROTEÇÃO CONTRA INCÊNDIO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+            { empresa: "REAL ACTION", valor: 28910, objeto: "FORNECIMENTO DE MATERIAL DE CONSUMO PARA ATENDER AO CURSO DE ATENDIMENTO PRÉ-HOSPITALAR TÁTICO", pac: "NÃO CONSTA NO PAC 2024", categoria: "Material de Consumo" },
+            { empresa: "ROMILDO DIAS DE ARAUJO", valor: 23000, objeto: "SERVIÇOS DE INSTALAÇÕES ELÉTRICAS", pac: "33903999 - OUTROS SERVICOS DE TERCEIROS-PESSOA JURIDICA", categoria: "Serviços" },
+            { empresa: "SERVIÇOS PARA COM. DO BRASIL S/A", valor: 230.13, objeto: "CERTIFICADO DIGITAL DO SPC", pac: "NÃO CONSTA NO PAC 2024", categoria: "Serviços" },
+            { empresa: "VBC GÁS", valor: 4560, objeto: "FORNECIMENTO DE CARGA DE GÁS LIQUEFEITO", pac: "33903004 - GAS ENGARRAFADO", categoria: "Gás" },
+            { empresa: "VENTISOL DA AMAZONIA", valor: 26200, objeto: "AQUISIÇÃO DE APARELHOS DE AR-CONDICIONADO", pac: "44905234 - MAQUINAS, UTENSILIOS E EQUIPAMENTOS DIVERSOS", categoria: "Equipamentos" }
+        ];
+
+        // Variáveis globais
+        let currentData = [...sampleData];
+        let charts = {};
+
+        // Sistema de autenticação simples
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Autenticação simples (em produção, isso seria feito no servidor)
+            if (username === 'admin' && password === 'admin') {
+                document.getElementById('login-page').classList.add('d-none');
+                document.getElementById('dashboard').classList.remove('d-none');
+                document.getElementById('user-name').textContent = username;
+                initializeDashboard();
+            } else {
+                document.getElementById('login-error').classList.remove('d-none');
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            document.getElementById('dashboard').classList.add('d-none');
+            document.getElementById('login-page').classList.remove('d-none');
+            document.getElementById('login-form').reset();
+            document.getElementById('login-error').classList.add('d-none');
+        });
+
+        // Navegação entre seções
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Atualizar link ativo
+                document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Mostrar seção correspondente
+                const section = this.getAttribute('data-section');
+                document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
+                document.getElementById(`${section}-section`).classList.remove('d-none');
+            });
+        });
+
+        // Inicialização do dashboard
+        function initializeDashboard() {
+            updateMetrics();
+            populateCategoryFilter();
+            initializeCharts();
+            populateDataTable();
+            
+            // Configurar eventos dos filtros
+            document.getElementById('category-filter').addEventListener('change', applyFilters);
+            document.getElementById('pac-filter').addEventListener('change', applyFilters);
+            document.getElementById('value-range').addEventListener('input', function() {
+                document.getElementById('max-value').textContent = `R$ ${this.value}`;
+                applyFilters();
+            });
+            
+            // Configurar botão de atualização de dados
+            document.getElementById('update-data-btn').addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('updateDataModal'));
+                modal.show();
+            });
+            
+            document.getElementById('confirm-update').addEventListener('click', function() {
+                const fileInput = document.getElementById('file-upload');
+                if (fileInput.files.length > 0) {
+                    // Em produção, aqui seria feito o upload e processamento do arquivo
+                    alert('Dados atualizados com sucesso!');
+                    bootstrap.Modal.getInstance(document.getElementById('updateDataModal')).hide();
+                    // Recarregar dados e gráficos
+                    initializeDashboard();
+                } else {
+                    alert('Por favor, selecione um arquivo.');
+                }
+            });
+            
+            // Configurar botão de exportação
+            document.getElementById('export-btn').addEventListener('click', exportToCSV);
+        }
+
+        // Atualizar métricas principais
+        function updateMetrics() {
+            const totalValue = currentData.reduce((sum, item) => sum + item.valor, 0);
+            const pacCount = currentData.filter(item => !item.pac.includes('NÃO CONSTA')).length;
+            const pacPercentage = ((pacCount / currentData.length) * 100).toFixed(1);
+            const avgValue = totalValue / currentData.length;
+            
+            document.getElementById('total-value').textContent = `R$ ${totalValue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('pac-percentage').textContent = `${pacPercentage}%`;
+            document.getElementById('total-companies').textContent = currentData.length;
+            document.getElementById('avg-value').textContent = `R$ ${avgValue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        // Popular filtro de categorias
+        function populateCategoryFilter() {
+            const categories = [...new Set(currentData.map(item => item.categoria))];
+            const filter = document.getElementById('category-filter');
+            
+            // Limpar opções existentes (exceto "Todas as Categorias")
+            while (filter.children.length > 1) {
+                filter.removeChild(filter.lastChild);
+            }
+            
+            // Adicionar categorias
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                filter.appendChild(option);
+            });
+        }
+
+        // Inicializar gráficos
+        function initializeCharts() {
+            // Destruir gráficos existentes
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            
+            charts = {};
+            
+            // Gráfico de pizza por categoria
+            const categoryData = aggregateByCategory(currentData);
+            const categoryChart = new Chart(document.getElementById('category-chart'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        data: Object.values(categoryData),
+                        backgroundColor: [
+                            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+                            '#1abc9c', '#d35400', '#34495e', '#16a085', '#8e44ad'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribuição por Categoria'
+                        }
+                    }
+                }
+            });
+            charts.category = categoryChart;
+            
+            // Gráfico de comparação PAC
+            const pacData = {
+                'Atendido no PAC': currentData.filter(item => !item.pac.includes('NÃO CONSTA')).length,
+                'Não Atendido no PAC': currentData.filter(item => item.pac.includes('NÃO CONSTA')).length
+            };
+            
+            const pacComparisonChart = new Chart(document.getElementById('pac-comparison-chart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(pacData),
+                    datasets: [{
+                        label: 'Quantidade de Contratos',
+                        data: Object.values(pacData),
+                        backgroundColor: ['#2ecc71', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Contratos Atendidos vs Não Atendidos no PAC 2024'
+                        }
+                    }
+                }
+            });
+            charts.pacComparison = pacComparisonChart;
+            
+            // Gráfico de barras para top empresas
+            const topCompanies = [...currentData]
+                .sort((a, b) => b.valor - a.valor)
+                .slice(0, 10);
+            
+            const topCompaniesChart = new Chart(document.getElementById('top-companies-chart'), {
+                type: 'bar',
+                data: {
+                    labels: topCompanies.map(item => item.empresa),
+                    datasets: [{
+                        label: 'Valor (R$)',
+                        data: topCompanies.map(item => item.valor),
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Top 10 Empresas por Valor de Contrato'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            charts.topCompanies = topCompaniesChart;
+            
+            // Gráfico de barras por categoria
+            const categoryBarChart = new Chart(document.getElementById('category-bar-chart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        label: 'Valor Total (R$)',
+                        data: Object.values(categoryData),
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Valor Total por Categoria'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            charts.categoryBar = categoryBarChart;
+            
+            // Gráfico de pizza PAC
+            const pacPieChart = new Chart(document.getElementById('pac-pie-chart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Atendido no PAC', 'Não Atendido no PAC'],
+                    datasets: [{
+                        data: [pacData['Atendido no PAC'], pacData['Não Atendido no PAC']],
+                        backgroundColor: ['#2ecc71', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Distribuição PAC 2024'
+                        }
+                    }
+                }
+            });
+            charts.pacPie = pacPieChart;
+            
+            // Gráfico de comparação PAC por categoria
+            const pacByCategory = {};
+            currentData.forEach(item => {
+                const category = item.categoria;
+                if (!pacByCategory[category]) {
+                    pacByCategory[category] = { pac: 0, nonPac: 0 };
+                }
+                
+                if (item.pac.includes('NÃO CONSTA')) {
+                    pacByCategory[category].nonPac += item.valor;
+                } else {
+                    pacByCategory[category].pac += item.valor;
+                }
+            });
+            
+            const pacCategoryChart = new Chart(document.getElementById('pac-category-chart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(pacByCategory),
+                    datasets: [
+                        {
+                            label: 'Atendido no PAC',
+                            data: Object.values(pacByCategory).map(item => item.pac),
+                            backgroundColor: '#2ecc71'
+                        },
+                        {
+                            label: 'Não Atendido no PAC',
+                            data: Object.values(pacByCategory).map(item => item.nonPac),
+                            backgroundColor: '#e74c3c'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Valor por Categoria (PAC vs Não PAC)'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            charts.pacCategory = pacCategoryChart;
+            
+            // Gráfico de todas as empresas
+            const companiesChart = new Chart(document.getElementById('companies-chart'), {
+                type: 'bar',
+                data: {
+                    labels: currentData.map(item => item.empresa),
+                    datasets: [{
+                        label: 'Valor (R$)',
+                        data: currentData.map(item => item.valor),
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Valor por Empresa'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            charts.companies = companiesChart;
+        }
+
+        // Agregar dados por categoria
+        function aggregateByCategory(data) {
+            const result = {};
+            data.forEach(item => {
+                if (!result[item.categoria]) {
+                    result[item.categoria] = 0;
+                }
+                result[item.categoria] += item.valor;
+            });
+            return result;
+        }
+
+        // Aplicar filtros
+        function applyFilters() {
+            const categoryFilter = document.getElementById('category-filter').value;
+            const pacFilter = document.getElementById('pac-filter').value;
+            const valueFilter = parseInt(document.getElementById('value-range').value);
+            
+            let filteredData = [...sampleData];
+            
+            // Aplicar filtro de categoria
+            if (categoryFilter !== 'all') {
+                filteredData = filteredData.filter(item => item.categoria === categoryFilter);
+            }
+            
+            // Aplicar filtro PAC
+            if (pacFilter !== 'all') {
+                if (pacFilter === 'yes') {
+                    filteredData = filteredData.filter(item => !item.pac.includes('NÃO CONSTA'));
+                } else {
+                    filteredData = filteredData.filter(item => item.pac.includes('NÃO CONSTA'));
+                }
+            }
+            
+            // Aplicar filtro de valor
+            filteredData = filteredData.filter(item => item.valor <= valueFilter);
+            
+            currentData = filteredData;
+            updateMetrics();
+            initializeCharts();
+            populateDataTable();
+        }
+
+        // Popular tabela de dados
+        function populateDataTable() {
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = '';
+            
+            currentData.forEach(item => {
+                const row = document.createElement('tr');
+                if (!item.pac.includes('NÃO CONSTA')) {
+                    row.classList.add('highlight-pac');
+                }
+                
+                row.innerHTML = `
+                    <td>${item.empresa}</td>
+                    <td>R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td>${item.objeto}</td>
+                    <td>${item.pac.includes('NÃO CONSTA') ? 'Não' : 'Sim'}</td>
+                    <td>${item.categoria}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Exportar para CSV
+        function exportToCSV() {
+            const headers = ['Empresa', 'Valor Total', 'Objeto do Contrato', 'Atendido no PAC 2024', 'Categoria'];
+            const csvContent = [
+                headers.join(','),
+                ...currentData.map(item => [
+                    `"${item.empresa}"`,
+                    item.valor,
+                    `"${item.objeto}"`,
+                    `"${item.pac.includes('NÃO CONSTA') ? 'Não' : 'Sim'}"`,
+                    `"${item.categoria}"`
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'compras_espep.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
 </body>
 </html>
