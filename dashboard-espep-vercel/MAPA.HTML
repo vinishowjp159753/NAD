@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sistema ESPEP - Mapas Comparativos</title>
+<title>Sistema ESPEP - Mapas</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 body{font-family:Arial;background:#eef2f7;margin:0;}
@@ -54,7 +56,14 @@ th{background:#0d3b66;color:#fff;}
     margin-bottom:10px;
 }
 
-.logo img{width:70px;}
+.logo img{
+    width:80px;
+}
+
+.footer{
+    margin-top:30px;
+    text-align:right;
+}
 
 @media print{
     .no-print{display:none;}
@@ -82,7 +91,7 @@ th{background:#0d3b66;color:#fff;}
 </div>
 
 <div class="card">
-<h3>Histórico de Mapas</h3>
+<h3>Histórico</h3>
 <ul id="listaProcessos"></ul>
 </div>
 
@@ -93,6 +102,8 @@ th{background:#0d3b66;color:#fff;}
 
 <button class="no-print" onclick="voltar()">⬅ Voltar</button>
 
+<div id="areaPDF">
+
 <div class="logo">
 <img src="https://raw.githubusercontent.com/dashboard-espep-vercel/img/main/GovPBT.png">
 <div>
@@ -102,22 +113,6 @@ MAPA COMPARATIVO DE PREÇOS
 </div>
 
 <h3 id="tituloProcesso"></h3>
-
-<div class="card no-print">
-<input id="descItem" placeholder="Descrição">
-<input id="qtdItem" type="number" placeholder="Qtd">
-<input id="undItem" placeholder="Unidade">
-<button onclick="addItem()">Adicionar Item</button>
-</div>
-
-<div class="card no-print">
-<select id="itemSelect"></select>
-<input id="empresa" placeholder="Empresa">
-<input id="cnpj" placeholder="CNPJ">
-<input id="valor" type="number" placeholder="Valor">
-<input id="link" placeholder="Link da proposta">
-<button onclick="addCotacao()">Adicionar Cotação</button>
-</div>
 
 <table>
 <thead>
@@ -140,7 +135,35 @@ MAPA COMPARATIVO DE PREÇOS
 <tbody id="tbody"></tbody>
 </table>
 
-<button class="no-print" onclick="window.print()">🖨️ Imprimir</button>
+<div class="footer">
+<p id="responsavelTexto"></p>
+</div>
+
+</div>
+
+<!-- FORM -->
+<div class="card no-print">
+<input id="descItem" placeholder="Descrição">
+<input id="qtdItem" type="number" placeholder="Qtd">
+<input id="undItem" placeholder="Unidade">
+<button onclick="addItem()">Adicionar Item</button>
+</div>
+
+<div class="card no-print">
+<select id="itemSelect"></select>
+<input id="empresa" placeholder="Empresa">
+<input id="cnpj" placeholder="CNPJ">
+<input id="valor" type="number" placeholder="Valor">
+<input id="link" placeholder="Link proposta">
+<button onclick="addCotacao()">Adicionar Cotação</button>
+</div>
+
+<div class="card no-print">
+<input id="responsavel" placeholder="Elaborado por">
+<button onclick="gerarRodape()">Salvar Responsável</button>
+</div>
+
+<button class="no-print" onclick="baixarPDF()">📄 Baixar PDF</button>
 
 </div>
 
@@ -156,10 +179,7 @@ getFirestore, collection, addDoc, getDocs, query, where
 const firebaseConfig = {
   apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
   authDomain: "nad1-3fbbf.firebaseapp.com",
-  projectId: "nad1-3fbbf",
-  storageBucket: "nad1-3fbbf.firebasestorage.app",
-  messagingSenderId: "360366546650",
-  appId: "1:360366546650:web:69869a60cca33dc7a5cfe3"
+  projectId: "nad1-3fbbf"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -185,10 +205,8 @@ async function carregarProcessos(){
     snap.forEach(doc=>{
         let p = doc.data();
         listaProcessos.innerHTML += `
-        <li>
-            ${p.numero} - ${p.orgao}
-            <button onclick="abrir('${doc.id}','${p.numero}')">Abrir</button>
-        </li>`;
+        <li>${p.numero} - ${p.orgao}
+        <button onclick="abrir('${doc.id}','${p.numero}')">Abrir</button></li>`;
     });
 }
 
@@ -316,6 +334,21 @@ function render(){
         });
 
     });
+}
+
+// RESPONSÁVEL
+window.gerarRodape = function(){
+    let nome = responsavel.value;
+    let data = new Date().toLocaleDateString("pt-BR");
+
+    responsavelTexto.innerText = `${nome} - ${data}`;
+}
+
+// PDF
+window.baixarPDF = function(){
+    let element = document.getElementById("areaPDF");
+
+    html2pdf().from(element).save("mapa-comparativo.pdf");
 }
 
 window.voltar = function(){
