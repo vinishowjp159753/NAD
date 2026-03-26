@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Mapas - ESPEP</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#eef2f7;
+}
+
+header{
+    background:#0d3b66;
+    color:#fff;
+    padding:15px;
+    text-align:center;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:#fff;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:8px;
+}
+
+button{
+    background:#0d3b66;
+    color:#fff;
+    border:none;
+    padding:8px;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    border:1px solid #ccc;
+    padding:6px;
+    font-size:13px;
+}
+
+th{
+    background:#0d3b66;
+    color:#fff;
+}
+
+.hidden{
+    display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Sistema de Mapa Comparativo - ESPEP</h2>
+</header>
+
+<div class="container">
+
+<!-- LISTA DE PROCESSOS -->
+<div id="telaProcessos">
+
+<div class="card">
+<h3>Novo Processo</h3>
+<input id="numero" placeholder="Número do Processo">
+<input id="orgao" placeholder="Órgão">
+<input id="data" type="date">
+<button onclick="criarProcesso()">Criar</button>
+</div>
+
+<div class="card">
+<h3>Processos</h3>
+<ul id="listaProcessos"></ul>
+</div>
+
+</div>
+
+<!-- TELA DO MAPA -->
+<div id="telaMapa" class="hidden">
+
+<button onclick="voltar()">⬅ Voltar</button>
+
+<h3 id="tituloProcesso"></h3>
+
+<div class="card">
+<input id="descItem" placeholder="Descrição">
+<input id="qtdItem" type="number" placeholder="Qtd">
+<input id="undItem" placeholder="Und">
+<button onclick="addItem()">Adicionar Item</button>
+</div>
+
+<div class="card">
+<select id="itemSelect"></select>
+<input id="empresa" placeholder="Empresa">
+<input id="cnpj" placeholder="CNPJ">
+<input id="valor" type="number" placeholder="Valor">
+<button onclick="addCotacao()">Adicionar Cotação</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Descrição</th>
+<th>Qtd</th>
+<th>Empresa</th>
+<th>CNPJ</th>
+<th>Total</th>
+<th>Média</th>
+<th>Mediana</th>
+<th>Saneada</th>
+<th>Desvio</th>
+<th>Mín</th>
+<th>Máx</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<button onclick="window.print()">🖨️ Imprimir</button>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+getFirestore, collection, addDoc, getDocs, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
+  authDomain: "nad1-3fbbf.firebaseapp.com",
+  projectId: "nad1-3fbbf",
+  storageBucket: "nad1-3fbbf.firebasestorage.app",
+  messagingSenderId: "360366546650",
+  appId: "1:360366546650:web:69869a60cca33dc7a5cfe3",
+  measurementId: "G-151MBZ4XFH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let processoAtual = null;
+let itens = [];
+
+// 🔹 PROCESSOS
+window.criarProcesso = async function(){
+    await addDoc(collection(db,"processos"),{
+        numero:numero.value,
+        orgao:orgao.value,
+        data:data.value
+    });
+    carregarProcessos();
+}
+
+async function carregarProcessos(){
+    listaProcessos.innerHTML="";
+    let snap = await getDocs(collection(db,"processos"));
+
+    snap.forEach(doc=>{
+        let p = doc.data();
+        listaProcessos.innerHTML += `
+        <li>
+            ${p.numero} - ${p.orgao}
+            <button onclick="abrir('${doc.id}','${p.numero}')">Abrir</button>
+        </li>`;
+    });
+}
+
+window.abrir = async function(id, numeroProc){
+    processoAtual = id;
+    tituloProcesso.innerText = "Processo: " + numeroProc;
+
+    telaProcessos.classList.add("hidden");
+    telaMapa.classList.remove("hidden");
+
+    carregarItens();
+}
+
+// 🔹 ITENS
+window.addItem = async function(){
+    await addDoc(collection(db,"itens"),{
+        processo: processoAtual,
+        descricao: descItem.value,
+        qtd: parseFloat(qtdItem.value),
+        und: undItem.value
+    });
+    carregarItens();
+}
+
+async function carregarItens(){
+
+    itens = [];
+    let snap = await getDocs(query(collection(db,"itens"), where("processo","==",processoAtual)));
+
+    snap.forEach(doc=>{
+        itens.push({id:doc.id, ...doc.data(), cotacoes:[]});
+    });
+
+    let cot = await getDocs(query(collection(db,"cotacoes"), where("processo","==",processoAtual)));
+
+    cot.forEach(doc=>{
+        let c = doc.data();
+        let item = itens.find(i=>i.id === c.item);
+        if(item) item.cotacoes.push(c);
+    });
+
+    atualizarSelect();
+    render();
+}
+
+// 🔹 COTAÇÕES
+window.addCotacao = async function(){
+
+    let itemId = itens[itemSelect.value].id;
+
+    await addDoc(collection(db,"cotacoes"),{
+        processo:processoAtual,
+        item:itemId,
+        empresa:empresa.value,
+        cnpj:cnpj.value,
+        valor:parseFloat(valor.value)
+    });
+
+    carregarItens();
+}
+
+// 🔹 CÁLCULOS
+function stats(v){
+    let m = v.reduce((a,b)=>a+b,0)/v.length;
+    let o=[...v].sort((a,b)=>a-b);
+    let med = v.length%2 ? o[Math.floor(v.length/2)] : (o[v.length/2-1]+o[v.length/2])/2;
+
+    let s=o.slice(1,-1);
+    let ms=s.length? s.reduce((a,b)=>a+b,0)/s.length : m;
+
+    let varr = v.reduce((a,b)=>a+(b-m)**2,0)/v.length;
+
+    return {
+        media:m, mediana:med, saneada:ms,
+        desvio:Math.sqrt(varr),
+        min:Math.min(...v),
+        max:Math.max(...v)
+    };
+}
+
+// 🔹 RENDER
+function render(){
+
+    tbody.innerHTML="";
+
+    itens.forEach((item,i)=>{
+
+        if(!item.cotacoes.length) return;
+
+        let totais = item.cotacoes.map(c=>c.valor * item.qtd);
+        let s = stats(totais);
+
+        item.cotacoes.forEach((c,j)=>{
+
+            let total = c.valor * item.qtd;
+
+            tbody.innerHTML+=`
+            <tr>
+                <td>${i+1}</td>
+                <td>${item.descricao}</td>
+                <td>${item.qtd} ${item.und}</td>
+                <td>${c.empresa}</td>
+                <td>${c.cnpj}</td>
+                <td>${total.toFixed(2)}</td>
+
+                ${j===0?`
+                <td rowspan="${item.cotacoes.length}">${s.media.toFixed(2)}</td>
+                <td rowspan="${item.cotacoes.length}">${s.mediana.toFixed(2)}</td>
+                <td rowspan="${item.cotacoes.length}">${s.saneada.toFixed(2)}</td>
+                <td rowspan="${item.cotacoes.length}">${s.desvio.toFixed(2)}</td>
+                <td rowspan="${item.cotacoes.length}">${s.min.toFixed(2)}</td>
+                <td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>
+                `:""}
+            </tr>`;
+        });
+
+    });
+}
+
+function atualizarSelect(){
+    itemSelect.innerHTML="";
+    itens.forEach((i, index)=>{
+        itemSelect.innerHTML += `<option value="${index}">Item ${index+1}</option>`;
+    });
+}
+
+window.voltar = function(){
+    telaMapa.classList.add("hidden");
+    telaProcessos.classList.remove("hidden");
+}
+
+carregarProcessos();
+
+</script>
+
+</body>
+</html>
