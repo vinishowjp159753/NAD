@@ -2,13 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Mapas - ESPEP</title>
+<title>Sistema ESPEP - Mapas Comparativos</title>
 
 <style>
-body{
-    font-family: Arial;
-    background:#eef2f7;
-}
+body{font-family:Arial;background:#eef2f7;margin:0;}
 
 header{
     background:#0d3b66;
@@ -17,11 +14,7 @@ header{
     text-align:center;
 }
 
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:20px;
-}
+.container{max-width:1200px;margin:auto;padding:20px;}
 
 .card{
     background:#fff;
@@ -47,17 +40,25 @@ th, td{
     border:1px solid #ccc;
     padding:6px;
     font-size:13px;
+    text-align:center;
 }
 
-th{
-    background:#0d3b66;
-    color:#fff;
+th{background:#0d3b66;color:#fff;}
+
+.hidden{display:none;}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
 }
 
-.hidden{
-    display:none;
-}
+.logo img{width:70px;}
 
+@media print{
+    .no-print{display:none;}
+}
 </style>
 </head>
 
@@ -69,7 +70,7 @@ th{
 
 <div class="container">
 
-<!-- LISTA DE PROCESSOS -->
+<!-- HISTÓRICO -->
 <div id="telaProcessos">
 
 <div class="card">
@@ -81,31 +82,40 @@ th{
 </div>
 
 <div class="card">
-<h3>Processos</h3>
+<h3>Histórico de Mapas</h3>
 <ul id="listaProcessos"></ul>
 </div>
 
 </div>
 
-<!-- TELA DO MAPA -->
+<!-- MAPA -->
 <div id="telaMapa" class="hidden">
 
-<button onclick="voltar()">⬅ Voltar</button>
+<button class="no-print" onclick="voltar()">⬅ Voltar</button>
+
+<div class="logo">
+<img src="https://raw.githubusercontent.com/dashboard-espep-vercel/img/main/GovPBT.png">
+<div>
+<strong>GOVERNO DA PARAÍBA</strong><br>
+MAPA COMPARATIVO DE PREÇOS
+</div>
+</div>
 
 <h3 id="tituloProcesso"></h3>
 
-<div class="card">
+<div class="card no-print">
 <input id="descItem" placeholder="Descrição">
 <input id="qtdItem" type="number" placeholder="Qtd">
-<input id="undItem" placeholder="Und">
+<input id="undItem" placeholder="Unidade">
 <button onclick="addItem()">Adicionar Item</button>
 </div>
 
-<div class="card">
+<div class="card no-print">
 <select id="itemSelect"></select>
 <input id="empresa" placeholder="Empresa">
 <input id="cnpj" placeholder="CNPJ">
 <input id="valor" type="number" placeholder="Valor">
+<input id="link" placeholder="Link da proposta">
 <button onclick="addCotacao()">Adicionar Cotação</button>
 </div>
 
@@ -118,6 +128,7 @@ th{
 <th>Empresa</th>
 <th>CNPJ</th>
 <th>Total</th>
+<th>Proposta</th>
 <th>Média</th>
 <th>Mediana</th>
 <th>Saneada</th>
@@ -129,7 +140,7 @@ th{
 <tbody id="tbody"></tbody>
 </table>
 
-<button onclick="window.print()">🖨️ Imprimir</button>
+<button class="no-print" onclick="window.print()">🖨️ Imprimir</button>
 
 </div>
 
@@ -148,8 +159,7 @@ const firebaseConfig = {
   projectId: "nad1-3fbbf",
   storageBucket: "nad1-3fbbf.firebasestorage.app",
   messagingSenderId: "360366546650",
-  appId: "1:360366546650:web:69869a60cca33dc7a5cfe3",
-  measurementId: "G-151MBZ4XFH"
+  appId: "1:360366546650:web:69869a60cca33dc7a5cfe3"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -158,7 +168,7 @@ const db = getFirestore(app);
 let processoAtual = null;
 let itens = [];
 
-// 🔹 PROCESSOS
+// PROCESSOS
 window.criarProcesso = async function(){
     await addDoc(collection(db,"processos"),{
         numero:numero.value,
@@ -192,20 +202,38 @@ window.abrir = async function(id, numeroProc){
     carregarItens();
 }
 
-// 🔹 ITENS
+// ITENS
 window.addItem = async function(){
     await addDoc(collection(db,"itens"),{
-        processo: processoAtual,
-        descricao: descItem.value,
-        qtd: parseFloat(qtdItem.value),
-        und: undItem.value
+        processo:processoAtual,
+        descricao:descItem.value,
+        qtd:parseFloat(qtdItem.value),
+        und:undItem.value
     });
+    carregarItens();
+}
+
+// COTAÇÕES
+window.addCotacao = async function(){
+
+    let itemId = itemSelect.value;
+
+    await addDoc(collection(db,"cotacoes"),{
+        processo:processoAtual,
+        item:itemId,
+        empresa:empresa.value,
+        cnpj:cnpj.value,
+        valor:parseFloat(valor.value),
+        link:link.value
+    });
+
     carregarItens();
 }
 
 async function carregarItens(){
 
     itens = [];
+
     let snap = await getDocs(query(collection(db,"itens"), where("processo","==",processoAtual)));
 
     snap.forEach(doc=>{
@@ -224,23 +252,14 @@ async function carregarItens(){
     render();
 }
 
-// 🔹 COTAÇÕES
-window.addCotacao = async function(){
-
-    let itemId = itens[itemSelect.value].id;
-
-    await addDoc(collection(db,"cotacoes"),{
-        processo:processoAtual,
-        item:itemId,
-        empresa:empresa.value,
-        cnpj:cnpj.value,
-        valor:parseFloat(valor.value)
+function atualizarSelect(){
+    itemSelect.innerHTML="";
+    itens.forEach((i)=>{
+        itemSelect.innerHTML += `<option value="${i.id}">${i.descricao}</option>`;
     });
-
-    carregarItens();
 }
 
-// 🔹 CÁLCULOS
+// CÁLCULOS
 function stats(v){
     let m = v.reduce((a,b)=>a+b,0)/v.length;
     let o=[...v].sort((a,b)=>a-b);
@@ -259,7 +278,7 @@ function stats(v){
     };
 }
 
-// 🔹 RENDER
+// RENDER
 function render(){
 
     tbody.innerHTML="";
@@ -283,6 +302,7 @@ function render(){
                 <td>${c.empresa}</td>
                 <td>${c.cnpj}</td>
                 <td>${total.toFixed(2)}</td>
+                <td><a href="${c.link}" target="_blank">Abrir</a></td>
 
                 ${j===0?`
                 <td rowspan="${item.cotacoes.length}">${s.media.toFixed(2)}</td>
@@ -295,13 +315,6 @@ function render(){
             </tr>`;
         });
 
-    });
-}
-
-function atualizarSelect(){
-    itemSelect.innerHTML="";
-    itens.forEach((i, index)=>{
-        itemSelect.innerHTML += `<option value="${index}">Item ${index+1}</option>`;
     });
 }
 
