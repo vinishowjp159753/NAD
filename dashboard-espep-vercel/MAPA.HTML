@@ -42,18 +42,8 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 
 .topo-oficial img{width:80px;}
 
-.assinatura{
-margin-top:50px;
-text-align:center;
-}
-
-.linha{
-margin-top:40px;
-border-top:1px solid #000;
-width:300px;
-margin-left:auto;
-margin-right:auto;
-}
+.assinatura{text-align:center;margin-top:40px;}
+.linha{border-top:1px solid #000;width:300px;margin:40px auto 10px;}
 
 @media print{
 .no-print{display:none;}
@@ -68,11 +58,8 @@ margin-right:auto;
 
 <div class="container">
 
-<!-- PROCESSOS -->
 <div id="telaProcessos">
-
 <div class="card">
-<h3>Novo Processo</h3>
 <input id="numero" placeholder="Número">
 <input id="orgao" placeholder="Órgão">
 <input id="data" type="date">
@@ -80,13 +67,10 @@ margin-right:auto;
 </div>
 
 <div class="card">
-<h3>Histórico</h3>
 <ul id="listaProcessos"></ul>
 </div>
-
 </div>
 
-<!-- MAPA -->
 <div id="telaMapa" class="hidden">
 
 <button class="no-print" onclick="voltar()">⬅ Voltar</button>
@@ -95,10 +79,7 @@ margin-right:auto;
 
 <div class="topo-oficial">
 <img src="img/GovPBT.png" onerror="this.style.display='none'">
-<div>
-<strong>GOVERNO DA PARAÍBA</strong><br>
-MAPA COMPARATIVO DE PREÇOS
-</div>
+<div><strong>GOVERNO DA PARAÍBA</strong><br>MAPA COMPARATIVO</div>
 </div>
 
 <h3 id="tituloProcesso"></h3>
@@ -125,7 +106,6 @@ MAPA COMPARATIVO DE PREÇOS
 <tbody id="tbody"></tbody>
 </table>
 
-<!-- ASSINATURA -->
 <div class="assinatura">
 <div class="linha"></div>
 <p id="assinaturaTexto"></p>
@@ -135,7 +115,7 @@ MAPA COMPARATIVO DE PREÇOS
 
 <!-- FORM -->
 <div class="card no-print">
-<input id="codigoItem" placeholder="Código Central">
+<input id="codigoItem" placeholder="Código">
 <input id="descItem" placeholder="Descrição">
 <input id="qtdItem" type="number" placeholder="Qtd">
 <input id="undItem" placeholder="Unidade">
@@ -151,16 +131,14 @@ MAPA COMPARATIVO DE PREÇOS
 <button onclick="addCotacao()">Adicionar</button>
 </div>
 
-<!-- ASSINATURA INPUT -->
 <div class="card no-print">
-<h4>Assinatura</h4>
 <input id="nomeResp" placeholder="Nome">
 <input id="matriculaResp" placeholder="Matrícula">
 <input id="setorResp" placeholder="Setor">
 <button onclick="gerarAssinatura()">Salvar Assinatura</button>
 </div>
 
-<button class="no-print" onclick="gerarPDF()">📄 Gerar PDF</button>
+<button class="no-print" onclick="window.print()">📄 PDF</button>
 
 </div>
 
@@ -198,33 +176,31 @@ async function carregarProcessos(){
 listaProcessos.innerHTML="";
 let snap=await getDocs(collection(db,"processos"));
 
-snap.forEach(docSnap=>{
-let p=docSnap.data();
+snap.forEach(d=>{
+let p=d.data();
 listaProcessos.innerHTML+=`
-<li>
-${p.numero} - ${p.orgao}
-<button onclick="abrir('${docSnap.id}','${p.numero}')">Abrir</button>
-<button class="btn-danger" onclick="excluirProcesso('${docSnap.id}')">Excluir</button>
+<li>${p.numero}
+<button onclick="abrir('${d.id}','${p.numero}')">Abrir</button>
+<button class="btn-danger" onclick="excluirProcesso('${d.id}')">Excluir</button>
 </li>`;
 });
 }
 
-// EXCLUIR PROCESSO
 window.excluirProcesso=async(id)=>{
-if(!confirm("Excluir processo completo?")) return;
+if(!confirm("Excluir processo?")) return;
 await deleteDoc(doc(db,"processos",id));
 carregarProcessos();
 }
 
-window.abrir=async(id,num)=>{
+window.abrir=(id,num)=>{
 processoAtual=id;
-tituloProcesso.innerText="Processo: "+num;
+tituloProcesso.innerText=num;
 telaProcessos.classList.add("hidden");
 telaMapa.classList.remove("hidden");
 carregarItens();
 }
 
-// ITENS
+// ITEM
 window.addItem=async()=>{
 await addDoc(collection(db,"itens"),{
 processo:processoAtual,
@@ -236,14 +212,22 @@ und:undItem.value
 carregarItens();
 }
 
-// EXCLUIR ITEM
 window.excluirItem=async(id)=>{
-if(!confirm("Excluir item?")) return;
+if(!confirm("Excluir item completo?")) return;
+
+// excluir cotacoes
+let cot = await getDocs(query(collection(db,"cotacoes"),where("item","==",id)));
+cot.forEach(async c=>{
+await deleteDoc(doc(db,"cotacoes",c.id));
+});
+
+// excluir item
 await deleteDoc(doc(db,"itens",id));
+
 carregarItens();
 }
 
-// COTAÇÕES
+// COTAÇÃO
 window.addCotacao=async()=>{
 await addDoc(collection(db,"cotacoes"),{
 processo:processoAtual,
@@ -256,18 +240,24 @@ link:link.value
 carregarItens();
 }
 
+window.excluirCotacao=async(id)=>{
+if(!confirm("Excluir empresa?")) return;
+await deleteDoc(doc(db,"cotacoes",id));
+carregarItens();
+}
+
 async function carregarItens(){
 
 itens=[];
 
 let snap=await getDocs(query(collection(db,"itens"),where("processo","==",processoAtual)));
-snap.forEach(docSnap=>{
-itens.push({id:docSnap.id,...docSnap.data(),cotacoes:[]});
+snap.forEach(d=>{
+itens.push({id:d.id,...d.data(),cotacoes:[]});
 });
 
 let cot=await getDocs(query(collection(db,"cotacoes"),where("processo","==",processoAtual)));
-cot.forEach(docSnap=>{
-let c=docSnap.data();
+cot.forEach(d=>{
+let c={id:d.id,...d.data()};
 let item=itens.find(i=>i.id===c.item);
 if(item)item.cotacoes.push(c);
 });
@@ -284,8 +274,13 @@ render();
 function stats(v){
 let m=v.reduce((a,b)=>a+b,0)/v.length;
 let o=[...v].sort((a,b)=>a-b);
-let varr=v.reduce((a,b)=>a+(b-m)**2,0)/v.length;
-return{media:m,mediana:o[Math.floor(v.length/2)],desvio:Math.sqrt(varr),min:o[0],max:o[o.length-1]};
+return{
+media:m,
+mediana:o[Math.floor(v.length/2)],
+desvio:Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length),
+min:o[0],
+max:o[o.length-1]
+};
 }
 
 // RENDER
@@ -310,7 +305,7 @@ tbody.innerHTML+=`
 <td>${item.qtd} ${item.und}</td>
 <td>${c.empresa}</td>
 <td>${c.cnpj}</td>
-<td>R$ ${total.toFixed(2)}</td>
+<td>${total.toFixed(2)}</td>
 <td><a href="${c.link}" target="_blank">Abrir</a></td>
 
 ${j===0?`
@@ -319,12 +314,14 @@ ${j===0?`
 <td rowspan="${item.cotacoes.length}">${s.desvio.toFixed(2)}</td>
 <td rowspan="${item.cotacoes.length}">${s.min.toFixed(2)}</td>
 <td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>
+<td rowspan="${item.cotacoes.length}">
+<button class="btn-danger" onclick="excluirItem('${item.id}')">Excluir Item</button>
+</td>
 `:""}
 
 <td class="no-print">
-<button class="btn-danger" onclick="excluirItem('${item.id}')">X</button>
+<button class="btn-danger" onclick="excluirCotacao('${c.id}')">Excluir</button>
 </td>
-
 </tr>`;
 });
 });
@@ -332,22 +329,12 @@ ${j===0?`
 
 // ASSINATURA
 window.gerarAssinatura=()=>{
-let nome = nomeResp.value;
-let mat = matriculaResp.value;
-let setor = setorResp.value;
-let data = new Date().toLocaleDateString("pt-BR");
-
-assinaturaTexto.innerHTML = `
-<strong>${nome}</strong><br>
-Matrícula: ${mat}<br>
-Setor: ${setor}<br>
-Data: ${data}
+assinaturaTexto.innerHTML=`
+<strong>${nomeResp.value}</strong><br>
+Matrícula: ${matriculaResp.value}<br>
+Setor: ${setorResp.value}<br>
+Data: ${new Date().toLocaleDateString("pt-BR")}
 `;
-}
-
-// PDF
-window.gerarPDF=()=>{
-window.print();
 }
 
 window.voltar=()=>{
