@@ -42,6 +42,19 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 
 .topo-oficial img{width:80px;}
 
+.assinatura{
+margin-top:50px;
+text-align:center;
+}
+
+.linha{
+margin-top:40px;
+border-top:1px solid #000;
+width:300px;
+margin-left:auto;
+margin-right:auto;
+}
+
 @media print{
 .no-print{display:none;}
 *{-webkit-print-color-adjust:exact;}
@@ -112,6 +125,12 @@ MAPA COMPARATIVO DE PREÇOS
 <tbody id="tbody"></tbody>
 </table>
 
+<!-- ASSINATURA -->
+<div class="assinatura">
+<div class="linha"></div>
+<p id="assinaturaTexto"></p>
+</div>
+
 </div>
 
 <!-- FORM -->
@@ -130,6 +149,15 @@ MAPA COMPARATIVO DE PREÇOS
 <input id="valor" type="number" placeholder="Valor">
 <input id="link" placeholder="Link proposta">
 <button onclick="addCotacao()">Adicionar</button>
+</div>
+
+<!-- ASSINATURA INPUT -->
+<div class="card no-print">
+<h4>Assinatura</h4>
+<input id="nomeResp" placeholder="Nome">
+<input id="matriculaResp" placeholder="Matrícula">
+<input id="setorResp" placeholder="Setor">
+<button onclick="gerarAssinatura()">Salvar Assinatura</button>
 </div>
 
 <button class="no-print" onclick="gerarPDF()">📄 Gerar PDF</button>
@@ -300,6 +328,21 @@ ${j===0?`
 </tr>`;
 });
 });
+}
+
+// ASSINATURA
+window.gerarAssinatura=()=>{
+let nome = nomeResp.value;
+let mat = matriculaResp.value;
+let setor = setorResp.value;
+let data = new Date().toLocaleDateString("pt-BR");
+
+assinaturaTexto.innerHTML = `
+<strong>${nome}</strong><br>
+Matrícula: ${mat}<br>
+Setor: ${setor}<br>
+Data: ${data}
+`;
 }
 
 // PDF
