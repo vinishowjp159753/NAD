@@ -2,67 +2,91 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Sistema ESPEP - Mapas</title>
+<title>ESPEP - Sistema de Mapas</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-body{font-family:Arial;background:#eef2f7;margin:0;}
-
-header{
-    background:#0d3b66;
-    color:#fff;
-    padding:15px;
-    text-align:center;
+body{
+    font-family: 'Segoe UI', sans-serif;
+    background:#f1f5f9;
+    margin:0;
 }
 
-.container{max-width:1200px;margin:auto;padding:20px;}
+header{
+    background:linear-gradient(90deg,#0d3b66,#1d6fa5);
+    color:#fff;
+    padding:20px;
+    text-align:center;
+    font-size:20px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
 
 .card{
     background:#fff;
     padding:15px;
+    border-radius:10px;
     margin-bottom:15px;
-    border-radius:8px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.1);
 }
 
 button{
     background:#0d3b66;
     color:#fff;
     border:none;
-    padding:8px;
+    padding:8px 12px;
+    border-radius:6px;
     cursor:pointer;
+}
+
+button:hover{
+    background:#094a86;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
+    background:#fff;
 }
 
-th, td{
-    border:1px solid #ccc;
-    padding:6px;
-    font-size:13px;
+th{
+    background:#0d3b66;
+    color:#fff;
+}
+
+th,td{
+    padding:8px;
+    border:1px solid #ddd;
     text-align:center;
 }
 
-th{background:#0d3b66;color:#fff;}
-
-.hidden{display:none;}
+.menor{
+    background:#d4edda;
+    font-weight:bold;
+}
 
 .logo{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:15px;
     margin-bottom:10px;
 }
 
 .logo img{
-    width:80px;
+    width:90px;
 }
+
+.hidden{display:none;}
 
 .footer{
     margin-top:30px;
     text-align:right;
+    font-size:14px;
 }
 
 @media print{
@@ -73,18 +97,16 @@ th{background:#0d3b66;color:#fff;}
 
 <body>
 
-<header>
-<h2>Sistema de Mapa Comparativo - ESPEP</h2>
-</header>
+<header>📊 Sistema de Mapa Comparativo - ESPEP</header>
 
 <div class="container">
 
-<!-- HISTÓRICO -->
+<!-- PROCESSOS -->
 <div id="telaProcessos">
 
 <div class="card">
 <h3>Novo Processo</h3>
-<input id="numero" placeholder="Número do Processo">
+<input id="numero" placeholder="Número">
 <input id="orgao" placeholder="Órgão">
 <input id="data" type="date">
 <button onclick="criarProcesso()">Criar</button>
@@ -105,7 +127,8 @@ th{background:#0d3b66;color:#fff;}
 <div id="areaPDF">
 
 <div class="logo">
-<img src="https://raw.githubusercontent.com/dashboard-espep-vercel/img/main/GovPBT.png">
+<img id="logoGov" src="https://raw.githubusercontent.com/dashboard-espep-vercel/img/main/GovPBT.png"
+onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Bras%C3%A3o_da_Para%C3%ADba.svg/200px-Bras%C3%A3o_da_Para%C3%ADba.svg.png'">
 <div>
 <strong>GOVERNO DA PARAÍBA</strong><br>
 MAPA COMPARATIVO DE PREÇOS
@@ -126,7 +149,6 @@ MAPA COMPARATIVO DE PREÇOS
 <th>Proposta</th>
 <th>Média</th>
 <th>Mediana</th>
-<th>Saneada</th>
 <th>Desvio</th>
 <th>Mín</th>
 <th>Máx</th>
@@ -155,12 +177,12 @@ MAPA COMPARATIVO DE PREÇOS
 <input id="cnpj" placeholder="CNPJ">
 <input id="valor" type="number" placeholder="Valor">
 <input id="link" placeholder="Link proposta">
-<button onclick="addCotacao()">Adicionar Cotação</button>
+<button onclick="addCotacao()">Adicionar</button>
 </div>
 
 <div class="card no-print">
-<input id="responsavel" placeholder="Elaborado por">
-<button onclick="gerarRodape()">Salvar Responsável</button>
+<input id="responsavel" placeholder="Responsável">
+<button onclick="salvarResponsavel()">Salvar</button>
 </div>
 
 <button class="no-print" onclick="baixarPDF()">📄 Baixar PDF</button>
@@ -176,184 +198,151 @@ import {
 getFirestore, collection, addDoc, getDocs, query, where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
-  authDomain: "nad1-3fbbf.firebaseapp.com",
-  projectId: "nad1-3fbbf"
-};
+const app = initializeApp({
+apiKey:"AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
+authDomain:"nad1-3fbbf.firebaseapp.com",
+projectId:"nad1-3fbbf"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let processoAtual = null;
-let itens = [];
+let processoAtual=null;
+let itens=[];
 
 // PROCESSOS
-window.criarProcesso = async function(){
-    await addDoc(collection(db,"processos"),{
-        numero:numero.value,
-        orgao:orgao.value,
-        data:data.value
-    });
-    carregarProcessos();
+window.criarProcesso=async()=>{
+await addDoc(collection(db,"processos"),{
+numero:numero.value,
+orgao:orgao.value,
+data:data.value
+});
+carregarProcessos();
 }
 
 async function carregarProcessos(){
-    listaProcessos.innerHTML="";
-    let snap = await getDocs(collection(db,"processos"));
-
-    snap.forEach(doc=>{
-        let p = doc.data();
-        listaProcessos.innerHTML += `
-        <li>${p.numero} - ${p.orgao}
-        <button onclick="abrir('${doc.id}','${p.numero}')">Abrir</button></li>`;
-    });
+listaProcessos.innerHTML="";
+let snap=await getDocs(collection(db,"processos"));
+snap.forEach(doc=>{
+let p=doc.data();
+listaProcessos.innerHTML+=`
+<li>${p.numero} - ${p.orgao}
+<button onclick="abrir('${doc.id}','${p.numero}')">Abrir</button></li>`;
+});
 }
 
-window.abrir = async function(id, numeroProc){
-    processoAtual = id;
-    tituloProcesso.innerText = "Processo: " + numeroProc;
-
-    telaProcessos.classList.add("hidden");
-    telaMapa.classList.remove("hidden");
-
-    carregarItens();
+window.abrir=async(id,num)=>{
+processoAtual=id;
+tituloProcesso.innerText="Processo: "+num;
+telaProcessos.classList.add("hidden");
+telaMapa.classList.remove("hidden");
+carregarItens();
 }
 
 // ITENS
-window.addItem = async function(){
-    await addDoc(collection(db,"itens"),{
-        processo:processoAtual,
-        descricao:descItem.value,
-        qtd:parseFloat(qtdItem.value),
-        und:undItem.value
-    });
-    carregarItens();
+window.addItem=async()=>{
+await addDoc(collection(db,"itens"),{
+processo:processoAtual,
+descricao:descItem.value,
+qtd:parseFloat(qtdItem.value),
+und:undItem.value
+});
+carregarItens();
 }
 
 // COTAÇÕES
-window.addCotacao = async function(){
-
-    let itemId = itemSelect.value;
-
-    await addDoc(collection(db,"cotacoes"),{
-        processo:processoAtual,
-        item:itemId,
-        empresa:empresa.value,
-        cnpj:cnpj.value,
-        valor:parseFloat(valor.value),
-        link:link.value
-    });
-
-    carregarItens();
+window.addCotacao=async()=>{
+await addDoc(collection(db,"cotacoes"),{
+processo:processoAtual,
+item:itemSelect.value,
+empresa:empresa.value,
+cnpj:cnpj.value,
+valor:parseFloat(valor.value),
+link:link.value
+});
+carregarItens();
 }
 
 async function carregarItens(){
 
-    itens = [];
+itens=[];
 
-    let snap = await getDocs(query(collection(db,"itens"), where("processo","==",processoAtual)));
+let snap=await getDocs(query(collection(db,"itens"),where("processo","==",processoAtual)));
+snap.forEach(doc=>{
+itens.push({id:doc.id,...doc.data(),cotacoes:[]});
+});
 
-    snap.forEach(doc=>{
-        itens.push({id:doc.id, ...doc.data(), cotacoes:[]});
-    });
+let cot=await getDocs(query(collection(db,"cotacoes"),where("processo","==",processoAtual)));
+cot.forEach(doc=>{
+let c=doc.data();
+let item=itens.find(i=>i.id===c.item);
+if(item)item.cotacoes.push(c);
+});
 
-    let cot = await getDocs(query(collection(db,"cotacoes"), where("processo","==",processoAtual)));
+itemSelect.innerHTML="";
+itens.forEach(i=>{
+itemSelect.innerHTML+=`<option value="${i.id}">${i.descricao}</option>`;
+});
 
-    cot.forEach(doc=>{
-        let c = doc.data();
-        let item = itens.find(i=>i.id === c.item);
-        if(item) item.cotacoes.push(c);
-    });
-
-    atualizarSelect();
-    render();
+render();
 }
 
-function atualizarSelect(){
-    itemSelect.innerHTML="";
-    itens.forEach((i)=>{
-        itemSelect.innerHTML += `<option value="${i.id}">${i.descricao}</option>`;
-    });
-}
-
-// CÁLCULOS
+// STATS
 function stats(v){
-    let m = v.reduce((a,b)=>a+b,0)/v.length;
-    let o=[...v].sort((a,b)=>a-b);
-    let med = v.length%2 ? o[Math.floor(v.length/2)] : (o[v.length/2-1]+o[v.length/2])/2;
-
-    let s=o.slice(1,-1);
-    let ms=s.length? s.reduce((a,b)=>a+b,0)/s.length : m;
-
-    let varr = v.reduce((a,b)=>a+(b-m)**2,0)/v.length;
-
-    return {
-        media:m, mediana:med, saneada:ms,
-        desvio:Math.sqrt(varr),
-        min:Math.min(...v),
-        max:Math.max(...v)
-    };
+let m=v.reduce((a,b)=>a+b,0)/v.length;
+let o=[...v].sort((a,b)=>a-b);
+let varr=v.reduce((a,b)=>a+(b-m)**2,0)/v.length;
+return{media:m,mediana:o[Math.floor(v.length/2)],desvio:Math.sqrt(varr),min:o[0],max:o[o.length-1]};
 }
 
 // RENDER
 function render(){
+tbody.innerHTML="";
 
-    tbody.innerHTML="";
+itens.forEach((item,i)=>{
+if(!item.cotacoes.length)return;
 
-    itens.forEach((item,i)=>{
+let totais=item.cotacoes.map(c=>c.valor*item.qtd);
+let s=stats(totais);
+let menor=Math.min(...totais);
 
-        if(!item.cotacoes.length) return;
+item.cotacoes.forEach((c,j)=>{
+let total=c.valor*item.qtd;
 
-        let totais = item.cotacoes.map(c=>c.valor * item.qtd);
-        let s = stats(totais);
+tbody.innerHTML+=`
+<tr class="${total===menor?'menor':''}">
+<td>${i+1}</td>
+<td>${item.descricao}</td>
+<td>${item.qtd} ${item.und}</td>
+<td>${c.empresa}</td>
+<td>${c.cnpj}</td>
+<td>R$ ${total.toFixed(2)}</td>
+<td><a href="${c.link}" target="_blank">Abrir</a></td>
 
-        item.cotacoes.forEach((c,j)=>{
-
-            let total = c.valor * item.qtd;
-
-            tbody.innerHTML+=`
-            <tr>
-                <td>${i+1}</td>
-                <td>${item.descricao}</td>
-                <td>${item.qtd} ${item.und}</td>
-                <td>${c.empresa}</td>
-                <td>${c.cnpj}</td>
-                <td>${total.toFixed(2)}</td>
-                <td><a href="${c.link}" target="_blank">Abrir</a></td>
-
-                ${j===0?`
-                <td rowspan="${item.cotacoes.length}">${s.media.toFixed(2)}</td>
-                <td rowspan="${item.cotacoes.length}">${s.mediana.toFixed(2)}</td>
-                <td rowspan="${item.cotacoes.length}">${s.saneada.toFixed(2)}</td>
-                <td rowspan="${item.cotacoes.length}">${s.desvio.toFixed(2)}</td>
-                <td rowspan="${item.cotacoes.length}">${s.min.toFixed(2)}</td>
-                <td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>
-                `:""}
-            </tr>`;
-        });
-
-    });
+${j===0?`
+<td rowspan="${item.cotacoes.length}">${s.media.toFixed(2)}</td>
+<td rowspan="${item.cotacoes.length}">${s.mediana.toFixed(2)}</td>
+<td rowspan="${item.cotacoes.length}">${s.desvio.toFixed(2)}</td>
+<td rowspan="${item.cotacoes.length}">${s.min.toFixed(2)}</td>
+<td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>
+`:""}
+</tr>`;
+});
+});
 }
 
 // RESPONSÁVEL
-window.gerarRodape = function(){
-    let nome = responsavel.value;
-    let data = new Date().toLocaleDateString("pt-BR");
-
-    responsavelTexto.innerText = `${nome} - ${data}`;
+window.salvarResponsavel=()=>{
+responsavelTexto.innerText=`${responsavel.value} - ${new Date().toLocaleDateString()}`;
 }
 
 // PDF
-window.baixarPDF = function(){
-    let element = document.getElementById("areaPDF");
-
-    html2pdf().from(element).save("mapa-comparativo.pdf");
+window.baixarPDF=()=>{
+html2pdf().from(document.getElementById("areaPDF")).save();
 }
 
-window.voltar = function(){
-    telaMapa.classList.add("hidden");
-    telaProcessos.classList.remove("hidden");
+window.voltar=()=>{
+telaMapa.classList.add("hidden");
+telaProcessos.classList.remove("hidden");
 }
 
 carregarProcessos();
