@@ -203,6 +203,43 @@ tr:hover {
     margin-bottom: 3px;
 }
 
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin: 10px 0;
+    align-items: center;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+.info-box {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.total-contrato {
+    background: #c8e6c9;
+    border-left: 4px solid #4caf50;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -220,6 +257,12 @@ tr:hover {
     th, td {
         font-size: 0.65rem;
         padding: 4px;
+    }
+    
+    .radio-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
 }
 </style>
@@ -276,7 +319,7 @@ tr:hover {
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
-         </table>
+        </table>
     </div>
 
     <!-- Adicionar Item -->
@@ -303,6 +346,25 @@ tr:hover {
         <button onclick="addCotacao()" class="btn-success">💰 Adicionar Cotação</button>
     </div>
 
+    <!-- Configurações do Contrato -->
+    <div class="card">
+        <h4>📅 Configurações da Contratação</h4>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="tipoContratacao" value="contrato" checked> 📝 Contrato (12 meses)
+            </label>
+            <label>
+                <input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (N/A)
+            </label>
+        </div>
+        <div id="infoContrato" class="info-box">
+            ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12.
+        </div>
+        <div id="infoDispensa" class="info-box hidden">
+            ℹ️ Para dispensa de licitação, não será calculado valor de contrato. O campo "N/A" será exibido na justificativa.
+        </div>
+    </div>
+
     <!-- Assinatura -->
     <div class="card">
         <h4>✍️ Assinatura do Responsável</h4>
@@ -316,6 +378,9 @@ tr:hover {
     <div class="card">
         <h4>🏆 Fornecedor Vencedor Geral</h4>
         <select id="vencedorSelect"></select>
+        <div id="totalContratoDisplay" class="total-contrato hidden">
+            💰 Valor Total do Contrato (12 meses): <strong id="valorTotalContrato">R$ 0,00</strong>
+        </div>
         <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
             ⚠️ Selecione o fornecedor que apresentou a proposta mais vantajosa para a administração pública
         </p>
@@ -389,6 +454,64 @@ function validateFields(fields) {
     }
     return true;
 }
+
+// Função para calcular o valor total da empresa vencedora
+function calcularTotalVencedor(empresaSelecionada) {
+    let totalGeral = 0;
+    itens.forEach(item => {
+        if (item.cotacoes && item.cotacoes.length > 0) {
+            const cotacaoVencedora = item.cotacoes.find(c => c.empresa === empresaSelecionada);
+            if (cotacaoVencedora) {
+                totalGeral += cotacaoVencedora.valor * item.qtd;
+            }
+        }
+    });
+    return totalGeral;
+}
+
+// Função para atualizar o display do valor total do contrato
+function atualizarTotalContrato() {
+    const vencedorSelect = document.getElementById('vencedorSelect');
+    const empresaSelecionada = vencedorSelect.value;
+    const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
+    const totalContratoDisplay = document.getElementById('totalContratoDisplay');
+    const valorTotalContrato = document.getElementById('valorTotalContrato');
+    
+    if (empresaSelecionada && tipoContratacao === 'contrato') {
+        const totalVencedor = calcularTotalVencedor(empresaSelecionada);
+        const totalContrato = totalVencedor * 12;
+        valorTotalContrato.innerHTML = `R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        totalContratoDisplay.classList.remove('hidden');
+    } else {
+        totalContratoDisplay.classList.add('hidden');
+    }
+}
+
+// Event listeners para atualizar o total do contrato
+document.addEventListener('DOMContentLoaded', () => {
+    const radios = document.querySelectorAll('input[name="tipoContratacao"]');
+    radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const tipo = radio.value;
+            const infoContrato = document.getElementById('infoContrato');
+            const infoDispensa = document.getElementById('infoDispensa');
+            
+            if (tipo === 'contrato') {
+                infoContrato.classList.remove('hidden');
+                infoDispensa.classList.add('hidden');
+            } else {
+                infoContrato.classList.add('hidden');
+                infoDispensa.classList.remove('hidden');
+            }
+            atualizarTotalContrato();
+        });
+    });
+    
+    const vencedorSelect = document.getElementById('vencedorSelect');
+    if (vencedorSelect) {
+        vencedorSelect.addEventListener('change', atualizarTotalContrato);
+    }
+});
 
 // PROCESSOS
 window.criarProcesso = async () => {
@@ -668,6 +791,7 @@ window.carregarItens = async () => {
         });
         
         render();
+        atualizarTotalContrato();
     } catch (error) {
         console.error('Erro ao carregar itens:', error);
         showAlert('Erro ao carregar itens', 'error');
@@ -798,7 +922,7 @@ async function adicionarImagemPDF(doc, x, y, width, height, imagemPath) {
     });
 }
 
-// PDF - Versão corrigida com tabela ajustada
+// PDF
 window.gerarPDF = async () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -829,7 +953,7 @@ window.gerarPDF = async () => {
     
     y += 12;
     
-    // Preparar dados da tabela com ajuste fino de larguras
+    // Preparar dados da tabela
     const body = [];
     itens.forEach((item) => {
         if (!item.cotacoes || item.cotacoes.length === 0) return;
@@ -866,7 +990,6 @@ window.gerarPDF = async () => {
     if (body.length === 0) {
         doc.text("Nenhum item cadastrado neste processo.", 14, y);
     } else {
-        // Configuração otimizada para caber na página A4 paisagem
         doc.autoTable({
             startY: y,
             head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Méd", "Med", "Dv", "Mín", "Máx"]],
@@ -887,21 +1010,21 @@ window.gerarPDF = async () => {
             },
             alternateRowStyles: { fillColor: [245, 245, 245] },
             columnStyles: {
-                0: { cellWidth: 10, halign: 'center' },      // Código
-                1: { cellWidth: 38, halign: 'left' },        // Descrição
-                2: { cellWidth: 8, halign: 'center' },       // Qtd
-                3: { cellWidth: 7, halign: 'center' },       // Un
-                4: { cellWidth: 38, halign: 'left' },        // Empresa
-                5: { cellWidth: 25, halign: 'center' },      // CNPJ
-                6: { cellWidth: 16, halign: 'right' },       // Unit
-                7: { cellWidth: 16, halign: 'right' },       // Total
-                8: { cellWidth: 16, halign: 'center' },      // Origem
-                9: { cellWidth: 6, halign: 'center' },       // Rk
-                10: { cellWidth: 14, halign: 'right' },      // Méd
-                11: { cellWidth: 14, halign: 'right' },      // Med
-                12: { cellWidth: 12, halign: 'right' },      // Dv
-                13: { cellWidth: 14, halign: 'right' },      // Mín
-                14: { cellWidth: 14, halign: 'right' }       // Máx
+                0: { cellWidth: 10, halign: 'center' },
+                1: { cellWidth: 38, halign: 'left' },
+                2: { cellWidth: 8, halign: 'center' },
+                3: { cellWidth: 7, halign: 'center' },
+                4: { cellWidth: 38, halign: 'left' },
+                5: { cellWidth: 25, halign: 'center' },
+                6: { cellWidth: 16, halign: 'right' },
+                7: { cellWidth: 16, halign: 'right' },
+                8: { cellWidth: 16, halign: 'center' },
+                9: { cellWidth: 6, halign: 'center' },
+                10: { cellWidth: 14, halign: 'right' },
+                11: { cellWidth: 14, halign: 'right' },
+                12: { cellWidth: 12, halign: 'right' },
+                13: { cellWidth: 14, halign: 'right' },
+                14: { cellWidth: 14, halign: 'right' }
             },
             margin: { left: 10, right: 10 },
             tableWidth: 'auto',
@@ -909,23 +1032,36 @@ window.gerarPDF = async () => {
         });
     }
     
-    // Justificativa
+    // Justificativa com cálculo do contrato
     let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : y + 30;
-    const vencedor = document.getElementById('vencedorSelect').value || "o fornecedor melhor classificado";
+    const vencedor = document.getElementById('vencedorSelect').value;
+    const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
     
     doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.text("JUSTIFICATIVA:", 14, finalY);
     doc.setFontSize(7.5);
     doc.setFont(undefined, 'normal');
-    const justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, considerando-se os princípios da economicidade, eficiência e vantajosidade para a Administração Pública, em conformidade com a Lei nº 8.666/93 e suas alterações.`;
+    
+    let justificativa = "";
+    
+    if (tipoContratacao === 'contrato' && vencedor) {
+        const totalVencedor = calcularTotalVencedor(vencedor);
+        const totalContrato = totalVencedor * 12;
+        
+        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} para o período inicial. Considerando a contratação por 12 (doze) meses, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, sendo esta a proposta mais vantajosa para a Administração Pública, em conformidade com os princípios da economicidade, eficiência e vantajosidade, nos termos da Lei nº 8.666/93 e suas alterações.`;
+    } else if (tipoContratacao === 'dispensa') {
+        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública. Trata-se de processo de dispensa de licitação, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual, em conformidade com os princípios da economicidade e eficiência.`;
+    } else {
+        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, em conformidade com os princípios da economicidade e eficiência.`;
+    }
+    
     const splitText = doc.splitTextToSize(justificativa, 265);
     doc.text(splitText, 14, finalY + 5);
     
     // Assinatura
     finalY += 12 + (splitText.length * 3.5);
     
-    // Verificar se cabe na página, se não, adicionar nova página
     if (finalY > 195) {
         doc.addPage();
         finalY = 20;
