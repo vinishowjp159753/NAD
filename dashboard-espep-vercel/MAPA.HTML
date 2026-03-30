@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>ESPEP - Sistema PRO</title>
+<title>ESPEP - Sistema Final</title>
 
 <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -26,7 +26,7 @@ td{border:1px solid #ddd;padding:5px;}
 
 <body>
 
-<header>📊 Sistema ESPEP - PRO</header>
+<header>📊 Sistema ESPEP FINAL</header>
 
 <div class="container">
 
@@ -90,10 +90,9 @@ td{border:1px solid #ddd;padding:5px;}
 <input id="nomeResp" placeholder="Nome">
 <input id="matriculaResp" placeholder="Matrícula">
 <input id="setorResp" placeholder="Setor">
-<button onclick="salvarAssinatura()">Salvar Assinatura</button>
 </div>
 
-<button onclick="gerarPDF()">📄 Gerar PDF Oficial</button>
+<button onclick="gerarPDF()">📄 Gerar PDF TCE</button>
 
 </div>
 
@@ -103,7 +102,7 @@ td{border:1px solid #ddd;padding:5px;}
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, query, where
+getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app = initializeApp({
@@ -116,10 +115,9 @@ const db = getFirestore(app);
 
 let processoAtual=null;
 let itens=[];
-let assinatura={};
 
-// PROCESSOS
-window.criarProcesso=async()=>{
+// ================= PROCESSOS =================
+window.criarProcesso = async ()=>{
 await addDoc(collection(db,"processos"),{
 numero:numero.value,
 orgao:orgao.value,
@@ -128,9 +126,10 @@ data:data.value
 carregarProcessos();
 }
 
-async function carregarProcessos(){
+window.carregarProcessos = async ()=>{
 listaProcessos.innerHTML="";
 let snap=await getDocs(collection(db,"processos"));
+
 snap.forEach(d=>{
 let p=d.data();
 listaProcessos.innerHTML+=`
@@ -140,7 +139,8 @@ listaProcessos.innerHTML+=`
 });
 }
 
-window.abrir=async(id,num)=>{
+// ================= ABRIR =================
+window.abrir = async (id,num)=>{
 processoAtual=id;
 tituloProcesso.innerText=num;
 telaProcessos.classList.add("hidden");
@@ -148,8 +148,8 @@ telaMapa.classList.remove("hidden");
 carregarItens();
 }
 
-// ITEM
-window.addItem=async()=>{
+// ================= ITEM =================
+window.addItem = async ()=>{
 await addDoc(collection(db,"itens"),{
 processo:processoAtual,
 codigo:codigoItem.value,
@@ -160,14 +160,14 @@ und:undItem.value
 carregarItens();
 }
 
-window.editarItem=async(id,desc)=>{
-let novo=prompt("Editar descrição:",desc);
+window.editarItem = async (id,desc)=>{
+let novo=prompt("Editar:",desc);
 if(!novo)return;
 await updateDoc(doc(db,"itens",id),{descricao:novo});
 carregarItens();
 }
 
-window.excluirItem=async(id)=>{
+window.excluirItem = async (id)=>{
 if(!confirm("Excluir item?"))return;
 
 let cot=await getDocs(query(collection(db,"cotacoes"),where("item","==",id)));
@@ -177,8 +177,8 @@ await deleteDoc(doc(db,"itens",id));
 carregarItens();
 }
 
-// COTAÇÃO
-window.addCotacao=async()=>{
+// ================= COTAÇÃO =================
+window.addCotacao = async ()=>{
 await addDoc(collection(db,"cotacoes"),{
 processo:processoAtual,
 item:itemSelect.value,
@@ -190,20 +190,44 @@ origem:origem.value
 carregarItens();
 }
 
-window.editarCotacao=async(id,empresa)=>{
+window.editarCotacao = async (id,empresa)=>{
 let novo=prompt("Editar empresa:",empresa);
 if(!novo)return;
 await updateDoc(doc(db,"cotacoes",id),{empresa:novo});
 carregarItens();
 }
 
-window.excluirCotacao=async(id)=>{
+window.excluirCotacao = async (id)=>{
 if(!confirm("Excluir empresa?"))return;
 await deleteDoc(doc(db,"cotacoes",id));
 carregarItens();
 }
 
-// STATS
+// ================= CARREGAR =================
+window.carregarItens = async ()=>{
+itens=[];
+
+let snap=await getDocs(query(collection(db,"itens"),where("processo","==",processoAtual)));
+snap.forEach(d=>{
+itens.push({id:d.id,...d.data(),cotacoes:[]});
+});
+
+let cot=await getDocs(query(collection(db,"cotacoes"),where("processo","==",processoAtual)));
+cot.forEach(d=>{
+let c={id:d.id,...d.data()};
+let item=itens.find(i=>i.id===c.item);
+if(item)item.cotacoes.push(c);
+});
+
+itemSelect.innerHTML="";
+itens.forEach(i=>{
+itemSelect.innerHTML+=`<option value="${i.id}">${i.descricao}</option>`;
+});
+
+render();
+}
+
+// ================= STATS =================
 function stats(v){
 let m=v.reduce((a,b)=>a+b,0)/v.length;
 let o=[...v].sort((a,b)=>a-b);
@@ -216,8 +240,8 @@ max:o[o.length-1]
 };
 }
 
-// RENDER
-function render(){
+// ================= RENDER =================
+window.render = ()=>{
 tbody.innerHTML="";
 
 itens.forEach((item,i)=>{
@@ -252,8 +276,10 @@ ${j===0?`
 <td>
 <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa}')">✏️</button>
 <button class="btn-danger" onclick="excluirCotacao('${c.id}')">X</button>
-${j===0?`<button onclick="editarItem('${item.id}','${item.descricao}')">Editar Item</button>
-<button onclick="excluirItem('${item.id}')">Excluir Item</button>`:""}
+${j===0?`
+<button onclick="editarItem('${item.id}','${item.descricao}')">Item</button>
+<button onclick="excluirItem('${item.id}')">Excluir</button>
+`:""}
 </td>
 
 </tr>`;
@@ -261,13 +287,13 @@ ${j===0?`<button onclick="editarItem('${item.id}','${item.descricao}')">Editar I
 });
 }
 
-// PDF
-window.gerarPDF = async () => {
+// ================= PDF TCE =================
+window.gerarPDF = ()=>{
 
 const { jsPDF } = window.jspdf;
 const doc = new jsPDF("l","mm","a4");
 
-let y = 10;
+let y=10;
 
 // LOGOS
 try{
@@ -275,71 +301,49 @@ doc.addImage("img/GovPBT.png","PNG",10,y,25,18);
 doc.addImage("img/LOGOESPEP.PNG","PNG",40,y,25,18);
 }catch(e){}
 
-// CABEÇALHO
 doc.setFontSize(12);
-doc.text("GOVERNO DO ESTADO DA PARAÍBA",100,y+5);
-doc.text("ESCOLA DE SERVIÇO PÚBLICO - ESPEP",100,y+10);
-doc.text("MAPA COMPARATIVO DE PREÇOS",100,y+15);
+doc.text("MAPA COMPARATIVO DE PREÇOS - ESPEP",100,y+10);
 
-y += 25;
+y+=25;
 
-// PROCESSO
-doc.setFontSize(10);
-doc.text("Processo: " + tituloProcesso.innerText,10,y);
-
-y += 5;
-
-// TABELA + RANKING
-let body = [];
+let body=[];
 
 itens.forEach((item,i)=>{
-
-let ranking = item.cotacoes
-.map(c=>({
-...c,
-total:c.valor * item.qtd
-}))
+let ranking=item.cotacoes.map(c=>({...c,total:c.valor*item.qtd}))
 .sort((a,b)=>a.total-b.total);
 
 ranking.forEach((c,index)=>{
 body.push([
-i+1,
-item.codigo || "-",
-item.descricao,
-item.qtd,
-c.empresa,
-c.cnpj,
-c.total.toFixed(2),
-c.origem,
-(index+1) // ranking
+i+1,item.codigo,item.descricao,item.qtd,
+c.empresa,c.cnpj,c.total.toFixed(2),c.origem,index+1
 ]);
 });
-
 });
 
-// TABELA
 doc.autoTable({
 startY:y,
-head:[[
-"Item","Código","Descrição","Qtd",
-"Empresa","CNPJ","Total","Origem","Ranking"
-]],
+head:[["Item","Código","Descrição","Qtd","Empresa","CNPJ","Total","Origem","Ranking"]],
 body:body,
 styles:{fontSize:8},
 headStyles:{fillColor:[13,59,102]}
 });
 
-// ===== JUSTIFICATIVA AUTOMÁTICA =====
+// JUSTIFICATIVA
 let finalY = doc.lastAutoTable.finalY + 10;
 
-let texto = "Após análise das propostas apresentadas, verificou-se que os fornecedores classificados em primeiro lugar por item apresentaram os menores valores, sendo considerados mais vantajosos para a Administração Pública, em conformidade com os princípios da economicidade e eficiência.";
-
-doc.setFontSize(10);
 doc.text("JUSTIFICATIVA:",10,finalY);
-doc.setFontSize(9);
-doc.text(doc.splitTextToSize(texto,260),10,finalY+5);
 
-// ===== ASSINATURA =====
+doc.setFontSize(9);
+doc.text(
+doc.splitTextToSize(
+"Após análise das propostas, verifica-se que os menores preços apresentados são mais vantajosos para a Administração, atendendo aos princípios da economicidade e eficiência.",
+260
+),
+10,
+finalY+5
+);
+
+// ASSINATURA
 finalY += 25;
 
 doc.text("__________________________________",100,finalY);
@@ -350,13 +354,19 @@ Matrícula: ${matriculaResp.value}
 Setor: ${setorResp.value}
 Data: ${new Date().toLocaleDateString("pt-BR")}`,
 100,
-finalY + 5
+finalY+5
 );
 
-// SALVAR
-doc.save("Mapa_Comparativo_TCE.pdf");
+doc.save("Mapa_TCE.pdf");
+}
 
-};
+// ================= VOLTAR =================
+window.voltar = ()=>{
+telaMapa.classList.add("hidden");
+telaProcessos.classList.remove("hidden");
+}
+
+carregarProcessos();
 
 </script>
 
