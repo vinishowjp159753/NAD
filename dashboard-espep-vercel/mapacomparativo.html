@@ -276,7 +276,7 @@ tr:hover {
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
-        </table>
+         </table>
     </div>
 
     <!-- Adicionar Item -->
@@ -334,7 +334,7 @@ import {
     getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Configuração do Firebase (recomenda-se mover para variáveis de ambiente)
+// Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
     authDomain: "nad1-3fbbf.firebaseapp.com",
@@ -798,10 +798,14 @@ async function adicionarImagemPDF(doc, x, y, width, height, imagemPath) {
     });
 }
 
-// PDF
+// PDF - Versão corrigida com tabela ajustada
 window.gerarPDF = async () => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("l", "mm", "a4");
+    const doc = new jsPDF({
+        orientation: "l",
+        unit: "mm",
+        format: "a4"
+    });
     
     let y = 15;
     
@@ -825,7 +829,7 @@ window.gerarPDF = async () => {
     
     y += 12;
     
-    // Preparar dados da tabela com larguras otimizadas
+    // Preparar dados da tabela com ajuste fino de larguras
     const body = [];
     itens.forEach((item) => {
         if (!item.cotacoes || item.cotacoes.length === 0) return;
@@ -840,21 +844,21 @@ window.gerarPDF = async () => {
         
         ranking.forEach((c, index) => {
             body.push([
-                item.codigo || '-',
-                item.descricao.length > 35 ? item.descricao.substring(0, 32) + '...' : item.descricao,
+                (item.codigo || '-').substring(0, 8),
+                item.descricao.length > 30 ? item.descricao.substring(0, 27) + '...' : item.descricao,
                 item.qtd.toString(),
-                item.und || 'UN',
-                c.empresa.length > 28 ? c.empresa.substring(0, 25) + '...' : c.empresa,
+                (item.und || 'UN').substring(0, 3),
+                c.empresa.length > 25 ? c.empresa.substring(0, 22) + '...' : c.empresa,
                 c.cnpj,
-                c.valorUnitario.toFixed(2),
-                c.total.toFixed(2),
-                c.origem || '-',
+                `R$ ${c.valorUnitario.toFixed(2)}`,
+                `R$ ${c.total.toFixed(2)}`,
+                (c.origem || '-').substring(0, 12),
                 (index + 1).toString(),
-                s.media.toFixed(2),
-                s.mediana.toFixed(2),
-                s.desvio.toFixed(2),
-                s.min.toFixed(2),
-                s.max.toFixed(2)
+                `R$ ${s.media.toFixed(2)}`,
+                `R$ ${s.mediana.toFixed(2)}`,
+                `R$ ${s.desvio.toFixed(2)}`,
+                `R$ ${s.min.toFixed(2)}`,
+                `R$ ${s.max.toFixed(2)}`
             ]);
         });
     });
@@ -862,43 +866,46 @@ window.gerarPDF = async () => {
     if (body.length === 0) {
         doc.text("Nenhum item cadastrado neste processo.", 14, y);
     } else {
+        // Configuração otimizada para caber na página A4 paisagem
         doc.autoTable({
             startY: y,
-            head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Vl.Unit", "Total", "Origem", "Rk", "Média", "Mediana", "Desvio", "Mín", "Máx"]],
+            head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Méd", "Med", "Dv", "Mín", "Máx"]],
             body: body,
             styles: { 
-                fontSize: 7, 
+                fontSize: 6.5, 
                 cellPadding: 1.5,
                 overflow: 'linebreak',
-                cellWidth: 'wrap'
+                valign: 'middle'
             },
             headStyles: { 
                 fillColor: [13, 59, 102], 
                 textColor: [255, 255, 255], 
-                fontSize: 7,
+                fontSize: 6.5,
                 fontStyle: 'bold',
-                halign: 'center'
+                halign: 'center',
+                valign: 'middle'
             },
             alternateRowStyles: { fillColor: [245, 245, 245] },
             columnStyles: {
-                0: { cellWidth: 15, halign: 'center' },      // Código
-                1: { cellWidth: 42, halign: 'left' },        // Descrição
-                2: { cellWidth: 10, halign: 'center' },      // Qtd
-                3: { cellWidth: 8, halign: 'center' },       // Un
-                4: { cellWidth: 42, halign: 'left' },        // Empresa
-                5: { cellWidth: 28, halign: 'center' },      // CNPJ
-                6: { cellWidth: 18, halign: 'right' },       // Vl.Unit
-                7: { cellWidth: 18, halign: 'right' },       // Total
-                8: { cellWidth: 20, halign: 'center' },      // Origem
-                9: { cellWidth: 8, halign: 'center' },       // Rk
-                10: { cellWidth: 18, halign: 'right' },      // Média
-                11: { cellWidth: 18, halign: 'right' },      // Mediana
-                12: { cellWidth: 18, halign: 'right' },      // Desvio
-                13: { cellWidth: 16, halign: 'right' },      // Mín
-                14: { cellWidth: 16, halign: 'right' }       // Máx
+                0: { cellWidth: 10, halign: 'center' },      // Código
+                1: { cellWidth: 38, halign: 'left' },        // Descrição
+                2: { cellWidth: 8, halign: 'center' },       // Qtd
+                3: { cellWidth: 7, halign: 'center' },       // Un
+                4: { cellWidth: 38, halign: 'left' },        // Empresa
+                5: { cellWidth: 25, halign: 'center' },      // CNPJ
+                6: { cellWidth: 16, halign: 'right' },       // Unit
+                7: { cellWidth: 16, halign: 'right' },       // Total
+                8: { cellWidth: 16, halign: 'center' },      // Origem
+                9: { cellWidth: 6, halign: 'center' },       // Rk
+                10: { cellWidth: 14, halign: 'right' },      // Méd
+                11: { cellWidth: 14, halign: 'right' },      // Med
+                12: { cellWidth: 12, halign: 'right' },      // Dv
+                13: { cellWidth: 14, halign: 'right' },      // Mín
+                14: { cellWidth: 14, halign: 'right' }       // Máx
             },
-            margin: { left: 12, right: 12 },
-            tableWidth: 'auto'
+            margin: { left: 10, right: 10 },
+            tableWidth: 'auto',
+            pageBreak: 'auto'
         });
     }
     
@@ -906,28 +913,31 @@ window.gerarPDF = async () => {
     let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : y + 30;
     const vencedor = document.getElementById('vencedorSelect').value || "o fornecedor melhor classificado";
     
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.text("JUSTIFICATIVA:", 14, finalY);
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setFont(undefined, 'normal');
     const justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, considerando-se os princípios da economicidade, eficiência e vantajosidade para a Administração Pública, em conformidade com a Lei nº 8.666/93 e suas alterações.`;
-    const splitText = doc.splitTextToSize(justificativa, 260);
+    const splitText = doc.splitTextToSize(justificativa, 265);
     doc.text(splitText, 14, finalY + 5);
     
     // Assinatura
-    finalY += 15 + (splitText.length * 4);
+    finalY += 12 + (splitText.length * 3.5);
     
     // Verificar se cabe na página, se não, adicionar nova página
-    if (finalY > 190) {
+    if (finalY > 195) {
         doc.addPage();
         finalY = 20;
     }
     
+    doc.setDrawColor(0);
     doc.line(80, finalY, 180, finalY);
-    doc.setFontSize(9);
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'bold');
     doc.text(assinatura.nome || "_________________________", 130, finalY + 3, { align: "center" });
-    doc.setFontSize(7);
+    doc.setFontSize(6.5);
+    doc.setFont(undefined, 'normal');
     doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, finalY + 8, { align: "center" });
     doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, finalY + 13, { align: "center" });
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 130, finalY + 18, { align: "center" });
