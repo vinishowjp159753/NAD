@@ -2,94 +2,32 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>ESPEP - Sistema de Mapas</title>
+<title>ESPEP - Sistema Oficial</title>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <style>
 body{font-family:'Segoe UI';background:#eef2f7;margin:0;}
-
-header{
-background:linear-gradient(90deg,#0d3b66,#1d6fa5);
-color:#fff;padding:20px;text-align:center;
-}
-
+header{background:#0d3b66;color:#fff;padding:15px;text-align:center;}
 .container{max-width:1200px;margin:auto;padding:20px;}
-
-.card{
-background:#fff;padding:15px;border-radius:10px;margin-bottom:15px;
-box-shadow:0 3px 10px rgba(0,0,0,0.1);
-}
-
-button{
-background:#0d3b66;color:#fff;border:none;padding:6px 10px;
-border-radius:6px;cursor:pointer;margin:2px;
-}
-
+.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:10px;}
+button{background:#0d3b66;color:#fff;border:none;padding:6px 10px;border-radius:6px;margin:2px;}
 .btn-danger{background:#c0392b;}
-.btn-edit{background:#f39c12;}
-
 table{width:100%;border-collapse:collapse;}
-
-th{
-background:#0d3b66;color:#fff;font-size:13px;
-}
-
-td{
-font-size:12px;padding:6px;border:1px solid #ddd;
-}
-
-tr:nth-child(even){background:#f8fafc;}
-
-.menor{
-background:#d1fae5 !important;
-font-weight:bold;
-border-left:4px solid #10b981;
-}
-
-.topo-oficial{
-display:flex;
-justify-content:space-between;
-align-items:center;
-border-bottom:3px solid #0d3b66;
-margin-bottom:15px;
-padding-bottom:10px;
-}
-
-.logos{
-display:flex;
-gap:20px;
-align-items:center;
-}
-
-.logos img{height:70px;}
-
-.assinatura{
-text-align:center;
-margin-top:50px;
-}
-
-.linha{
-border-top:1px solid #000;
-width:300px;
-margin:40px auto 10px;
-}
-
+th{background:#0d3b66;color:#fff;}
+td{border:1px solid #ddd;padding:5px;}
 .hidden{display:none;}
-
-@media print{
-.no-print{display:none !important;}
-*{-webkit-print-color-adjust:exact;}
-body{background:#fff;}
-}
 </style>
 </head>
 
 <body>
 
-<header>📊 Sistema de Mapa Comparativo - ESPEP</header>
+<header>Sistema Oficial ESPEP</header>
 
 <div class="container">
 
-<!-- PROCESSOS -->
 <div id="telaProcessos">
 
 <div class="card">
@@ -99,30 +37,13 @@ body{background:#fff;}
 <button onclick="criarProcesso()">Criar</button>
 </div>
 
-<div class="card">
 <ul id="listaProcessos"></ul>
-</div>
 
 </div>
 
-<!-- MAPA -->
 <div id="telaMapa" class="hidden">
 
-<button class="no-print" onclick="voltar()">⬅ Voltar</button>
-
-<div id="areaPDF">
-
-<div class="topo-oficial">
-<div class="logos">
-<img src="img/GovPBT.png" onerror="this.style.display='none'">
-<img src="img/LOGOESPEP.PNG" onerror="this.style.display='none'">
-</div>
-<div>
-<strong>GOVERNO DA PARAÍBA</strong><br>
-ESCOLA DE SERVIÇO PÚBLICO - ESPEP<br>
-MAPA COMPARATIVO DE PREÇOS
-</div>
-</div>
+<button onclick="voltar()">Voltar</button>
 
 <h3 id="tituloProcesso"></h3>
 
@@ -137,26 +58,12 @@ MAPA COMPARATIVO DE PREÇOS
 <th>CNPJ</th>
 <th>Total</th>
 <th>Origem</th>
-<th>Média</th>
-<th>Mediana</th>
-<th>Desvio</th>
-<th>Mín</th>
-<th>Máx</th>
-<th class="no-print">Ações</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 
-<div class="assinatura">
-<div class="linha"></div>
-<p id="assinaturaTexto"></p>
-</div>
-
-</div>
-
-<!-- FORM -->
-<div class="card no-print">
+<div class="card">
 <input id="codigoItem" placeholder="Código">
 <input id="descItem" placeholder="Descrição">
 <input id="qtdItem" type="number" placeholder="Qtd">
@@ -164,23 +71,24 @@ MAPA COMPARATIVO DE PREÇOS
 <button onclick="addItem()">Adicionar Item</button>
 </div>
 
-<div class="card no-print">
+<div class="card">
 <select id="itemSelect"></select>
 <input id="empresa" placeholder="Empresa">
 <input id="cnpj" placeholder="CNPJ">
 <input id="valor" type="number" placeholder="Valor">
-<input id="origem" placeholder="Origem da proposta">
+<input id="origem" placeholder="Origem">
 <button onclick="addCotacao()">Adicionar</button>
 </div>
 
-<div class="card no-print">
+<div class="card">
+<h4>Assinatura</h4>
 <input id="nomeResp" placeholder="Nome">
 <input id="matriculaResp" placeholder="Matrícula">
 <input id="setorResp" placeholder="Setor">
-<button onclick="gerarAssinatura()">Salvar Assinatura</button>
+<button onclick="salvarAssinatura()">Salvar</button>
 </div>
 
-<button class="no-print" onclick="window.print()">📄 Gerar PDF</button>
+<button onclick="gerarPDF()">📄 Gerar PDF</button>
 
 </div>
 
@@ -190,7 +98,7 @@ MAPA COMPARATIVO DE PREÇOS
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where
+getFirestore, collection, addDoc, getDocs, doc, setDoc, query, where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app = initializeApp({
@@ -203,6 +111,7 @@ const db = getFirestore(app);
 
 let processoAtual=null;
 let itens=[];
+let assinatura={};
 
 // PROCESSOS
 window.criarProcesso=async()=>{
@@ -221,27 +130,20 @@ snap.forEach(d=>{
 let p=d.data();
 listaProcessos.innerHTML+=`
 <li>${p.numero}
-<button onclick="abrir('${d.id}','${p.numero}')">Abrir</button>
-<button class="btn-danger" onclick="excluirProcesso('${d.id}')">Excluir</button>
-</li>`;
+<button onclick="abrir('${d.id}','${p.numero}')">Abrir</button></li>`;
 });
 }
 
-window.excluirProcesso=async(id)=>{
-if(!confirm("Excluir processo?"))return;
-await deleteDoc(doc(db,"processos",id));
-carregarProcessos();
-}
-
-window.abrir=(id,num)=>{
+window.abrir=async(id,num)=>{
 processoAtual=id;
 tituloProcesso.innerText=num;
 telaProcessos.classList.add("hidden");
 telaMapa.classList.remove("hidden");
 carregarItens();
+carregarAssinatura();
 }
 
-// ITEM
+// ITENS
 window.addItem=async()=>{
 await addDoc(collection(db,"itens"),{
 processo:processoAtual,
@@ -253,24 +155,7 @@ und:undItem.value
 carregarItens();
 }
 
-window.editarItem=async(id,desc)=>{
-let novo=prompt("Editar descrição:",desc);
-if(!novo)return;
-await updateDoc(doc(db,"itens",id),{descricao:novo});
-carregarItens();
-}
-
-window.excluirItem=async(id)=>{
-if(!confirm("Excluir item completo?"))return;
-
-let cot=await getDocs(query(collection(db,"cotacoes"),where("item","==",id)));
-cot.forEach(async c=>await deleteDoc(doc(db,"cotacoes",c.id)));
-
-await deleteDoc(doc(db,"itens",id));
-carregarItens();
-}
-
-// COTAÇÃO
+// COTAÇÕES
 window.addCotacao=async()=>{
 await addDoc(collection(db,"cotacoes"),{
 processo:processoAtual,
@@ -283,17 +168,48 @@ origem:origem.value
 carregarItens();
 }
 
-window.editarCotacao=async(id,empresa)=>{
-let novo=prompt("Editar empresa:",empresa);
-if(!novo)return;
-await updateDoc(doc(db,"cotacoes",id),{empresa:novo});
-carregarItens();
+// ASSINATURA
+window.salvarAssinatura=async()=>{
+await setDoc(doc(db,"assinaturas",processoAtual),{
+nome:nomeResp.value,
+matricula:matriculaResp.value,
+setor:setorResp.value
+});
+alert("Assinatura salva!");
 }
 
-window.excluirCotacao=async(id)=>{
-if(!confirm("Excluir empresa?"))return;
-await deleteDoc(doc(db,"cotacoes",id));
-carregarItens();
+async function carregarAssinatura(){
+let snap=await getDocs(collection(db,"assinaturas"));
+snap.forEach(d=>{
+if(d.id===processoAtual){
+assinatura=d.data();
+}
+});
+}
+
+// CARREGAR
+async function carregarItens(){
+
+itens=[];
+
+let snap=await getDocs(query(collection(db,"itens"),where("processo","==",processoAtual)));
+snap.forEach(d=>{
+itens.push({id:d.id,...d.data(),cotacoes:[]});
+});
+
+let cot=await getDocs(query(collection(db,"cotacoes"),where("processo","==",processoAtual)));
+cot.forEach(d=>{
+let c=d.data();
+let item=itens.find(i=>i.id===c.item);
+if(item)item.cotacoes.push(c);
+});
+
+itemSelect.innerHTML="";
+itens.forEach(i=>{
+itemSelect.innerHTML+=`<option value="${i.id}">${i.descricao}</option>`;
+});
+
+render();
 }
 
 // RENDER
@@ -301,38 +217,58 @@ function render(){
 tbody.innerHTML="";
 
 itens.forEach((item,i)=>{
-if(!item.cotacoes.length)return;
-
-let totais=item.cotacoes.map(c=>c.valor*item.qtd);
-let menor=Math.min(...totais);
-
-item.cotacoes.forEach((c,j)=>{
-let total=c.valor*item.qtd;
-
+item.cotacoes.forEach(c=>{
 tbody.innerHTML+=`
-<tr class="${total===menor?'menor':''}">
+<tr>
 <td>${i+1}</td>
 <td>${item.codigo||'-'}</td>
 <td>${item.descricao}</td>
 <td>${item.qtd}</td>
 <td>${c.empresa}</td>
 <td>${c.cnpj}</td>
-<td>${total.toFixed(2)}</td>
+<td>${(c.valor*item.qtd).toFixed(2)}</td>
 <td>${c.origem}</td>
-
-<td class="no-print">
-<button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa}')">✏️</button>
-<button class="btn-danger" onclick="excluirCotacao('${c.id}')">X</button>
-</td>
 </tr>`;
 });
 });
+}
+
+// PDF
+window.gerarPDF=()=>{
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF("l","mm","a4");
+
+doc.text("MAPA COMPARATIVO - ESPEP",100,10);
+
+let body=[];
+itens.forEach((item,i)=>{
+item.cotacoes.forEach(c=>{
+body.push([
+i+1,item.codigo,item.descricao,item.qtd,
+c.empresa,c.cnpj,(c.valor*item.qtd).toFixed(2),c.origem
+]);
+});
+});
+
+doc.autoTable({
+head:[["Item","Código","Descrição","Qtd","Empresa","CNPJ","Total","Origem"]],
+body:body
+});
+
+doc.text(`Responsável: ${assinatura.nome || ""}`,10,180);
+doc.text(`Matrícula: ${assinatura.matricula || ""}`,10,185);
+doc.text(`Setor: ${assinatura.setor || ""}`,10,190);
+doc.text(`Data: ${new Date().toLocaleDateString("pt-BR")}`,10,195);
+
+doc.save("Mapa_ESPEP.pdf");
 }
 
 window.voltar=()=>{
 telaMapa.classList.add("hidden");
 telaProcessos.classList.remove("hidden");
 }
+
+carregarProcessos();
 
 </script>
 
