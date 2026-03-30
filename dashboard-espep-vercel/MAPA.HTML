@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>ESPEP - Sistema Final</title>
+<title>ESPEP - Sistema MASTER</title>
 
 <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -26,7 +26,7 @@ td{border:1px solid #ddd;padding:5px;}
 
 <body>
 
-<header>📊 Sistema ESPEP FINAL</header>
+<header>📊 Sistema ESPEP MASTER</header>
 
 <div class="container">
 
@@ -37,32 +37,20 @@ td{border:1px solid #ddd;padding:5px;}
 <input id="data" type="date">
 <button onclick="criarProcesso()">Criar</button>
 </div>
-
 <ul id="listaProcessos"></ul>
 </div>
 
 <div id="telaMapa" class="hidden">
 
 <button onclick="voltar()">⬅ Voltar</button>
-
 <h3 id="tituloProcesso"></h3>
 
 <table>
 <thead>
 <tr>
-<th>Item</th>
-<th>Código</th>
-<th>Descrição</th>
-<th>Qtd</th>
-<th>Empresa</th>
-<th>CNPJ</th>
-<th>Total</th>
-<th>Origem</th>
-<th>Média</th>
-<th>Mediana</th>
-<th>Desvio</th>
-<th>Mín</th>
-<th>Máx</th>
+<th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th>
+<th>Empresa</th><th>CNPJ</th><th>Total</th><th>Origem</th>
+<th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th>
 <th>Ações</th>
 </tr>
 </thead>
@@ -87,15 +75,21 @@ td{border:1px solid #ddd;padding:5px;}
 </div>
 
 <div class="card">
+<h4>Assinatura</h4>
 <input id="nomeResp" placeholder="Nome">
 <input id="matriculaResp" placeholder="Matrícula">
 <input id="setorResp" placeholder="Setor">
+<button onclick="salvarAssinatura()">Salvar Assinatura</button>
+</div>
+
+<div class="card">
+<h4>Fornecedor Vencedor Geral</h4>
+<select id="vencedorSelect"></select>
 </div>
 
 <button onclick="gerarPDF()">📄 Gerar PDF TCE</button>
 
 </div>
-
 </div>
 
 <script type="module">
@@ -115,32 +109,26 @@ const db = getFirestore(app);
 
 let processoAtual=null;
 let itens=[];
+let assinatura={};
 
-// ================= PROCESSOS =================
-window.criarProcesso = async ()=>{
+// PROCESSOS
+window.criarProcesso=async()=>{
 await addDoc(collection(db,"processos"),{
-numero:numero.value,
-orgao:orgao.value,
-data:data.value
-});
+numero:numero.value,orgao:orgao.value,data:data.value});
 carregarProcessos();
 }
 
-window.carregarProcessos = async ()=>{
+window.carregarProcessos=async()=>{
 listaProcessos.innerHTML="";
 let snap=await getDocs(collection(db,"processos"));
-
 snap.forEach(d=>{
 let p=d.data();
-listaProcessos.innerHTML+=`
-<li>${p.numero}
-<button onclick="abrir('${d.id}','${p.numero}')">Abrir</button>
-</li>`;
+listaProcessos.innerHTML+=`<li>${p.numero}
+<button onclick="abrir('${d.id}','${p.numero}')">Abrir</button></li>`;
 });
 }
 
-// ================= ABRIR =================
-window.abrir = async (id,num)=>{
+window.abrir=async(id,num)=>{
 processoAtual=id;
 tituloProcesso.innerText=num;
 telaProcessos.classList.add("hidden");
@@ -148,69 +136,73 @@ telaMapa.classList.remove("hidden");
 carregarItens();
 }
 
-// ================= ITEM =================
-window.addItem = async ()=>{
+// ITEM
+window.addItem=async()=>{
 await addDoc(collection(db,"itens"),{
 processo:processoAtual,
 codigo:codigoItem.value,
 descricao:descItem.value,
 qtd:parseFloat(qtdItem.value),
-und:undItem.value
-});
+und:undItem.value});
 carregarItens();
 }
 
-window.editarItem = async (id,desc)=>{
+window.editarItem=async(id,desc)=>{
 let novo=prompt("Editar:",desc);
 if(!novo)return;
 await updateDoc(doc(db,"itens",id),{descricao:novo});
 carregarItens();
 }
 
-window.excluirItem = async (id)=>{
+window.excluirItem=async(id)=>{
 if(!confirm("Excluir item?"))return;
-
 let cot=await getDocs(query(collection(db,"cotacoes"),where("item","==",id)));
 cot.forEach(async c=>await deleteDoc(doc(db,"cotacoes",c.id)));
-
 await deleteDoc(doc(db,"itens",id));
 carregarItens();
 }
 
-// ================= COTAÇÃO =================
-window.addCotacao = async ()=>{
+// COTAÇÃO
+window.addCotacao=async()=>{
 await addDoc(collection(db,"cotacoes"),{
 processo:processoAtual,
 item:itemSelect.value,
 empresa:empresa.value,
 cnpj:cnpj.value,
 valor:parseFloat(valor.value),
-origem:origem.value
-});
+origem:origem.value});
 carregarItens();
 }
 
-window.editarCotacao = async (id,empresa)=>{
+window.editarCotacao=async(id,empresa)=>{
 let novo=prompt("Editar empresa:",empresa);
 if(!novo)return;
 await updateDoc(doc(db,"cotacoes",id),{empresa:novo});
 carregarItens();
 }
 
-window.excluirCotacao = async (id)=>{
+window.excluirCotacao=async(id)=>{
 if(!confirm("Excluir empresa?"))return;
 await deleteDoc(doc(db,"cotacoes",id));
 carregarItens();
 }
 
-// ================= CARREGAR =================
-window.carregarItens = async ()=>{
+// STATS
+function stats(v){
+let m=v.reduce((a,b)=>a+b,0)/v.length;
+let o=[...v].sort((a,b)=>a-b);
+return{
+media:m,mediana:o[Math.floor(v.length/2)],
+desvio:Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length),
+min:o[0],max:o[o.length-1]};
+}
+
+// CARREGAR
+window.carregarItens=async()=>{
 itens=[];
 
 let snap=await getDocs(query(collection(db,"itens"),where("processo","==",processoAtual)));
-snap.forEach(d=>{
-itens.push({id:d.id,...d.data(),cotacoes:[]});
-});
+snap.forEach(d=>itens.push({id:d.id,...d.data(),cotacoes:[]}));
 
 let cot=await getDocs(query(collection(db,"cotacoes"),where("processo","==",processoAtual)));
 cot.forEach(d=>{
@@ -219,6 +211,22 @@ let item=itens.find(i=>i.id===c.item);
 if(item)item.cotacoes.push(c);
 });
 
+// fornecedor vencedor select
+let fornecedores=[];
+itens.forEach(item=>{
+item.cotacoes.forEach(c=>{
+if(!fornecedores.includes(c.empresa)){
+fornecedores.push(c.empresa);
+}
+});
+});
+
+vencedorSelect.innerHTML="<option value=''>Selecione</option>";
+fornecedores.forEach(f=>{
+vencedorSelect.innerHTML+=`<option value="${f}">${f}</option>`;
+});
+
+// select itens
 itemSelect.innerHTML="";
 itens.forEach(i=>{
 itemSelect.innerHTML+=`<option value="${i.id}">${i.descricao}</option>`;
@@ -227,21 +235,8 @@ itemSelect.innerHTML+=`<option value="${i.id}">${i.descricao}</option>`;
 render();
 }
 
-// ================= STATS =================
-function stats(v){
-let m=v.reduce((a,b)=>a+b,0)/v.length;
-let o=[...v].sort((a,b)=>a-b);
-return{
-media:m,
-mediana:o[Math.floor(v.length/2)],
-desvio:Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length),
-min:o[0],
-max:o[o.length-1]
-};
-}
-
-// ================= RENDER =================
-window.render = ()=>{
+// RENDER
+window.render=()=>{
 tbody.innerHTML="";
 
 itens.forEach((item,i)=>{
@@ -270,139 +265,109 @@ ${j===0?`
 <td rowspan="${item.cotacoes.length}">${s.mediana.toFixed(2)}</td>
 <td rowspan="${item.cotacoes.length}">${s.desvio.toFixed(2)}</td>
 <td rowspan="${item.cotacoes.length}">${s.min.toFixed(2)}</td>
-<td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>
-`:""}
+<td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>`:""}
 
 <td>
 <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa}')">✏️</button>
 <button class="btn-danger" onclick="excluirCotacao('${c.id}')">X</button>
 ${j===0?`
 <button onclick="editarItem('${item.id}','${item.descricao}')">Item</button>
-<button onclick="excluirItem('${item.id}')">Excluir</button>
-`:""}
+<button onclick="excluirItem('${item.id}')">Excluir</button>`:""}
 </td>
-
 </tr>`;
 });
 });
 }
 
-// ================= PDF TCE =================
-window.gerarPDF = ()=>{
+// ASSINATURA
+window.salvarAssinatura=()=>{
+assinatura={
+nome:nomeResp.value,
+matricula:matriculaResp.value,
+setor:setorResp.value
+};
+alert("Assinatura salva!");
+}
 
+// PDF
+window.gerarPDF=()=>{
 const { jsPDF } = window.jspdf;
 const doc = new jsPDF("l","mm","a4");
 
 let y=10;
 
-// ===== LOGOS =====
+// logos
 try{
 doc.addImage("img/GovPBT.png","PNG",10,y,25,18);
 doc.addImage("img/LOGOESPEP.png","PNG",40,y,25,18);
 }catch(e){}
 
-// ===== TÍTULO =====
-doc.setFontSize(12);
 doc.text("MAPA COMPARATIVO DE PREÇOS - ESPEP",100,y+10);
 
 y+=25;
 
-// ===== FUNÇÃO DE CÁLCULO =====
-function stats(v){
-let m=v.reduce((a,b)=>a+b,0)/v.length;
-let o=[...v].sort((a,b)=>a-b);
-return{
-media:m,
-mediana:o[Math.floor(v.length/2)],
-desvio:Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length),
-min:o[0],
-max:o[o.length-1]
-};
-}
-
-// ===== TABELA =====
 let body=[];
 
 itens.forEach((item,i)=>{
+let totais=item.cotacoes.map(c=>c.valor*item.qtd);
+let s=stats(totais);
 
-let totais = item.cotacoes.map(c=>c.valor * item.qtd);
-let s = stats(totais);
-
-// ranking
-let ranking = item.cotacoes
-.map(c=>({...c,total:c.valor*item.qtd}))
+let ranking=item.cotacoes.map(c=>({...c,total:c.valor*item.qtd}))
 .sort((a,b)=>a.total-b.total);
 
 ranking.forEach((c,index)=>{
 body.push([
-i+1,
-item.codigo || "-",
-item.descricao,
-item.qtd,
-c.empresa,
-c.cnpj,
-c.total.toFixed(2),
-c.origem,
-(index+1),
-s.media.toFixed(2),
-s.mediana.toFixed(2),
-s.desvio.toFixed(2),
-s.min.toFixed(2),
-s.max.toFixed(2)
+i+1,item.codigo,item.descricao,item.qtd,
+c.empresa,c.cnpj,c.total.toFixed(2),c.origem,index+1,
+s.media.toFixed(2),s.mediana.toFixed(2),
+s.desvio.toFixed(2),s.min.toFixed(2),s.max.toFixed(2)
 ]);
 });
-
 });
 
-// ===== AUTO TABLE =====
 doc.autoTable({
 startY:y,
-head:[[
-"Item","Código","Descrição","Qtd",
-"Empresa","CNPJ","Total","Origem","Ranking",
-"Média","Mediana","Desvio","Mín","Máx"
-]],
+head:[["Item","Código","Descrição","Qtd","Empresa","CNPJ","Total","Origem","Ranking","Média","Mediana","Desvio","Mín","Máx"]],
 body:body,
 styles:{fontSize:7},
 headStyles:{fillColor:[13,59,102]}
 });
 
-// ===== JUSTIFICATIVA =====
-let finalY = doc.lastAutoTable.finalY + 10;
+// JUSTIFICATIVA COM VENCEDOR
+let finalY=doc.lastAutoTable.finalY+10;
 
-doc.setFontSize(10);
+let vencedor=vencedorSelect.value || "o fornecedor melhor classificado";
+
 doc.text("JUSTIFICATIVA:",10,finalY);
 
 doc.setFontSize(9);
 doc.text(
 doc.splitTextToSize(
-"Após análise das propostas apresentadas, verifica-se que os fornecedores classificados em primeiro lugar em cada item ofertaram os menores preços, sendo considerados mais vantajosos para a Administração Pública, em conformidade com os princípios da economicidade e eficiência.",
+`Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, em conformidade com os princípios da economicidade e eficiência.`,
 260
 ),
 10,
 finalY+5
 );
 
-// ===== ASSINATURA =====
-finalY += 30;
+// assinatura
+finalY+=30;
 
 doc.text("__________________________________",100,finalY);
 
 doc.text(
-`${nomeResp.value}
-Matrícula: ${matriculaResp.value}
-Setor: ${setorResp.value}
+`${assinatura.nome||""}
+Matrícula: ${assinatura.matricula||""}
+Setor: ${assinatura.setor||""}
 Data: ${new Date().toLocaleDateString("pt-BR")}`,
 100,
 finalY+5
 );
 
-// ===== SALVAR =====
-doc.save("Mapa_TCE_Completo.pdf");
+doc.save("Mapa_TCE_MASTER.pdf");
+}
 
-};
-// ================= VOLTAR =================
-window.voltar = ()=>{
+window.voltar=()=>{
 telaMapa.classList.add("hidden");
 telaProcessos.classList.remove("hidden");
 }
