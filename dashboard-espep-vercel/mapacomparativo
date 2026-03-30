@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESPEP - Sistema MASTER - Versão Aprimorada</title>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<!-- SweetAlert2 para melhor feedback -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+header {
+    background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+header p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 20px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.card h3, .card h4 {
+    margin-bottom: 15px;
+    color: #0d3b66;
+    border-left: 4px solid #f39c12;
+    padding-left: 10px;
+}
+
+button {
+    background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+input, select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin: 5px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #0d3b66;
+    box-shadow: 0 0 0 3px rgba(13,59,102,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    overflow-x: auto;
+    display: block;
+}
+
+th {
+    background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
+    color: #fff;
+    padding: 12px;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-size: 0.85rem;
+}
+
+tr:hover {
+    background: #f5f5f5;
+}
+
+.menor {
+    background: #d1fae5;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+    color: #0d3b66;
+}
+
+.loading::after {
+    content: "...";
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: "."; }
+    40% { content: ".."; }
+    60%, 100% { content: "..."; }
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 6px;
+    margin: 10px 0;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.form-group {
+    display: inline-block;
+    margin: 5px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.stats-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin: 2px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 15px;
+    }
+    
+    input, select, button {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    table {
+        font-size: 0.7rem;
+    }
+    
+    td, th {
+        padding: 4px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>📊 Sistema ESPEP MASTER - Versão Aprimorada</h1>
+    <p>Gestão de Processos de Compras Públicas com Segurança e Eficiência</p>
+</header>
+
+<div class="container">
+
+<div id="telaProcessos">
+    <div class="card">
+        <h3>📋 Novo Processo</h3>
+        <div class="form-group">
+            <label>Número do Processo *</label>
+            <input id="numero" placeholder="Ex: 2024/0001">
+        </div>
+        <div class="form-group">
+            <label>Órgão *</label>
+            <input id="orgao" placeholder="Ex: Secretaria de Administração">
+        </div>
+        <div class="form-group">
+            <label>Data *</label>
+            <input id="data" type="date">
+        </div>
+        <button onclick="criarProcesso()">✅ Criar Processo</button>
+        <button onclick="carregarProcessos()" class="btn-info">🔄 Recarregar</button>
+    </div>
+    
+    <div class="card">
+        <h3>📁 Processos Cadastrados</h3>
+        <div id="listaProcessos"></div>
+    </div>
+</div>
+
+<div id="telaMapa" class="hidden">
+    <button onclick="voltar()" class="btn-info">⬅ Voltar para Processos</button>
+    <h3 id="tituloProcesso" style="margin: 15px 0;"></h3>
+    
+    <!-- Tabela de Itens e Cotações -->
+    <div class="card" style="overflow-x: auto;">
+        <h3>📊 Mapa Comparativo de Preços</h3>
+        <table id="tabelaPrincipal">
+            <thead>
+                <tr>
+                    <th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th>
+                    <th>Empresa</th><th>CNPJ</th><th>Total (R$)</th><th>Origem</th>
+                    <th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <!-- Adicionar Item -->
+    <div class="card">
+        <h4>➕ Adicionar Item ao Processo</h4>
+        <div class="form-group"><input id="codigoItem" placeholder="Código do Item"></div>
+        <div class="form-group"><input id="descItem" placeholder="Descrição *" required></div>
+        <div class="form-group"><input id="qtdItem" type="number" placeholder="Quantidade *" required></div>
+        <div class="form-group"><input id="undItem" placeholder="Unidade (Ex: UN, KG, M)"></div>
+        <button onclick="addItem()" class="btn-success">➕ Adicionar Item</button>
+    </div>
+
+    <!-- Adicionar Cotação -->
+    <div class="card">
+        <h4>💰 Adicionar Cotação</h4>
+        <div class="form-group">
+            <label>Item</label>
+            <select id="itemSelect"></select>
+        </div>
+        <div class="form-group"><input id="empresa" placeholder="Empresa *" required></div>
+        <div class="form-group"><input id="cnpj" placeholder="CNPJ *" required></div>
+        <div class="form-group"><input id="valor" type="number" placeholder="Valor Unitário (R$) *" required></div>
+        <div class="form-group"><input id="origem" placeholder="Origem (Ex: Cotação, Pregão)"></div>
+        <button onclick="addCotacao()" class="btn-success">💰 Adicionar Cotação</button>
+    </div>
+
+    <!-- Assinatura -->
+    <div class="card">
+        <h4>✍️ Assinatura do Responsável</h4>
+        <div class="form-group"><input id="nomeResp" placeholder="Nome Completo *" required></div>
+        <div class="form-group"><input id="matriculaResp" placeholder="Matrícula *" required></div>
+        <div class="form-group"><input id="setorResp" placeholder="Setor/Lotação *" required></div>
+        <button onclick="salvarAssinatura()" class="btn-info">💾 Salvar Assinatura</button>
+    </div>
+
+    <!-- Fornecedor Vencedor -->
+    <div class="card">
+        <h4>🏆 Fornecedor Vencedor Geral</h4>
+        <select id="vencedorSelect"></select>
+        <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+            ⚠️ Selecione o fornecedor que apresentou a proposta mais vantajosa para a administração pública
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF Completo</button>
+        <button onclick="exportarExcel()" class="btn-info" style="flex: 1;">📊 Exportar para Excel</button>
+    </div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// Configuração do Firebase (recomenda-se mover para variáveis de ambiente)
+const firebaseConfig = {
+    apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
+    authDomain: "nad1-3fbbf.firebaseapp.com",
+    projectId: "nad1-3fbbf"
+};
+
+// Inicialização com tratamento de erro
+let db;
+try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    console.log("✅ Firebase conectado com sucesso");
+} catch (error) {
+    console.error("❌ Erro ao conectar Firebase:", error);
+    Swal.fire({
+        icon: 'error',
+        title: 'Erro de Conexão',
+        text: 'Não foi possível conectar ao banco de dados. Verifique sua conexão.'
+    });
+}
+
+let processoAtual = null;
+let itens = [];
+let assinatura = {};
+
+// Função para mostrar loading
+function showLoading(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.innerHTML = '<div class="loading">Carregando</div>';
+    }
+}
+
+// Função para mostrar alerta
+function showAlert(message, type = 'success') {
+    Swal.fire({
+        title: type === 'success' ? 'Sucesso!' : 'Erro!',
+        text: message,
+        icon: type,
+        timer: 3000,
+        showConfirmButton: false
+    });
+}
+
+// Função para validar campos obrigatórios
+function validateFields(fields) {
+    for (let field of fields) {
+        if (!field.value || field.value.trim() === '') {
+            showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error');
+            return false;
+        }
+    }
+    return true;
+}
+
+// PROCESSOS
+window.criarProcesso = async () => {
+    const numeroField = document.getElementById('numero');
+    const orgaoField = document.getElementById('orgao');
+    const dataField = document.getElementById('data');
+    
+    if (!validateFields([numeroField, orgaoField, dataField])) return;
+    
+    try {
+        await addDoc(collection(db, "processos"), {
+            numero: numeroField.value,
+            orgao: orgaoField.value,
+            data: dataField.value,
+            createdAt: new Date().toISOString()
+        });
+        
+        showAlert('Processo criado com sucesso!', 'success');
+        numeroField.value = '';
+        orgaoField.value = '';
+        dataField.value = '';
+        await carregarProcessos();
+    } catch (error) {
+        console.error('Erro ao criar processo:', error);
+        showAlert('Erro ao criar processo: ' + error.message, 'error');
+    }
+};
+
+window.carregarProcessos = async () => {
+    const listaElement = document.getElementById('listaProcessos');
+    showLoading('listaProcessos');
+    
+    try {
+        const snap = await getDocs(collection(db, "processos"));
+        
+        if (snap.empty) {
+            listaElement.innerHTML = '<p style="text-align: center; color: #666;">Nenhum processo cadastrado</p>';
+            return;
+        }
+        
+        listaElement.innerHTML = '<div style="display: grid; gap: 10px;">';
+        snap.forEach(d => {
+            const p = d.data();
+            listaElement.innerHTML += `
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>📄 ${p.numero}</strong><br>
+                        <small>${p.orgao} - ${new Date(p.data).toLocaleDateString('pt-BR')}</small>
+                    </div>
+                    <button onclick="abrir('${d.id}','${p.numero.replace(/'/g, "\\'")}')" class="btn-success">Abrir</button>
+                </div>
+            `;
+        });
+        listaElement.innerHTML += '</div>';
+    } catch (error) {
+        console.error('Erro ao carregar processos:', error);
+        listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>';
+        showAlert('Erro ao carregar processos', 'error');
+    }
+};
+
+window.abrir = async (id, num) => {
+    processoAtual = id;
+    document.getElementById('tituloProcesso').innerHTML = `<strong>Processo:</strong> ${num}`;
+    document.getElementById('telaProcessos').classList.add('hidden');
+    document.getElementById('telaMapa').classList.remove('hidden');
+    await carregarItens();
+};
+
+// ITEM
+window.addItem = async () => {
+    const codigoField = document.getElementById('codigoItem');
+    const descField = document.getElementById('descItem');
+    const qtdField = document.getElementById('qtdItem');
+    const undField = document.getElementById('undItem');
+    
+    if (!validateFields([descField, qtdField])) return;
+    
+    try {
+        await addDoc(collection(db, "itens"), {
+            processo: processoAtual,
+            codigo: codigoField.value || '-',
+            descricao: descField.value,
+            qtd: parseFloat(qtdField.value),
+            und: undField.value || 'UN',
+            createdAt: new Date().toISOString()
+        });
+        
+        showAlert('Item adicionado com sucesso!', 'success');
+        codigoField.value = '';
+        descField.value = '';
+        qtdField.value = '';
+        undField.value = '';
+        await carregarItens();
+    } catch (error) {
+        console.error('Erro ao adicionar item:', error);
+        showAlert('Erro ao adicionar item', 'error');
+    }
+};
+
+window.editarItem = async (id, desc) => {
+    const { value: novaDesc } = await Swal.fire({
+        title: 'Editar Item',
+        input: 'text',
+        inputLabel: 'Nova descrição',
+        inputValue: desc,
+        showCancelButton: true
+    });
+    
+    if (novaDesc && novaDesc !== desc) {
+        try {
+            await updateDoc(doc(db, "itens", id), { descricao: novaDesc });
+            showAlert('Item atualizado com sucesso!', 'success');
+            await carregarItens();
+        } catch (error) {
+            showAlert('Erro ao atualizar item', 'error');
+        }
+    }
+};
+
+window.excluirItem = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirmar exclusão',
+        text: 'Esta ação também excluirá todas as cotações relacionadas a este item. Esta ação não pode ser desfeita!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+    });
+    
+    if (result.isConfirmed) {
+        try {
+            const cot = await getDocs(query(collection(db, "cotacoes"), where("item", "==", id)));
+            const batch = writeBatch(db);
+            cot.forEach(c => batch.delete(doc(db, "cotacoes", c.id)));
+            batch.delete(doc(db, "itens", id));
+            await batch.commit();
+            
+            showAlert('Item e cotações excluídos com sucesso!', 'success');
+            await carregarItens();
+        } catch (error) {
+            console.error('Erro ao excluir item:', error);
+            showAlert('Erro ao excluir item', 'error');
+        }
+    }
+};
+
+// COTAÇÃO
+window.addCotacao = async () => {
+    const itemSelect = document.getElementById('itemSelect');
+    const empresaField = document.getElementById('empresa');
+    const cnpjField = document.getElementById('cnpj');
+    const valorField = document.getElementById('valor');
+    const origemField = document.getElementById('origem');
+    
+    if (!validateFields([itemSelect, empresaField, cnpjField, valorField])) return;
+    
+    try {
+        await addDoc(collection(db, "cotacoes"), {
+            processo: processoAtual,
+            item: itemSelect.value,
+            empresa: empresaField.value,
+            cnpj: cnpjField.value,
+            valor: parseFloat(valorField.value),
+            origem: origemField.value || 'Cotação',
+            createdAt: new Date().toISOString()
+        });
+        
+        showAlert('Cotação adicionada com sucesso!', 'success');
+        empresaField.value = '';
+        cnpjField.value = '';
+        valorField.value = '';
+        origemField.value = '';
+        await carregarItens();
+    } catch (error) {
+        console.error('Erro ao adicionar cotação:', error);
+        showAlert('Erro ao adicionar cotação', 'error');
+    }
+};
+
+window.editarCotacao = async (id, empresa) => {
+    const { value: novaEmpresa } = await Swal.fire({
+        title: 'Editar Cotação',
+        input: 'text',
+        inputLabel: 'Nome da empresa',
+        inputValue: empresa,
+        showCancelButton: true
+    });
+    
+    if (novaEmpresa && novaEmpresa !== empresa) {
+        try {
+            await updateDoc(doc(db, "cotacoes", id), { empresa: novaEmpresa });
+            showAlert('Cotação atualizada com sucesso!', 'success');
+            await carregarItens();
+        } catch (error) {
+            showAlert('Erro ao atualizar cotação', 'error');
+        }
+    }
+};
+
+window.excluirCotacao = async (id) => {
+    const result = await Swal.fire({
+        title: 'Confirmar exclusão',
+        text: 'Tem certeza que deseja excluir esta cotação?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir!'
+    });
+    
+    if (result.isConfirmed) {
+        try {
+            await deleteDoc(doc(db, "cotacoes", id));
+            showAlert('Cotação excluída com sucesso!', 'success');
+            await carregarItens();
+        } catch (error) {
+            showAlert('Erro ao excluir cotação', 'error');
+        }
+    }
+};
+
+// STATS
+function stats(v) {
+    if (!v || v.length === 0) return { media: 0, mediana: 0, desvio: 0, min: 0, max: 0 };
+    
+    const sorted = [...v].sort((a, b) => a - b);
+    const media = v.reduce((a, b) => a + b, 0) / v.length;
+    const mediana = sorted[Math.floor(sorted.length / 2)];
+    const desvio = Math.sqrt(v.reduce((a, b) => a + Math.pow(b - media, 2), 0) / v.length);
+    
+    return {
+        media: media,
+        mediana: mediana,
+        desvio: desvio,
+        min: sorted[0],
+        max: sorted[sorted.length - 1]
+    };
+}
+
+// CARREGAR ITENS
+window.carregarItens = async () => {
+    if (!processoAtual) return;
+    
+    try {
+        itens = [];
+        
+        const snap = await getDocs(query(collection(db, "itens"), where("processo", "==", processoAtual)));
+        snap.forEach(d => itens.push({ id: d.id, ...d.data(), cotacoes: [] }));
+        
+        const cot = await getDocs(query(collection(db, "cotacoes"), where("processo", "==", processoAtual)));
+        cot.forEach(d => {
+            const c = { id: d.id, ...d.data() };
+            const item = itens.find(i => i.id === c.item);
+            if (item) item.cotacoes.push(c);
+        });
+        
+        // Atualizar select de fornecedor vencedor
+        const fornecedores = new Set();
+        itens.forEach(item => {
+            item.cotacoes.forEach(c => fornecedores.add(c.empresa));
+        });
+        
+        const vencedorSelect = document.getElementById('vencedorSelect');
+        vencedorSelect.innerHTML = '<option value="">Selecione o fornecedor vencedor</option>';
+        Array.from(fornecedores).sort().forEach(f => {
+            vencedorSelect.innerHTML += `<option value="${f.replace(/"/g, '&quot;')}">${f}</option>`;
+        });
+        
+        // Atualizar select de itens
+        const itemSelect = document.getElementById('itemSelect');
+        itemSelect.innerHTML = '';
+        itens.forEach(i => {
+            itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao}</option>`;
+        });
+        
+        render();
+    } catch (error) {
+        console.error('Erro ao carregar itens:', error);
+        showAlert('Erro ao carregar itens', 'error');
+    }
+};
+
+// RENDER
+function render() {
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    
+    if (itens.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="14" style="text-align: center;">Nenhum item cadastrado</td></tr>';
+        return;
+    }
+    
+    let rowIndex = 0;
+    itens.forEach((item, i) => {
+        if (!item.cotacoes || item.cotacoes.length === 0) return;
+        
+        const totais = item.cotacoes.map(c => c.valor * item.qtd);
+        const s = stats(totais);
+        const menor = Math.min(...totais);
+        
+        // Ordenar cotações por valor total
+        const cotacoesOrdenadas = [...item.cotacoes].sort((a, b) => (a.valor * item.qtd) - (b.valor * item.qtd));
+        
+        cotacoesOrdenadas.forEach((c, j) => {
+            const total = c.valor * item.qtd;
+            const isMenor = total === menor;
+            
+            const row = tbody.insertRow();
+            row.className = isMenor ? 'menor' : '';
+            
+            // Item e Código
+            row.insertCell(0).innerHTML = i + 1;
+            row.insertCell(1).innerHTML = item.codigo || '-';
+            row.insertCell(2).innerHTML = item.descricao;
+            row.insertCell(3).innerHTML = `${item.qtd} ${item.und || 'UN'}`;
+            
+            // Dados da cotação
+            row.insertCell(4).innerHTML = c.empresa;
+            row.insertCell(5).innerHTML = c.cnpj;
+            row.insertCell(6).innerHTML = `R$ ${total.toFixed(2)}`;
+            row.insertCell(7).innerHTML = c.origem || '-';
+            
+            // Estatísticas (apenas na primeira linha do item)
+            if (j === 0) {
+                row.insertCell(8).innerHTML = `R$ ${s.media.toFixed(2)}`;
+                row.insertCell(9).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
+                row.insertCell(10).innerHTML = `R$ ${s.desvio.toFixed(2)}`;
+                row.insertCell(11).innerHTML = `R$ ${s.min.toFixed(2)}`;
+                row.insertCell(12).innerHTML = `R$ ${s.max.toFixed(2)}`;
+            } else {
+                row.insertCell(8).innerHTML = '';
+                row.insertCell(9).innerHTML = '';
+                row.insertCell(10).innerHTML = '';
+                row.insertCell(11).innerHTML = '';
+                row.insertCell(12).innerHTML = '';
+            }
+            
+            // Ações
+            const actionsCell = row.insertCell(13);
+            actionsCell.innerHTML = `
+                <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.75rem;">✏️</button>
+                <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.75rem;">🗑️</button>
+            `;
+            
+            if (j === 0) {
+                actionsCell.innerHTML += `
+                    <button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.75rem;">📝 Item</button>
+                    <button onclick="excluirItem('${item.id}')" style="font-size: 0.75rem;">❌ Item</button>
+                `;
+            }
+        });
+    });
+}
+
+// ASSINATURA
+window.salvarAssinatura = () => {
+    const nomeField = document.getElementById('nomeResp');
+    const matriculaField = document.getElementById('matriculaResp');
+    const setorField = document.getElementById('setorResp');
+    
+    if (!validateFields([nomeField, matriculaField, setorField])) return;
+    
+    assinatura = {
+        nome: nomeField.value,
+        matricula: matriculaField.value,
+        setor: setorField.value,
+        data: new Date().toISOString()
+    };
+    
+    showAlert('Assinatura salva com sucesso!', 'success');
+};
+
+// EXPORTAR EXCEL
+window.exportarExcel = () => {
+    try {
+        const tabela = document.getElementById('tabelaPrincipal');
+        const html = tabela.outerHTML;
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `mapa_comparativo_${new Date().toISOString().slice(0,19)}.xls`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showAlert('Arquivo Excel gerado com sucesso!', 'success');
+    } catch (error) {
+        showAlert('Erro ao gerar Excel', 'error');
+    }
+};
+
+// PDF
+window.gerarPDF = async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("l", "mm", "a4");
+    
+    let y = 10;
+    
+    // Cabeçalho
+    doc.setFontSize(16);
+    doc.text("ESTADO DA PARAÍBA", 105, y, { align: "center" });
+    y += 7;
+    doc.setFontSize(14);
+    doc.text("SECRETARIA DE ESTADO DA ADMINISTRAÇÃO", 105, y, { align: "center" });
+    y += 7;
+    doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 105, y, { align: "center" });
+    y += 10;
+    
+    doc.setFontSize(12);
+    doc.text("MAPA COMPARATIVO DE PREÇOS", 105, y, { align: "center" });
+    y += 10;
+    
+    // Dados do processo
+    doc.setFontSize(10);
+    doc.text(`Processo: ${document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim()}`, 14, y);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, y + 5);
+    y += 15;
+    
+    // Tabela
+    const body = [];
+    itens.forEach((item) => {
+        if (!item.cotacoes || item.cotacoes.length === 0) return;
+        
+        const totais = item.cotacoes.map(c => c.valor * item.qtd);
+        const s = stats(totais);
+        const ranking = item.cotacoes.map(c => ({ ...c, total: c.valor * item.qtd })).sort((a, b) => a.total - b.total);
+        
+        ranking.forEach((c, index) => {
+            body.push([
+                item.codigo || '-',
+                item.descricao,
+                `${item.qtd} ${item.und || 'UN'}`,
+                c.empresa,
+                c.cnpj,
+                `R$ ${(c.valor * item.qtd).toFixed(2)}`,
+                c.origem || '-',
+                (index + 1).toString(),
+                `R$ ${s.media.toFixed(2)}`,
+                `R$ ${s.mediana.toFixed(2)}`,
+                `R$ ${s.desvio.toFixed(2)}`,
+                `R$ ${s.min.toFixed(2)}`,
+                `R$ ${s.max.toFixed(2)}`
+            ]);
+        });
+    });
+    
+    doc.autoTable({
+        startY: y,
+        head: [["Código", "Descrição", "Qtd", "Empresa", "CNPJ", "Total", "Origem", "Ranking", "Média", "Mediana", "Desvio", "Mín", "Máx"]],
+        body: body,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [13, 59, 102], textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [245, 245, 245] }
+    });
+    
+    // Justificativa
+    let finalY = doc.lastAutoTable.finalY + 10;
+    const vencedor = document.getElementById('vencedorSelect').value || "o fornecedor melhor classificado";
+    
+    doc.setFontSize(11);
+    doc.text("JUSTIFICATIVA:", 14, finalY);
+    doc.setFontSize(9);
+    const justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, considerando-se os princípios da economicidade, eficiência e vantajosidade para a Administração Pública, em conformidade com a Lei nº 8.666/93 e suas alterações.`;
+    const splitText = doc.splitTextToSize(justificativa, 260);
+    doc.text(splitText, 14, finalY + 5);
+    
+    // Assinatura
+    finalY += 20 + (splitText.length * 5);
+    doc.line(80, finalY, 180, finalY);
+    doc.text(assinatura.nome || "_________________________", 130, finalY + 3, { align: "center" });
+    doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, finalY + 8, { align: "center" });
+    doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, finalY + 13, { align: "center" });
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 130, finalY + 18, { align: "center" });
+    
+    doc.save(`Mapa_Comparativo_${new Date().toISOString().slice(0,19)}.pdf`);
+    showAlert('PDF gerado com sucesso!', 'success');
+};
+
+window.voltar = () => {
+    document.getElementById('telaMapa').classList.add('hidden');
+    document.getElementById('telaProcessos').classList.remove('hidden');
+    processoAtual = null;
+    itens = [];
+    assinatura = {};
+};
+
+// Inicialização
+carregarProcessos();
+</script>
+
+</body>
+</html>
