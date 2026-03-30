@@ -5,7 +5,7 @@
 <title>ESPEP - Sistema de Mapas</title>
 
 <style>
-body{font-family:'Segoe UI';background:#f1f5f9;margin:0;}
+body{font-family:'Segoe UI';background:#eef2f7;margin:0;}
 
 header{
 background:linear-gradient(90deg,#0d3b66,#1d6fa5);
@@ -25,29 +25,60 @@ border-radius:6px;cursor:pointer;margin:2px;
 }
 
 .btn-danger{background:#c0392b;}
+.btn-edit{background:#f39c12;}
 
 table{width:100%;border-collapse:collapse;}
 
-th{background:#0d3b66;color:#fff;font-size:13px;}
-td{font-size:12px;padding:6px;border:1px solid #ddd;}
+th{
+background:#0d3b66;color:#fff;font-size:13px;
+}
 
-.menor{background:#d1fae5 !important;font-weight:bold;}
+td{
+font-size:12px;padding:6px;border:1px solid #ddd;
+}
+
+tr:nth-child(even){background:#f8fafc;}
+
+.menor{
+background:#d1fae5 !important;
+font-weight:bold;
+border-left:4px solid #10b981;
+}
+
+.topo-oficial{
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-bottom:3px solid #0d3b66;
+margin-bottom:15px;
+padding-bottom:10px;
+}
+
+.logos{
+display:flex;
+gap:20px;
+align-items:center;
+}
+
+.logos img{height:70px;}
+
+.assinatura{
+text-align:center;
+margin-top:50px;
+}
+
+.linha{
+border-top:1px solid #000;
+width:300px;
+margin:40px auto 10px;
+}
 
 .hidden{display:none;}
 
-.topo-oficial{
-display:flex;align-items:center;gap:15px;
-border-bottom:3px solid #0d3b66;margin-bottom:10px;
-}
-
-.topo-oficial img{width:80px;}
-
-.assinatura{text-align:center;margin-top:40px;}
-.linha{border-top:1px solid #000;width:300px;margin:40px auto 10px;}
-
 @media print{
-.no-print{display:none;}
+.no-print{display:none !important;}
 *{-webkit-print-color-adjust:exact;}
+body{background:#fff;}
 }
 </style>
 </head>
@@ -58,7 +89,9 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 
 <div class="container">
 
+<!-- PROCESSOS -->
 <div id="telaProcessos">
+
 <div class="card">
 <input id="numero" placeholder="Número">
 <input id="orgao" placeholder="Órgão">
@@ -69,8 +102,10 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 <div class="card">
 <ul id="listaProcessos"></ul>
 </div>
+
 </div>
 
+<!-- MAPA -->
 <div id="telaMapa" class="hidden">
 
 <button class="no-print" onclick="voltar()">⬅ Voltar</button>
@@ -78,8 +113,15 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 <div id="areaPDF">
 
 <div class="topo-oficial">
+<div class="logos">
 <img src="img/GovPBT.png" onerror="this.style.display='none'">
-<div><strong>GOVERNO DA PARAÍBA</strong><br>MAPA COMPARATIVO</div>
+<img src="img/LOGOESPEP.PNG" onerror="this.style.display='none'">
+</div>
+<div>
+<strong>GOVERNO DA PARAÍBA</strong><br>
+ESCOLA DE SERVIÇO PÚBLICO - ESPEP<br>
+MAPA COMPARATIVO DE PREÇOS
+</div>
 </div>
 
 <h3 id="tituloProcesso"></h3>
@@ -94,7 +136,7 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 <th>Empresa</th>
 <th>CNPJ</th>
 <th>Total</th>
-<th>Proposta</th>
+<th>Origem</th>
 <th>Média</th>
 <th>Mediana</th>
 <th>Desvio</th>
@@ -127,7 +169,7 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 <input id="empresa" placeholder="Empresa">
 <input id="cnpj" placeholder="CNPJ">
 <input id="valor" type="number" placeholder="Valor">
-<input id="link" placeholder="Link proposta">
+<input id="origem" placeholder="Origem da proposta">
 <button onclick="addCotacao()">Adicionar</button>
 </div>
 
@@ -138,7 +180,7 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 <button onclick="gerarAssinatura()">Salvar Assinatura</button>
 </div>
 
-<button class="no-print" onclick="window.print()">📄 PDF</button>
+<button class="no-print" onclick="window.print()">📄 Gerar PDF</button>
 
 </div>
 
@@ -148,7 +190,7 @@ border-bottom:3px solid #0d3b66;margin-bottom:10px;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where
+getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app = initializeApp({
@@ -175,7 +217,6 @@ carregarProcessos();
 async function carregarProcessos(){
 listaProcessos.innerHTML="";
 let snap=await getDocs(collection(db,"processos"));
-
 snap.forEach(d=>{
 let p=d.data();
 listaProcessos.innerHTML+=`
@@ -187,7 +228,7 @@ listaProcessos.innerHTML+=`
 }
 
 window.excluirProcesso=async(id)=>{
-if(!confirm("Excluir processo?")) return;
+if(!confirm("Excluir processo?"))return;
 await deleteDoc(doc(db,"processos",id));
 carregarProcessos();
 }
@@ -212,18 +253,20 @@ und:undItem.value
 carregarItens();
 }
 
+window.editarItem=async(id,desc)=>{
+let novo=prompt("Editar descrição:",desc);
+if(!novo)return;
+await updateDoc(doc(db,"itens",id),{descricao:novo});
+carregarItens();
+}
+
 window.excluirItem=async(id)=>{
-if(!confirm("Excluir item completo?")) return;
+if(!confirm("Excluir item completo?"))return;
 
-// excluir cotacoes
-let cot = await getDocs(query(collection(db,"cotacoes"),where("item","==",id)));
-cot.forEach(async c=>{
-await deleteDoc(doc(db,"cotacoes",c.id));
-});
+let cot=await getDocs(query(collection(db,"cotacoes"),where("item","==",id)));
+cot.forEach(async c=>await deleteDoc(doc(db,"cotacoes",c.id)));
 
-// excluir item
 await deleteDoc(doc(db,"itens",id));
-
 carregarItens();
 }
 
@@ -235,52 +278,22 @@ item:itemSelect.value,
 empresa:empresa.value,
 cnpj:cnpj.value,
 valor:parseFloat(valor.value),
-link:link.value
+origem:origem.value
 });
+carregarItens();
+}
+
+window.editarCotacao=async(id,empresa)=>{
+let novo=prompt("Editar empresa:",empresa);
+if(!novo)return;
+await updateDoc(doc(db,"cotacoes",id),{empresa:novo});
 carregarItens();
 }
 
 window.excluirCotacao=async(id)=>{
-if(!confirm("Excluir empresa?")) return;
+if(!confirm("Excluir empresa?"))return;
 await deleteDoc(doc(db,"cotacoes",id));
 carregarItens();
-}
-
-async function carregarItens(){
-
-itens=[];
-
-let snap=await getDocs(query(collection(db,"itens"),where("processo","==",processoAtual)));
-snap.forEach(d=>{
-itens.push({id:d.id,...d.data(),cotacoes:[]});
-});
-
-let cot=await getDocs(query(collection(db,"cotacoes"),where("processo","==",processoAtual)));
-cot.forEach(d=>{
-let c={id:d.id,...d.data()};
-let item=itens.find(i=>i.id===c.item);
-if(item)item.cotacoes.push(c);
-});
-
-itemSelect.innerHTML="";
-itens.forEach(i=>{
-itemSelect.innerHTML+=`<option value="${i.id}">${i.descricao}</option>`;
-});
-
-render();
-}
-
-// STATS
-function stats(v){
-let m=v.reduce((a,b)=>a+b,0)/v.length;
-let o=[...v].sort((a,b)=>a-b);
-return{
-media:m,
-mediana:o[Math.floor(v.length/2)],
-desvio:Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length),
-min:o[0],
-max:o[o.length-1]
-};
 }
 
 // RENDER
@@ -291,7 +304,6 @@ itens.forEach((item,i)=>{
 if(!item.cotacoes.length)return;
 
 let totais=item.cotacoes.map(c=>c.valor*item.qtd);
-let s=stats(totais);
 let menor=Math.min(...totais);
 
 item.cotacoes.forEach((c,j)=>{
@@ -300,49 +312,27 @@ let total=c.valor*item.qtd;
 tbody.innerHTML+=`
 <tr class="${total===menor?'menor':''}">
 <td>${i+1}</td>
-<td>${item.codigo || '-'}</td>
+<td>${item.codigo||'-'}</td>
 <td>${item.descricao}</td>
-<td>${item.qtd} ${item.und}</td>
+<td>${item.qtd}</td>
 <td>${c.empresa}</td>
 <td>${c.cnpj}</td>
 <td>${total.toFixed(2)}</td>
-<td><a href="${c.link}" target="_blank">Abrir</a></td>
-
-${j===0?`
-<td rowspan="${item.cotacoes.length}">${s.media.toFixed(2)}</td>
-<td rowspan="${item.cotacoes.length}">${s.mediana.toFixed(2)}</td>
-<td rowspan="${item.cotacoes.length}">${s.desvio.toFixed(2)}</td>
-<td rowspan="${item.cotacoes.length}">${s.min.toFixed(2)}</td>
-<td rowspan="${item.cotacoes.length}">${s.max.toFixed(2)}</td>
-<td rowspan="${item.cotacoes.length}">
-<button class="btn-danger" onclick="excluirItem('${item.id}')">Excluir Item</button>
-</td>
-`:""}
+<td>${c.origem}</td>
 
 <td class="no-print">
-<button class="btn-danger" onclick="excluirCotacao('${c.id}')">Excluir</button>
+<button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa}')">✏️</button>
+<button class="btn-danger" onclick="excluirCotacao('${c.id}')">X</button>
 </td>
 </tr>`;
 });
 });
 }
 
-// ASSINATURA
-window.gerarAssinatura=()=>{
-assinaturaTexto.innerHTML=`
-<strong>${nomeResp.value}</strong><br>
-Matrícula: ${matriculaResp.value}<br>
-Setor: ${setorResp.value}<br>
-Data: ${new Date().toLocaleDateString("pt-BR")}
-`;
-}
-
 window.voltar=()=>{
 telaMapa.classList.add("hidden");
 telaProcessos.classList.remove("hidden");
 }
-
-carregarProcessos();
 
 </script>
 
