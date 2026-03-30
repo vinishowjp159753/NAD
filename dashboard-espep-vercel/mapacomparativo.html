@@ -147,16 +147,17 @@ table {
 th {
     background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
     color: #fff;
-    padding: 12px;
+    padding: 10px 6px;
     font-weight: 600;
+    font-size: 0.75rem;
     position: sticky;
     top: 0;
 }
 
 td {
     border: 1px solid #ddd;
-    padding: 8px;
-    font-size: 0.85rem;
+    padding: 6px;
+    font-size: 0.75rem;
 }
 
 tr:hover {
@@ -190,36 +191,6 @@ tr:hover {
     60%, 100% { content: "..."; }
 }
 
-.alert {
-    padding: 12px;
-    border-radius: 6px;
-    margin: 10px 0;
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
 .form-group {
     display: inline-block;
     margin: 5px;
@@ -230,15 +201,6 @@ tr:hover {
     font-size: 0.8rem;
     color: #666;
     margin-bottom: 3px;
-}
-
-.stats-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin: 2px;
 }
 
 @media (max-width: 768px) {
@@ -255,11 +217,8 @@ tr:hover {
         margin: 5px 0;
     }
     
-    table {
-        font-size: 0.7rem;
-    }
-    
-    td, th {
+    th, td {
+        font-size: 0.65rem;
         padding: 4px;
     }
 }
@@ -310,8 +269,8 @@ tr:hover {
         <table id="tabelaPrincipal">
             <thead>
                 <tr>
-                    <th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unidade</th>
-                    <th>Empresa</th><th>CNPJ</th><th>Valor Unitário</th><th>Total (R$)</th><th>Origem</th>
+                    <th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unid</th>
+                    <th>Empresa</th><th>CNPJ</th><th>Vl.Unit</th><th>Total</th><th>Origem</th>
                     <th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th>
                     <th>Ações</th>
                 </tr>
@@ -725,7 +684,6 @@ function render() {
         return;
     }
     
-    let rowIndex = 0;
     itens.forEach((item, i) => {
         if (!item.cotacoes || item.cotacoes.length === 0) return;
         
@@ -743,21 +701,17 @@ function render() {
             const row = tbody.insertRow();
             row.className = isMenor ? 'menor' : '';
             
-            // Item e Código
             row.insertCell(0).innerHTML = i + 1;
             row.insertCell(1).innerHTML = item.codigo || '-';
-            row.insertCell(2).innerHTML = item.descricao;
+            row.insertCell(2).innerHTML = item.descricao.substring(0, 30) + (item.descricao.length > 30 ? '...' : '');
             row.insertCell(3).innerHTML = item.qtd;
             row.insertCell(4).innerHTML = item.und || 'UN';
-            
-            // Dados da cotação
-            row.insertCell(5).innerHTML = c.empresa;
+            row.insertCell(5).innerHTML = c.empresa.substring(0, 25) + (c.empresa.length > 25 ? '...' : '');
             row.insertCell(6).innerHTML = c.cnpj;
             row.insertCell(7).innerHTML = `R$ ${c.valor.toFixed(2)}`;
             row.insertCell(8).innerHTML = `R$ ${total.toFixed(2)}`;
             row.insertCell(9).innerHTML = c.origem || '-';
             
-            // Estatísticas (apenas na primeira linha do item)
             if (j === 0) {
                 row.insertCell(10).innerHTML = `R$ ${s.media.toFixed(2)}`;
                 row.insertCell(11).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
@@ -772,17 +726,16 @@ function render() {
                 row.insertCell(14).innerHTML = '';
             }
             
-            // Ações
             const actionsCell = row.insertCell(15);
             actionsCell.innerHTML = `
-                <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.75rem;">✏️</button>
-                <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.75rem;">🗑️</button>
+                <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.7rem; padding: 4px 6px;">✏️</button>
+                <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.7rem; padding: 4px 6px;">🗑️</button>
             `;
             
             if (j === 0) {
                 actionsCell.innerHTML += `
-                    <button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.75rem;">📝 Item</button>
-                    <button onclick="excluirItem('${item.id}')" style="font-size: 0.75rem;">❌ Item</button>
+                    <button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.7rem; padding: 4px 6px;">📝</button>
+                    <button onclick="excluirItem('${item.id}')" style="font-size: 0.7rem; padding: 4px 6px;">❌</button>
                 `;
             }
         });
@@ -853,26 +806,26 @@ window.gerarPDF = async () => {
     let y = 15;
     
     // Tentar adicionar logos
-    await adicionarImagemPDF(doc, 15, y, 25, 20, 'img/GovPBT.png');
-    await adicionarImagemPDF(doc, 250, y, 25, 20, 'img/LOGOESPEP.png');
+    await adicionarImagemPDF(doc, 15, y, 22, 18, 'img/GovPBT.png');
+    await adicionarImagemPDF(doc, 245, y, 22, 18, 'img/LOGOESPEP.png');
     
     // Título principal
-    doc.setFontSize(18);
+    doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.text("MAPA COMPARATIVO DE PREÇOS - ESPEP", 148, y + 12, { align: "center" });
     
-    y += 25;
+    y += 22;
     
     // Informações do processo
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'normal');
     const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
     doc.text(`Processo nº: ${numeroProcesso}`, 14, y);
-    doc.text(`Data de emissão: ${new Date().toLocaleDateString('pt-BR')}`, 14, y + 5);
+    doc.text(`Data de emissão: ${new Date().toLocaleDateString('pt-BR')}`, 14, y + 4);
     
-    y += 15;
+    y += 12;
     
-    // Preparar dados da tabela
+    // Preparar dados da tabela com larguras otimizadas
     const body = [];
     itens.forEach((item) => {
         if (!item.cotacoes || item.cotacoes.length === 0) return;
@@ -888,20 +841,20 @@ window.gerarPDF = async () => {
         ranking.forEach((c, index) => {
             body.push([
                 item.codigo || '-',
-                item.descricao,
-                `${item.qtd}`,
+                item.descricao.length > 35 ? item.descricao.substring(0, 32) + '...' : item.descricao,
+                item.qtd.toString(),
                 item.und || 'UN',
-                c.empresa,
+                c.empresa.length > 28 ? c.empresa.substring(0, 25) + '...' : c.empresa,
                 c.cnpj,
-                `R$ ${c.valorUnitario.toFixed(2)}`,
-                `R$ ${c.total.toFixed(2)}`,
+                c.valorUnitario.toFixed(2),
+                c.total.toFixed(2),
                 c.origem || '-',
                 (index + 1).toString(),
-                `R$ ${s.media.toFixed(2)}`,
-                `R$ ${s.mediana.toFixed(2)}`,
-                `R$ ${s.desvio.toFixed(2)}`,
-                `R$ ${s.min.toFixed(2)}`,
-                `R$ ${s.max.toFixed(2)}`
+                s.media.toFixed(2),
+                s.mediana.toFixed(2),
+                s.desvio.toFixed(2),
+                s.min.toFixed(2),
+                s.max.toFixed(2)
             ]);
         });
     });
@@ -911,50 +864,70 @@ window.gerarPDF = async () => {
     } else {
         doc.autoTable({
             startY: y,
-            head: [["Código", "Descrição", "Qtd", "Unid", "Empresa", "CNPJ", "Valor Unit.", "Total", "Origem", "Rank", "Média", "Mediana", "Desvio", "Mín", "Máx"]],
+            head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Vl.Unit", "Total", "Origem", "Rk", "Média", "Mediana", "Desvio", "Mín", "Máx"]],
             body: body,
-            styles: { fontSize: 7, cellPadding: 2 },
-            headStyles: { fillColor: [13, 59, 102], textColor: [255, 255, 255], fontSize: 7 },
+            styles: { 
+                fontSize: 7, 
+                cellPadding: 1.5,
+                overflow: 'linebreak',
+                cellWidth: 'wrap'
+            },
+            headStyles: { 
+                fillColor: [13, 59, 102], 
+                textColor: [255, 255, 255], 
+                fontSize: 7,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
             alternateRowStyles: { fillColor: [245, 245, 245] },
             columnStyles: {
-                0: { cellWidth: 15 },
-                1: { cellWidth: 40 },
-                2: { cellWidth: 12 },
-                3: { cellWidth: 12 },
-                4: { cellWidth: 35 },
-                5: { cellWidth: 30 },
-                6: { cellWidth: 20 },
-                7: { cellWidth: 20 },
-                8: { cellWidth: 20 },
-                9: { cellWidth: 12 },
-                10: { cellWidth: 20 },
-                11: { cellWidth: 20 },
-                12: { cellWidth: 20 },
-                13: { cellWidth: 18 },
-                14: { cellWidth: 18 }
-            }
+                0: { cellWidth: 15, halign: 'center' },      // Código
+                1: { cellWidth: 42, halign: 'left' },        // Descrição
+                2: { cellWidth: 10, halign: 'center' },      // Qtd
+                3: { cellWidth: 8, halign: 'center' },       // Un
+                4: { cellWidth: 42, halign: 'left' },        // Empresa
+                5: { cellWidth: 28, halign: 'center' },      // CNPJ
+                6: { cellWidth: 18, halign: 'right' },       // Vl.Unit
+                7: { cellWidth: 18, halign: 'right' },       // Total
+                8: { cellWidth: 20, halign: 'center' },      // Origem
+                9: { cellWidth: 8, halign: 'center' },       // Rk
+                10: { cellWidth: 18, halign: 'right' },      // Média
+                11: { cellWidth: 18, halign: 'right' },      // Mediana
+                12: { cellWidth: 18, halign: 'right' },      // Desvio
+                13: { cellWidth: 16, halign: 'right' },      // Mín
+                14: { cellWidth: 16, halign: 'right' }       // Máx
+            },
+            margin: { left: 12, right: 12 },
+            tableWidth: 'auto'
         });
     }
     
     // Justificativa
-    let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : y + 20;
+    let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : y + 30;
     const vencedor = document.getElementById('vencedorSelect').value || "o fornecedor melhor classificado";
     
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
     doc.text("JUSTIFICATIVA:", 14, finalY);
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     const justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, considerando-se os princípios da economicidade, eficiência e vantajosidade para a Administração Pública, em conformidade com a Lei nº 8.666/93 e suas alterações.`;
     const splitText = doc.splitTextToSize(justificativa, 260);
     doc.text(splitText, 14, finalY + 5);
     
     // Assinatura
-    finalY += 20 + (splitText.length * 5);
+    finalY += 15 + (splitText.length * 4);
+    
+    // Verificar se cabe na página, se não, adicionar nova página
+    if (finalY > 190) {
+        doc.addPage();
+        finalY = 20;
+    }
+    
     doc.line(80, finalY, 180, finalY);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.text(assinatura.nome || "_________________________", 130, finalY + 3, { align: "center" });
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, finalY + 8, { align: "center" });
     doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, finalY + 13, { align: "center" });
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 130, finalY + 18, { align: "center" });
