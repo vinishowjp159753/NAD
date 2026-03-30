@@ -310,8 +310,8 @@ tr:hover {
         <table id="tabelaPrincipal">
             <thead>
                 <tr>
-                    <th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th>
-                    <th>Empresa</th><th>CNPJ</th><th>Total (R$)</th><th>Origem</th>
+                    <th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unidade</th>
+                    <th>Empresa</th><th>CNPJ</th><th>Valor Unitário</th><th>Total (R$)</th><th>Origem</th>
                     <th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th>
                     <th>Ações</th>
                 </tr>
@@ -721,7 +721,7 @@ function render() {
     tbody.innerHTML = '';
     
     if (itens.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="14" style="text-align: center;">Nenhum item cadastrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="16" style="text-align: center;">Nenhum item cadastrado</td></tr>';
         return;
     }
     
@@ -747,31 +747,33 @@ function render() {
             row.insertCell(0).innerHTML = i + 1;
             row.insertCell(1).innerHTML = item.codigo || '-';
             row.insertCell(2).innerHTML = item.descricao;
-            row.insertCell(3).innerHTML = `${item.qtd} ${item.und || 'UN'}`;
+            row.insertCell(3).innerHTML = item.qtd;
+            row.insertCell(4).innerHTML = item.und || 'UN';
             
             // Dados da cotação
-            row.insertCell(4).innerHTML = c.empresa;
-            row.insertCell(5).innerHTML = c.cnpj;
-            row.insertCell(6).innerHTML = `R$ ${total.toFixed(2)}`;
-            row.insertCell(7).innerHTML = c.origem || '-';
+            row.insertCell(5).innerHTML = c.empresa;
+            row.insertCell(6).innerHTML = c.cnpj;
+            row.insertCell(7).innerHTML = `R$ ${c.valor.toFixed(2)}`;
+            row.insertCell(8).innerHTML = `R$ ${total.toFixed(2)}`;
+            row.insertCell(9).innerHTML = c.origem || '-';
             
             // Estatísticas (apenas na primeira linha do item)
             if (j === 0) {
-                row.insertCell(8).innerHTML = `R$ ${s.media.toFixed(2)}`;
-                row.insertCell(9).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
-                row.insertCell(10).innerHTML = `R$ ${s.desvio.toFixed(2)}`;
-                row.insertCell(11).innerHTML = `R$ ${s.min.toFixed(2)}`;
-                row.insertCell(12).innerHTML = `R$ ${s.max.toFixed(2)}`;
+                row.insertCell(10).innerHTML = `R$ ${s.media.toFixed(2)}`;
+                row.insertCell(11).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
+                row.insertCell(12).innerHTML = `R$ ${s.desvio.toFixed(2)}`;
+                row.insertCell(13).innerHTML = `R$ ${s.min.toFixed(2)}`;
+                row.insertCell(14).innerHTML = `R$ ${s.max.toFixed(2)}`;
             } else {
-                row.insertCell(8).innerHTML = '';
-                row.insertCell(9).innerHTML = '';
                 row.insertCell(10).innerHTML = '';
                 row.insertCell(11).innerHTML = '';
                 row.insertCell(12).innerHTML = '';
+                row.insertCell(13).innerHTML = '';
+                row.insertCell(14).innerHTML = '';
             }
             
             // Ações
-            const actionsCell = row.insertCell(13);
+            const actionsCell = row.insertCell(15);
             actionsCell.innerHTML = `
                 <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.75rem;">✏️</button>
                 <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.75rem;">🗑️</button>
@@ -822,50 +824,77 @@ window.exportarExcel = () => {
     }
 };
 
+// Função para adicionar imagem base64 no PDF
+async function adicionarImagemPDF(doc, x, y, width, height, imagemPath) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            try {
+                doc.addImage(img, 'PNG', x, y, width, height);
+                resolve(true);
+            } catch (e) {
+                console.warn(`Erro ao carregar imagem ${imagemPath}:`, e);
+                resolve(false);
+            }
+        };
+        img.onerror = function() {
+            console.warn(`Imagem não encontrada: ${imagemPath}`);
+            resolve(false);
+        };
+        img.src = imagemPath;
+    });
+}
+
 // PDF
 window.gerarPDF = async () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("l", "mm", "a4");
     
-    let y = 10;
+    let y = 15;
     
-    // Cabeçalho
-    doc.setFontSize(16);
-    doc.text("ESTADO DA PARAÍBA", 105, y, { align: "center" });
-    y += 7;
-    doc.setFontSize(14);
-    doc.text("SECRETARIA DE ESTADO DA ADMINISTRAÇÃO", 105, y, { align: "center" });
-    y += 7;
-    doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 105, y, { align: "center" });
-    y += 10;
+    // Tentar adicionar logos
+    await adicionarImagemPDF(doc, 15, y, 25, 20, 'img/GovPBT.png');
+    await adicionarImagemPDF(doc, 250, y, 25, 20, 'img/LOGOESPEP.png');
     
-    doc.setFontSize(12);
-    doc.text("MAPA COMPARATIVO DE PREÇOS", 105, y, { align: "center" });
-    y += 10;
+    // Título principal
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text("MAPA COMPARATIVO DE PREÇOS - ESPEP", 148, y + 12, { align: "center" });
     
-    // Dados do processo
+    y += 25;
+    
+    // Informações do processo
     doc.setFontSize(10);
-    doc.text(`Processo: ${document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim()}`, 14, y);
-    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, y + 5);
+    doc.setFont(undefined, 'normal');
+    const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
+    doc.text(`Processo nº: ${numeroProcesso}`, 14, y);
+    doc.text(`Data de emissão: ${new Date().toLocaleDateString('pt-BR')}`, 14, y + 5);
+    
     y += 15;
     
-    // Tabela
+    // Preparar dados da tabela
     const body = [];
     itens.forEach((item) => {
         if (!item.cotacoes || item.cotacoes.length === 0) return;
         
         const totais = item.cotacoes.map(c => c.valor * item.qtd);
         const s = stats(totais);
-        const ranking = item.cotacoes.map(c => ({ ...c, total: c.valor * item.qtd })).sort((a, b) => a.total - b.total);
+        const ranking = item.cotacoes.map(c => ({ 
+            ...c, 
+            total: c.valor * item.qtd,
+            valorUnitario: c.valor
+        })).sort((a, b) => a.total - b.total);
         
         ranking.forEach((c, index) => {
             body.push([
                 item.codigo || '-',
                 item.descricao,
-                `${item.qtd} ${item.und || 'UN'}`,
+                `${item.qtd}`,
+                item.und || 'UN',
                 c.empresa,
                 c.cnpj,
-                `R$ ${(c.valor * item.qtd).toFixed(2)}`,
+                `R$ ${c.valorUnitario.toFixed(2)}`,
+                `R$ ${c.total.toFixed(2)}`,
                 c.origem || '-',
                 (index + 1).toString(),
                 `R$ ${s.media.toFixed(2)}`,
@@ -877,22 +906,45 @@ window.gerarPDF = async () => {
         });
     });
     
-    doc.autoTable({
-        startY: y,
-        head: [["Código", "Descrição", "Qtd", "Empresa", "CNPJ", "Total", "Origem", "Ranking", "Média", "Mediana", "Desvio", "Mín", "Máx"]],
-        body: body,
-        styles: { fontSize: 7, cellPadding: 2 },
-        headStyles: { fillColor: [13, 59, 102], textColor: [255, 255, 255] },
-        alternateRowStyles: { fillColor: [245, 245, 245] }
-    });
+    if (body.length === 0) {
+        doc.text("Nenhum item cadastrado neste processo.", 14, y);
+    } else {
+        doc.autoTable({
+            startY: y,
+            head: [["Código", "Descrição", "Qtd", "Unid", "Empresa", "CNPJ", "Valor Unit.", "Total", "Origem", "Rank", "Média", "Mediana", "Desvio", "Mín", "Máx"]],
+            body: body,
+            styles: { fontSize: 7, cellPadding: 2 },
+            headStyles: { fillColor: [13, 59, 102], textColor: [255, 255, 255], fontSize: 7 },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            columnStyles: {
+                0: { cellWidth: 15 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 12 },
+                3: { cellWidth: 12 },
+                4: { cellWidth: 35 },
+                5: { cellWidth: 30 },
+                6: { cellWidth: 20 },
+                7: { cellWidth: 20 },
+                8: { cellWidth: 20 },
+                9: { cellWidth: 12 },
+                10: { cellWidth: 20 },
+                11: { cellWidth: 20 },
+                12: { cellWidth: 20 },
+                13: { cellWidth: 18 },
+                14: { cellWidth: 18 }
+            }
+        });
+    }
     
     // Justificativa
-    let finalY = doc.lastAutoTable.finalY + 10;
+    let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : y + 20;
     const vencedor = document.getElementById('vencedorSelect').value || "o fornecedor melhor classificado";
     
     doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
     doc.text("JUSTIFICATIVA:", 14, finalY);
     doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
     const justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor} apresentou o menor preço global, considerando-se os princípios da economicidade, eficiência e vantajosidade para a Administração Pública, em conformidade com a Lei nº 8.666/93 e suas alterações.`;
     const splitText = doc.splitTextToSize(justificativa, 260);
     doc.text(splitText, 14, finalY + 5);
@@ -900,12 +952,14 @@ window.gerarPDF = async () => {
     // Assinatura
     finalY += 20 + (splitText.length * 5);
     doc.line(80, finalY, 180, finalY);
+    doc.setFontSize(10);
     doc.text(assinatura.nome || "_________________________", 130, finalY + 3, { align: "center" });
+    doc.setFontSize(8);
     doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, finalY + 8, { align: "center" });
     doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, finalY + 13, { align: "center" });
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 130, finalY + 18, { align: "center" });
     
-    doc.save(`Mapa_Comparativo_${new Date().toISOString().slice(0,19)}.pdf`);
+    doc.save(`Mapa_Comparativo_${numeroProcesso.replace(/\//g, '_')}.pdf`);
     showAlert('PDF gerado com sucesso!', 'success');
 };
 
