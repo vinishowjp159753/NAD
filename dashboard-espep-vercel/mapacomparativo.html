@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESPEP - Sistema de Preços - Lei 14.133/2021</title>
+<title>ESPEP - Sistema MASTER - Lei 14.133/2021</title>
 
 <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -228,39 +228,62 @@ tr:hover {
     font-weight: bold;
 }
 
-.graficos-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+.grafico-container {
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     margin-top: 20px;
 }
 
 .grafico-card {
     background: #fff;
-    padding: 15px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-
-.grafico-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .grafico-card h4 {
     margin-bottom: 15px;
     text-align: center;
     color: #0d3b66;
+    font-size: 1.1rem;
 }
 
 canvas {
-    max-height: 280px;
+    max-height: 400px;
     width: 100% !important;
 }
 
-.grafico-full {
-    grid-column: span 2;
+.legenda-grafico {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 4px solid #0d3b66;
+}
+
+.legenda-grafico h5 {
+    color: #0d3b66;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.legenda-grafico p {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.legenda-grafico ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.legenda-grafico li {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 4px;
 }
 
 .lei-badge {
@@ -293,12 +316,12 @@ canvas {
         padding: 4px;
     }
     
-    .graficos-container {
-        grid-template-columns: 1fr;
+    .grafico-card {
+        padding: 12px;
     }
     
-    .grafico-full {
-        grid-column: span 1;
+    canvas {
+        max-height: 250px;
     }
 }
 </style>
@@ -307,7 +330,7 @@ canvas {
 <body>
 
 <header>
-    <h1>📊 Sistema ESPEP de Preços <span class="lei-badge">Lei 14.133/2021</span></h1>
+    <h1>📊 Sistema ESPEP MASTER <span class="lei-badge">Lei 14.133/2021</span></h1>
     <p>Gestão de Processos de Compras Públicas conforme a Nova Lei de Licitações</p>
 </header>
 
@@ -355,32 +378,27 @@ canvas {
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
-         </table>
+        </table>
     </div>
 
-    <!-- Gráficos Melhorados -->
+    <!-- Gráfico de Barras -->
     <div class="card">
-        <h3>📈 Dashboard de Análise de Propostas <span class="lei-badge">Art. 25, Lei 14.133/2021</span></h3>
-        <div class="graficos-container">
+        <h3>📈 Análise Gráfica das Propostas <span class="lei-badge">Art. 25, Lei 14.133/2021</span></h3>
+        <div class="grafico-container">
             <div class="grafico-card">
                 <h4>💰 Comparativo de Valores por Empresa</h4>
                 <canvas id="graficoBarras"></canvas>
-            </div>
-            <div class="grafico-card">
-                <h4>🥧 Participação no Mercado</h4>
-                <canvas id="graficoPizza"></canvas>
-            </div>
-            <div class="grafico-card">
-                <h4>📊 Análise de Desempenho</h4>
-                <canvas id="graficoRadar"></canvas>
-            </div>
-            <div class="grafico-card">
-                <h4>📈 Tendência de Preços</h4>
-                <canvas id="graficoLinha"></canvas>
-            </div>
-            <div class="grafico-card grafico-full">
-                <h4>🎯 Comparativo de Média vs Menor Preço</h4>
-                <canvas id="graficoComparativo"></canvas>
+                <div class="legenda-grafico">
+                    <h5>📌 Interpretação do Gráfico de Barras</h5>
+                    <p>Este gráfico apresenta o <strong>valor total proposto por cada empresa participante</strong> do processo licitatório, considerando todos os itens cotados.</p>
+                    <ul>
+                        <li><strong>📊 Cada barra</strong> representa uma empresa participante</li>
+                        <li><strong>📈 Altura da barra</strong> = valor total da proposta (soma de todos os itens)</li>
+                        <li><strong>🏆 Barra mais baixa</strong> = menor preço global (proposta mais vantajosa)</li>
+                        <li><strong>📉 Quanto menor a barra</strong>, mais competitiva é a proposta</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Base Legal:</strong> Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -481,7 +499,7 @@ try {
 let processoAtual = null;
 let itens = [];
 let assinatura = {};
-let graficos = {};
+let graficoBarras = null;
 
 // Funções Auxiliares
 function showAlert(message, type = 'success') {
@@ -518,13 +536,12 @@ function calcularTotalVencedor(empresaSelecionada) {
 }
 
 function stats(v) {
-    if (!v || v.length === 0) return { media: 0, mediana: 0, desvio: 0, min: 0, max: 0, variancia: 0 };
+    if (!v || v.length === 0) return { media: 0, mediana: 0, desvio: 0, min: 0, max: 0 };
     const sorted = [...v].sort((a, b) => a - b);
     const media = v.reduce((a, b) => a + b, 0) / v.length;
     const mediana = sorted[Math.floor(sorted.length / 2)];
-    const variancia = v.reduce((a, b) => a + Math.pow(b - media, 2), 0) / v.length;
-    const desvio = Math.sqrt(variancia);
-    return { media, mediana, desvio, variancia, min: sorted[0], max: sorted[sorted.length - 1] };
+    const desvio = Math.sqrt(v.reduce((a, b) => a + Math.pow(b - media, 2), 0) / v.length);
+    return { media, mediana, desvio, min: sorted[0], max: sorted[sorted.length - 1] };
 }
 
 // Processos
@@ -699,8 +716,8 @@ window.excluirCotacao = async (id) => {
     }
 };
 
-// Gráficos
-function atualizarGraficos() {
+// Gráfico de Barras
+function atualizarGrafico() {
     const empresas = new Map();
     itens.forEach(item => {
         item.cotacoes.forEach(cot => {
@@ -717,60 +734,55 @@ function atualizarGraficos() {
     const valores = Array.from(empresas.values());
     const cores = ['#0d3b66', '#1a4d7a', '#2a5f8a', '#3a729a', '#4a85aa', '#5a98ba', '#6aabca', '#7abeda'];
     
-    Object.values(graficos).forEach(g => { if (g) g.destroy(); });
+    if (graficoBarras) {
+        graficoBarras.destroy();
+    }
     
-    const ctxBarras = document.getElementById('graficoBarras').getContext('2d');
-    graficos.barras = new Chart(ctxBarras, {
+    const ctx = document.getElementById('graficoBarras').getContext('2d');
+    graficoBarras = new Chart(ctx, {
         type: 'bar',
-        data: { labels: labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: cores, borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } } } }
-    });
-    
-    const ctxPizza = document.getElementById('graficoPizza').getContext('2d');
-    graficos.pizza = new Chart(ctxPizza, {
-        type: 'pie',
-        data: { labels: labels, datasets: [{ data: valores, backgroundColor: cores, borderWidth: 2, borderColor: '#fff' }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right' } } }
-    });
-    
-    const ctxRadar = document.getElementById('graficoRadar').getContext('2d');
-    const mediaGeral = valores.reduce((a, b) => a + b, 0) / valores.length;
-    const desempenho = valores.map(v => ((v - mediaGeral) / mediaGeral * 100).toFixed(1));
-    graficos.radar = new Chart(ctxRadar, {
-        type: 'radar',
-        data: { labels: labels, datasets: [{ label: 'Desempenho (%)', data: desempenho, backgroundColor: 'rgba(13, 59, 102, 0.2)', borderColor: '#0d3b66', borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: true, scales: { r: { beginAtZero: true, ticks: { callback: (v) => `${v}%` } } } }
-    });
-    
-    const ctxLinha = document.getElementById('graficoLinha').getContext('2d');
-    graficos.linha = new Chart(ctxLinha, {
-        type: 'line',
-        data: { labels: labels, datasets: [{ label: 'Valor Total (R$)', data: valores, borderColor: '#0d3b66', backgroundColor: 'rgba(13, 59, 102, 0.1)', fill: true, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: true }
-    });
-    
-    const ctxComparativo = document.getElementById('graficoComparativo').getContext('2d');
-    const medias = [];
-    const menores = [];
-    labels.forEach(emp => {
-        let totalEmpresa = 0;
-        let menorPreco = Infinity;
-        itens.forEach(item => {
-            const cot = item.cotacoes.find(c => c.empresa === emp);
-            if (cot) {
-                const total = cot.valor * item.qtd;
-                totalEmpresa += total;
-                const menorItem = Math.min(...item.cotacoes.map(c => c.valor * item.qtd));
-                if (total === menorItem) menorPreco = Math.min(menorPreco, total);
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Valor Total (R$)',
+                data: valores,
+                backgroundColor: cores,
+                borderRadius: 8,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: { 
+                    callbacks: { 
+                        label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 
+                    } 
+                }
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { 
+                        callback: (v) => `R$ ${v.toLocaleString()}` 
+                    },
+                    title: {
+                        display: true,
+                        text: 'Valor Total (R$)',
+                        font: { size: 10 }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Empresas Participantes',
+                        font: { size: 10 }
+                    }
+                }
             }
-        });
-        medias.push(totalEmpresa);
-        menores.push(menorPreco === Infinity ? 0 : menorPreco);
-    });
-    graficos.comparativo = new Chart(ctxComparativo, {
-        type: 'bar',
-        data: { labels: labels, datasets: [{ label: 'Valor Total', data: medias, backgroundColor: '#0d3b66', borderRadius: 8 }, { label: 'Menor Preço', data: menores, backgroundColor: '#27ae60', borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: true }
+        }
     });
 }
 
@@ -803,7 +815,7 @@ window.carregarItens = async () => {
         });
         
         render();
-        atualizarGraficos();
+        atualizarGrafico();
         atualizarTotalContrato();
     } catch (error) {
         showAlert('Erro ao carregar itens', 'error');
@@ -913,23 +925,20 @@ window.gerarPDF = async () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
     
-    const graficosElements = ['graficoBarras', 'graficoPizza', 'graficoRadar', 'graficoLinha', 'graficoComparativo'];
-    const imagensGraficos = {};
-    
-    for (const id of graficosElements) {
-        const canvas = document.getElementById(id);
-        if (canvas) {
-            try {
-                imagensGraficos[id] = canvas.toDataURL('image/png', 1.0);
-            } catch(e) {}
-        }
+    // Capturar gráfico
+    const canvasGrafico = document.getElementById('graficoBarras');
+    let imgGrafico = null;
+    if (canvasGrafico) {
+        try {
+            imgGrafico = canvasGrafico.toDataURL('image/png', 1.0);
+        } catch(e) {}
     }
     
     let y = 15;
     const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
     const dataAtual = new Date().toLocaleDateString('pt-BR');
     
-    // ==================== PÁGINA 1: CAPA ====================
+    // PÁGINA 1: CAPA
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 210, 'F');
     doc.setTextColor(255, 255, 255);
@@ -950,7 +959,7 @@ window.gerarPDF = async () => {
     doc.text(`Data: ${dataAtual}`, 148, 160, { align: "center" });
     doc.setTextColor(0, 0, 0);
     
-    // ==================== PÁGINA 2: TABELA COMPARATIVA ====================
+    // PÁGINA 2: TABELA COMPARATIVA
     doc.addPage();
     y = 15;
     
@@ -1015,83 +1024,59 @@ window.gerarPDF = async () => {
         });
     }
     
-    // ==================== PÁGINA 3: DASHBOARD DE GRÁFICOS ====================
+    // PÁGINA 3: GRÁFICO DE BARRAS COM EXPLICAÇÃO
     doc.addPage();
     y = 15;
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11);
-    doc.text("DASHBOARD DE ANÁLISE DE PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-    y = 25;
-    
-    if (imagensGraficos.graficoBarras) {
-        doc.addImage(imagensGraficos.graficoBarras, 'PNG', 10, y, 133, 70);
-        if (imagensGraficos.graficoPizza) doc.addImage(imagensGraficos.graficoPizza, 'PNG', 153, y, 133, 70);
-        y += 75;
-    }
-    if (imagensGraficos.graficoRadar) {
-        doc.addImage(imagensGraficos.graficoRadar, 'PNG', 10, y, 133, 70);
-        if (imagensGraficos.graficoLinha) doc.addImage(imagensGraficos.graficoLinha, 'PNG', 153, y, 133, 70);
-        y += 75;
-    }
-    if (imagensGraficos.graficoComparativo) {
-        doc.addImage(imagensGraficos.graficoComparativo, 'PNG', 10, y, 276, 70);
-        y += 75;
-    }
-    
-    // ==================== PÁGINA 4: LEGENDA DOS GRÁFICOS ====================
-    doc.addPage();
-    y = 15;
-    doc.setFillColor(13, 59, 102);
-    doc.rect(0, 0, 297, 22, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("LEGENDA DOS GRÁFICOS - INTERPRETAÇÃO DOS DADOS", 148, 14, { align: "center" });
+    doc.text("ANÁLISE GRÁFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" });
     doc.setTextColor(0, 0, 0);
     y = 28;
     
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text("1. GRÁFICO DE BARRAS - Comparativo de Valores por Empresa", 14, y);
-    doc.setFontSize(8);
-    doc.text("Mostra o valor total proposto por cada empresa participante. Quanto maior a barra, maior o valor total da proposta.", 14, y + 5);
-    y += 15;
+    // Adicionar gráfico
+    if (imgGrafico) {
+        doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90);
+        y += 100;
+    } else {
+        y += 10;
+    }
     
+    // Explicação do gráfico
     doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
-    doc.text("2. GRÁFICO DE PIZZA - Participação no Mercado", 14, y);
-    doc.setFontSize(8);
-    doc.text("Representa a participação percentual de cada empresa no valor global das propostas.", 14, y + 5);
-    y += 15;
+    doc.text("📌 INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y);
+    y += 7;
     
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text("3. GRÁFICO RADAR - Análise de Desempenho", 14, y);
     doc.setFontSize(8);
-    doc.text("Compara o desempenho de cada empresa em relação à média do mercado. Valores positivos = acima da média.", 14, y + 5);
-    y += 15;
+    doc.setFont(undefined, 'normal');
+    doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y);
+    y += 4;
+    doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y);
+    y += 8;
     
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
-    doc.text("4. GRÁFICO DE LINHA - Tendência de Preços", 14, y);
+    doc.text("Elementos do Gráfico:", 14, y);
+    y += 6;
     doc.setFontSize(8);
-    doc.text("Mostra a variação dos valores propostos pelas empresas. Auxilia na identificação de outliers.", 14, y + 5);
-    y += 15;
-    
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text("5. GRÁFICO COMPARATIVO - Média vs Menor Preço", 14, y);
-    doc.setFontSize(8);
-    doc.text("Compara o valor total de cada empresa (azul) com o menor preço encontrado (verde).", 14, y + 5);
-    y += 18;
+    doc.setFont(undefined, 'normal');
+    doc.text("• Cada barra representa uma empresa participante;", 14, y);
+    y += 4;
+    doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y);
+    y += 4;
+    doc.text("• A barra mais baixa indica o menor preço global - proposta mais vantajosa;", 14, y);
+    y += 4;
+    doc.text("• Quanto menor a barra, mais competitiva é a proposta apresentada.", 14, y);
+    y += 8;
     
     doc.setFontSize(8);
     doc.setFont(undefined, 'italic');
-    doc.text("Observação: Todos os valores estão expressos em Reais (R$), conforme determina o Art. 18 da Lei 14.133/2021.", 14, y);
+    doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y);
+    y += 12;
     
-    // ==================== PÁGINA 5: RESUMO ESTATÍSTICO ====================
+    // PÁGINA 4: RESUMO ESTATÍSTICO
     doc.addPage();
     y = 15;
     doc.setFillColor(13, 59, 102);
@@ -1137,7 +1122,7 @@ window.gerarPDF = async () => {
     doc.text(`Número de Itens Cotados: ${itens.length}`, 14, y + 18);
     doc.text(`Média de Propostas por Item: ${(itens.reduce((acc, i) => acc + i.cotacoes.length, 0) / itens.length).toFixed(1)}`, 14, y + 24);
     
-    // ==================== PÁGINA 6: JUSTIFICATIVA E ASSINATURA ====================
+    // PÁGINA 5: JUSTIFICATIVA E ASSINATURA
     doc.addPage();
     y = 15;
     doc.setFillColor(13, 59, 102);
@@ -1151,19 +1136,21 @@ window.gerarPDF = async () => {
     const vencedor = document.getElementById('vencedorSelect').value;
     const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
     
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y);
-    y += 6;
+    y += 5;
     doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
-    doc.text("Com fundamento no Art. 26, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y);
-    y += 12;
+    doc.text("Com fundamento no Art. 26, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento", 14, y);
+    y += 4;
+    doc.text("pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y);
+    y += 10;
     
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y);
-    y += 6;
+    y += 5;
     doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     
@@ -1185,7 +1172,7 @@ window.gerarPDF = async () => {
     
     const splitText = doc.splitTextToSize(justificativa, 265);
     doc.text(splitText, 14, y);
-    y += splitText.length * 4 + 15;
+    y += splitText.length * 4 + 12;
     
     // FUNDAMENTAÇÃO LEGAL
     doc.setFontSize(9);
@@ -1215,7 +1202,7 @@ window.gerarPDF = async () => {
     // Rodapé
     doc.setFontSize(6);
     doc.setTextColor(128, 128, 128);
-    doc.text("Documento gerado pelo Sistema ESPEP de Preços em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" });
+    doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" });
     doc.text(`Página ${doc.internal.getNumberOfPages()}`, 280, 200);
     
     doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}_Lei14133.pdf`);
