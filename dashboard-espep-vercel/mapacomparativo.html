@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESPEP - Sistema MASTER - Lei 14.133/2021</title>
+<title>ESPEP - Sistema de Preços - Lei 14.133/2021</title>
 
 <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -307,7 +307,7 @@ canvas {
 <body>
 
 <header>
-    <h1>📊 Sistema ESPEP MASTER <span class="lei-badge">Lei 14.133/2021</span></h1>
+    <h1>📊 Sistema ESPEP de Preços <span class="lei-badge">Lei 14.133/2021</span></h1>
     <p>Gestão de Processos de Compras Públicas conforme a Nova Lei de Licitações</p>
 </header>
 
@@ -1215,7 +1215,7 @@ window.gerarPDF = async () => {
     // Rodapé
     doc.setFontSize(6);
     doc.setTextColor(128, 128, 128);
-    doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" });
+    doc.text("Documento gerado pelo Sistema ESPEP de Preços em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" });
     doc.text(`Página ${doc.internal.getNumberOfPages()}`, 280, 200);
     
     doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}_Lei14133.pdf`);
