@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESPEP - Sistema MASTER - Versão Premium</title>
+<title>ESPEP - Sistema MASTER - Lei 14.133/2021</title>
 
 <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -263,6 +263,17 @@ canvas {
     grid-column: span 2;
 }
 
+.lei-badge {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-left: 10px;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -296,8 +307,8 @@ canvas {
 <body>
 
 <header>
-    <h1>📊 Sistema ESPEP MASTER - Versão Premium</h1>
-    <p>Gestão de Processos de Compras Públicas com Análise Avançada</p>
+    <h1>📊 Sistema ESPEP MASTER <span class="lei-badge">Lei 14.133/2021</span></h1>
+    <p>Gestão de Processos de Compras Públicas conforme a Nova Lei de Licitações</p>
 </header>
 
 <div class="container">
@@ -333,7 +344,7 @@ canvas {
     
     <!-- Tabela de Itens e Cotações -->
     <div class="card" style="overflow-x: auto;">
-        <h3>📊 Mapa Comparativo de Preços</h3>
+        <h3>📊 Mapa Comparativo de Preços <span class="lei-badge">Art. 23, §1º, Lei 14.133/2021</span></h3>
         <table id="tabelaPrincipal">
             <thead>
                 <tr>
@@ -344,12 +355,12 @@ canvas {
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
-        </table>
+         </table>
     </div>
 
     <!-- Gráficos Melhorados -->
     <div class="card">
-        <h3>📈 Dashboard de Análise de Propostas</h3>
+        <h3>📈 Dashboard de Análise de Propostas <span class="lei-badge">Art. 25, Lei 14.133/2021</span></h3>
         <div class="graficos-container">
             <div class="grafico-card">
                 <h4>💰 Comparativo de Valores por Empresa</h4>
@@ -400,20 +411,20 @@ canvas {
 
     <!-- Configurações do Contrato -->
     <div class="card">
-        <h4>📅 Configurações da Contratação</h4>
+        <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 28, Lei 14.133/2021</span></h4>
         <div class="radio-group">
             <label>
                 <input type="radio" name="tipoContratacao" value="contrato" checked> 📝 Contrato (12 meses)
             </label>
             <label>
-                <input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (N/A)
+                <input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (Art. 75)
             </label>
         </div>
         <div id="infoContrato" class="info-box">
-            ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12.
+            ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 28 da Lei 14.133/2021.
         </div>
         <div id="infoDispensa" class="info-box hidden">
-            ℹ️ Para dispensa de licitação, não será calculado valor de contrato. O campo "N/A" será exibido na justificativa.
+            ℹ️ Dispensa de licitação com fundamento no Art. 75 da Lei 14.133/2021. Não há previsão de contrato plurianual, aplicando-se N/A.
         </div>
     </div>
 
@@ -423,23 +434,24 @@ canvas {
         <div class="form-group"><input id="nomeResp" placeholder="Nome Completo *" required></div>
         <div class="form-group"><input id="matriculaResp" placeholder="Matrícula *" required></div>
         <div class="form-group"><input id="setorResp" placeholder="Setor/Lotação *" required></div>
+        <div class="form-group"><input id="cargoResp" placeholder="Cargo/Função *" required></div>
         <button onclick="salvarAssinatura()" class="btn-info">💾 Salvar Assinatura</button>
     </div>
 
     <!-- Fornecedor Vencedor -->
     <div class="card">
-        <h4>🏆 Fornecedor Vencedor Geral</h4>
+        <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 26, Lei 14.133/2021</span></h4>
         <select id="vencedorSelect"></select>
         <div id="totalContratoDisplay" class="total-contrato hidden">
             💰 Valor Total do Contrato (12 meses): <strong id="valorTotalContrato">R$ 0,00</strong>
         </div>
         <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
-            ⚠️ Selecione o fornecedor que apresentou a proposta mais vantajosa para a administração pública
+            ⚠️ Critério de julgamento: menor preço, conforme Art. 26, inciso I da Lei 14.133/2021.
         </p>
     </div>
 
     <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF Completo com Dashboard</button>
+        <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF (Lei 14.133/2021)</button>
         <button onclick="exportarExcel()" class="btn-info" style="flex: 1;">📊 Exportar para Excel</button>
     </div>
 </div>
@@ -687,7 +699,7 @@ window.excluirCotacao = async (id) => {
     }
 };
 
-// Gráficos Melhorados
+// Gráficos
 function atualizarGraficos() {
     const empresas = new Map();
     itens.forEach(item => {
@@ -705,109 +717,38 @@ function atualizarGraficos() {
     const valores = Array.from(empresas.values());
     const cores = ['#0d3b66', '#1a4d7a', '#2a5f8a', '#3a729a', '#4a85aa', '#5a98ba', '#6aabca', '#7abeda'];
     
-    // Destruir gráficos antigos
     Object.values(graficos).forEach(g => { if (g) g.destroy(); });
     
-    // Gráfico de Barras
     const ctxBarras = document.getElementById('graficoBarras').getContext('2d');
     graficos.barras = new Chart(ctxBarras, {
         type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Valor Total (R$)',
-                data: valores,
-                backgroundColor: cores,
-                borderRadius: 8,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } }
-            },
-            scales: { y: { beginAtZero: true, ticks: { callback: (v) => `R$ ${v.toLocaleString()}` } } }
-        }
+        data: { labels: labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: cores, borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } } } }
     });
     
-    // Gráfico de Pizza
     const ctxPizza = document.getElementById('graficoPizza').getContext('2d');
     graficos.pizza = new Chart(ctxPizza, {
         type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: valores,
-                backgroundColor: cores,
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'right' },
-                tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` } }
-            }
-        }
+        data: { labels: labels, datasets: [{ data: valores, backgroundColor: cores, borderWidth: 2, borderColor: '#fff' }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right' } } }
     });
     
-    // Gráfico Radar
     const ctxRadar = document.getElementById('graficoRadar').getContext('2d');
     const mediaGeral = valores.reduce((a, b) => a + b, 0) / valores.length;
     const desempenho = valores.map(v => ((v - mediaGeral) / mediaGeral * 100).toFixed(1));
     graficos.radar = new Chart(ctxRadar, {
         type: 'radar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Desempenho (%)',
-                data: desempenho,
-                backgroundColor: 'rgba(13, 59, 102, 0.2)',
-                borderColor: '#0d3b66',
-                borderWidth: 2,
-                pointBackgroundColor: cores
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: { r: { beginAtZero: true, ticks: { callback: (v) => `${v}%` } } }
-        }
+        data: { labels: labels, datasets: [{ label: 'Desempenho (%)', data: desempenho, backgroundColor: 'rgba(13, 59, 102, 0.2)', borderColor: '#0d3b66', borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { r: { beginAtZero: true, ticks: { callback: (v) => `${v}%` } } } }
     });
     
-    // Gráfico de Linha
     const ctxLinha = document.getElementById('graficoLinha').getContext('2d');
     graficos.linha = new Chart(ctxLinha, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Valor Total (R$)',
-                data: valores,
-                borderColor: '#0d3b66',
-                backgroundColor: 'rgba(13, 59, 102, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: cores,
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: { tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } } },
-            scales: { y: { ticks: { callback: (v) => `R$ ${v.toLocaleString()}` } } }
-        }
+        data: { labels: labels, datasets: [{ label: 'Valor Total (R$)', data: valores, borderColor: '#0d3b66', backgroundColor: 'rgba(13, 59, 102, 0.1)', fill: true, tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: true }
     });
     
-    // Gráfico Comparativo
     const ctxComparativo = document.getElementById('graficoComparativo').getContext('2d');
     const medias = [];
     const menores = [];
@@ -826,22 +767,10 @@ function atualizarGraficos() {
         medias.push(totalEmpresa);
         menores.push(menorPreco === Infinity ? 0 : menorPreco);
     });
-    
     graficos.comparativo = new Chart(ctxComparativo, {
         type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Valor Total', data: medias, backgroundColor: '#0d3b66', borderRadius: 8 },
-                { label: 'Menor Preço', data: menores, backgroundColor: '#27ae60', borderRadius: 8 }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: { tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } } },
-            scales: { y: { ticks: { callback: (v) => `R$ ${v.toLocaleString()}` } } }
-        }
+        data: { labels: labels, datasets: [{ label: 'Valor Total', data: medias, backgroundColor: '#0d3b66', borderRadius: 8 }, { label: 'Menor Preço', data: menores, backgroundColor: '#27ae60', borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: true }
     });
 }
 
@@ -936,11 +865,13 @@ window.salvarAssinatura = () => {
     const nomeField = document.getElementById('nomeResp');
     const matriculaField = document.getElementById('matriculaResp');
     const setorField = document.getElementById('setorResp');
-    if (!validateFields([nomeField, matriculaField, setorField])) return;
+    const cargoField = document.getElementById('cargoResp');
+    if (!validateFields([nomeField, matriculaField, setorField, cargoField])) return;
     assinatura = {
         nome: nomeField.value,
         matricula: matriculaField.value,
         setor: setorField.value,
+        cargo: cargoField.value,
         data: new Date().toISOString()
     };
     showAlert('Assinatura salva!', 'success');
@@ -977,12 +908,11 @@ function atualizarTotalContrato() {
     }
 }
 
-// PDF com estrutura profissional e justificativa em página separada
+// PDF com Lei 14.133/2021
 window.gerarPDF = async () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
     
-    // Capturar gráficos com alta qualidade
     const graficosElements = ['graficoBarras', 'graficoPizza', 'graficoRadar', 'graficoLinha', 'graficoComparativo'];
     const imagensGraficos = {};
     
@@ -991,30 +921,33 @@ window.gerarPDF = async () => {
         if (canvas) {
             try {
                 imagensGraficos[id] = canvas.toDataURL('image/png', 1.0);
-            } catch(e) {
-                console.warn(`Erro ao capturar ${id}:`, e);
-            }
+            } catch(e) {}
         }
     }
     
     let y = 15;
     const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
     
     // ==================== PÁGINA 1: CAPA ====================
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 210, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(28);
+    doc.setFontSize(22);
     doc.setFont(undefined, 'bold');
-    doc.text("RELATÓRIO DE ANÁLISE", 148, 65, { align: "center" });
-    doc.setFontSize(32);
-    doc.text("MAPA COMPARATIVO", 148, 85, { align: "center" });
+    doc.text("RELATÓRIO DE ANÁLISE", 148, 55, { align: "center" });
+    doc.setFontSize(28);
+    doc.text("MAPA COMPARATIVO", 148, 75, { align: "center" });
     doc.setFontSize(24);
-    doc.text("DE PREÇOS", 148, 105, { align: "center" });
+    doc.text("DE PREÇOS", 148, 95, { align: "center" });
+    doc.setFontSize(12);
+    doc.text("NOS TERMOS DA LEI Nº 14.133/2021", 148, 115, { align: "center" });
+    doc.setFontSize(10);
+    doc.text("NOVA LEI DE LICITAÇÕES E CONTRATOS ADMINISTRATIVOS", 148, 122, { align: "center" });
     doc.setFontSize(11);
-    doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 148, 140, { align: "center" });
-    doc.text(`Processo: ${numeroProcesso}`, 148, 150, { align: "center" });
-    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 148, 155, { align: "center" });
+    doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 148, 145, { align: "center" });
+    doc.text(`Processo: ${numeroProcesso}`, 148, 155, { align: "center" });
+    doc.text(`Data: ${dataAtual}`, 148, 160, { align: "center" });
     doc.setTextColor(0, 0, 0);
     
     // ==================== PÁGINA 2: TABELA COMPARATIVA ====================
@@ -1024,8 +957,8 @@ window.gerarPDF = async () => {
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("MAPA COMPARATIVO DE PREÇOS", 148, 14, { align: "center" });
+    doc.setFontSize(11);
+    doc.text("MAPA COMPARATIVO DE PREÇOS - Art. 23, §1º da Lei 14.133/2021", 148, 14, { align: "center" });
     doc.setTextColor(0, 0, 0);
     y = 28;
     
@@ -1034,10 +967,10 @@ window.gerarPDF = async () => {
     doc.text("DADOS DO PROCESSO:", 14, y);
     doc.setFont(undefined, 'normal');
     doc.text(`Número: ${numeroProcesso}`, 14, y + 6);
-    doc.text(`Data de Emissão: ${new Date().toLocaleDateString('pt-BR')}`, 14, y + 12);
-    y += 22;
+    doc.text(`Órgão: ${document.getElementById('orgao')?.value || 'Não informado'}`, 14, y + 12);
+    doc.text(`Data de Emissão: ${dataAtual}`, 14, y + 18);
+    y += 26;
     
-    // Tabela comparativa
     const body = [];
     itens.forEach((item) => {
         if (!item.cotacoes || item.cotacoes.length === 0) return;
@@ -1088,24 +1021,19 @@ window.gerarPDF = async () => {
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("DASHBOARD DE ANÁLISE DE PROPOSTAS", 148, 14, { align: "center" });
+    doc.setFontSize(11);
+    doc.text("DASHBOARD DE ANÁLISE DE PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" });
     doc.setTextColor(0, 0, 0);
     y = 25;
     
-    // Adicionar gráficos em grid
     if (imagensGraficos.graficoBarras) {
         doc.addImage(imagensGraficos.graficoBarras, 'PNG', 10, y, 133, 70);
-        if (imagensGraficos.graficoPizza) {
-            doc.addImage(imagensGraficos.graficoPizza, 'PNG', 153, y, 133, 70);
-        }
+        if (imagensGraficos.graficoPizza) doc.addImage(imagensGraficos.graficoPizza, 'PNG', 153, y, 133, 70);
         y += 75;
     }
     if (imagensGraficos.graficoRadar) {
         doc.addImage(imagensGraficos.graficoRadar, 'PNG', 10, y, 133, 70);
-        if (imagensGraficos.graficoLinha) {
-            doc.addImage(imagensGraficos.graficoLinha, 'PNG', 153, y, 133, 70);
-        }
+        if (imagensGraficos.graficoLinha) doc.addImage(imagensGraficos.graficoLinha, 'PNG', 153, y, 133, 70);
         y += 75;
     }
     if (imagensGraficos.graficoComparativo) {
@@ -1119,7 +1047,7 @@ window.gerarPDF = async () => {
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text("LEGENDA DOS GRÁFICOS - INTERPRETAÇÃO DOS DADOS", 148, 14, { align: "center" });
     doc.setTextColor(0, 0, 0);
     y = 28;
@@ -1128,7 +1056,6 @@ window.gerarPDF = async () => {
     doc.setFont(undefined, 'bold');
     doc.text("1. GRÁFICO DE BARRAS - Comparativo de Valores por Empresa", 14, y);
     doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
     doc.text("Mostra o valor total proposto por cada empresa participante. Quanto maior a barra, maior o valor total da proposta.", 14, y + 5);
     y += 15;
     
@@ -1136,37 +1063,33 @@ window.gerarPDF = async () => {
     doc.setFont(undefined, 'bold');
     doc.text("2. GRÁFICO DE PIZZA - Participação no Mercado", 14, y);
     doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text("Representa a participação percentual de cada empresa no valor global das propostas. Empresas com fatias maiores têm maior representatividade.", 14, y + 5);
+    doc.text("Representa a participação percentual de cada empresa no valor global das propostas.", 14, y + 5);
     y += 15;
     
     doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
     doc.text("3. GRÁFICO RADAR - Análise de Desempenho", 14, y);
     doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text("Compara o desempenho de cada empresa em relação à média do mercado. Valores positivos indicam desempenho acima da média, valores negativos indicam abaixo da média.", 14, y + 5);
+    doc.text("Compara o desempenho de cada empresa em relação à média do mercado. Valores positivos = acima da média.", 14, y + 5);
     y += 15;
     
     doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
     doc.text("4. GRÁFICO DE LINHA - Tendência de Preços", 14, y);
     doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text("Mostra a variação dos valores propostos pelas empresas. Quanto mais alta a linha, maior o valor proposto. Auxilia na identificação de outliers.", 14, y + 5);
+    doc.text("Mostra a variação dos valores propostos pelas empresas. Auxilia na identificação de outliers.", 14, y + 5);
     y += 15;
     
     doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
     doc.text("5. GRÁFICO COMPARATIVO - Média vs Menor Preço", 14, y);
     doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text("Compara o valor total de cada empresa (barras azuis) com o menor preço encontrado para cada item (barras verdes). Empresas com barras verdes próximas das azuis têm propostas mais competitivas.", 14, y + 5);
+    doc.text("Compara o valor total de cada empresa (azul) com o menor preço encontrado (verde).", 14, y + 5);
     y += 18;
     
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont(undefined, 'italic');
-    doc.text("Observação: Todos os valores estão expressos em Reais (R$). As cores diferenciadas auxiliam na identificação visual das empresas.", 14, y);
+    doc.text("Observação: Todos os valores estão expressos em Reais (R$), conforme determina o Art. 18 da Lei 14.133/2021.", 14, y);
     
     // ==================== PÁGINA 5: RESUMO ESTATÍSTICO ====================
     doc.addPage();
@@ -1174,23 +1097,18 @@ window.gerarPDF = async () => {
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("RESUMO ESTATÍSTICO E ANÁLISE ECONÔMICA", 148, 14, { align: "center" });
+    doc.setFontSize(11);
+    doc.text("RESUMO ESTATÍSTICO - CRITÉRIO DE JULGAMENTO (Art. 26, Lei 14.133/2021)", 148, 14, { align: "center" });
     doc.setTextColor(0, 0, 0);
     y = 28;
     
-    // Estatísticas das empresas
     const empresasTotais = new Map();
     let totalGeral = 0;
     itens.forEach(item => {
         item.cotacoes.forEach(cot => {
             const total = cot.valor * item.qtd;
             totalGeral += total;
-            if (empresasTotais.has(cot.empresa)) {
-                empresasTotais.set(cot.empresa, empresasTotais.get(cot.empresa) + total);
-            } else {
-                empresasTotais.set(cot.empresa, total);
-            }
+            empresasTotais.set(cot.empresa, (empresasTotais.get(cot.empresa) || 0) + total);
         });
     });
     
@@ -1218,7 +1136,6 @@ window.gerarPDF = async () => {
     doc.text(`Número de Empresas Participantes: ${empresasTotais.size}`, 14, y + 12);
     doc.text(`Número de Itens Cotados: ${itens.length}`, 14, y + 18);
     doc.text(`Média de Propostas por Item: ${(itens.reduce((acc, i) => acc + i.cotacoes.length, 0) / itens.length).toFixed(1)}`, 14, y + 24);
-    y += 35;
     
     // ==================== PÁGINA 6: JUSTIFICATIVA E ASSINATURA ====================
     doc.addPage();
@@ -1226,8 +1143,8 @@ window.gerarPDF = async () => {
     doc.setFillColor(13, 59, 102);
     doc.rect(0, 0, 297, 22, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("JUSTIFICATIVA DA CONTRATAÇÃO", 148, 14, { align: "center" });
+    doc.setFontSize(11);
+    doc.text("JUSTIFICATIVA DA CONTRATAÇÃO - LEI Nº 14.133/2021", 148, 14, { align: "center" });
     doc.setTextColor(0, 0, 0);
     y = 28;
     
@@ -1236,9 +1153,18 @@ window.gerarPDF = async () => {
     
     doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
-    doc.text("ANÁLISE DA PROPOSTA MAIS VANTAJOSA:", 14, y);
+    doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y);
     y += 6;
-    doc.setFontSize(9);
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    doc.text("Com fundamento no Art. 26, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y);
+    y += 12;
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y);
+    y += 6;
+    doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     
     let justificativa = "";
@@ -1246,42 +1172,54 @@ window.gerarPDF = async () => {
         const totalVencedor = calcularTotalVencedor(vencedor);
         const totalContrato = totalVencedor * 12;
         const economiaPercentual = ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2);
-        justificativa = `Após análise criteriosa das propostas apresentadas neste Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\n`;
-        justificativa += `Considerando a contratação por 12 (doze) meses, conforme modalidade selecionada, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\n`;
-        justificativa += `A proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 8.666/93 e suas alterações. Destaca-se que a análise considerou não apenas o critério de menor preço, mas também a capacidade técnica e regularidade fiscal da empresa proponente.`;
+        justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\n`;
+        justificativa += `Considerando a contratação por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\n`;
+        justificativa += `A proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
     } else if (tipoContratacao === 'dispensa') {
-        justificativa = `Após análise das propostas apresentadas neste Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\n`;
-        justificativa += `Trata-se de processo de dispensa de licitação fundamentada no art. 24 da Lei nº 8.666/93, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual.\n\n`;
+        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\n`;
+        justificativa += `Trata-se de processo de dispensa de licitação fundamentada no Art. 75 da Lei nº 14.133/2021, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual.\n\n`;
         justificativa += `A proposta atende aos requisitos legais de economicidade e eficiência, sendo a mais vantajosa para a Administração no contexto da dispensa licitatória.`;
     } else {
-        justificativa = `Após análise das propostas apresentadas neste Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\n`;
-        justificativa += `A proposta atende aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 8.666/93 e suas alterações.`;
+        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, nos termos da Lei nº 14.133/2021.`;
     }
     
     const splitText = doc.splitTextToSize(justificativa, 265);
     doc.text(splitText, 14, y);
-    y += splitText.length * 5 + 20;
+    y += splitText.length * 4 + 15;
+    
+    // FUNDAMENTAÇÃO LEGAL
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    doc.text("FUNDAMENTAÇÃO LEGAL:", 14, y);
+    y += 5;
+    doc.setFontSize(7);
+    doc.setFont(undefined, 'normal');
+    const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 26, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
+    const splitFund = doc.splitTextToSize(fundamentacao, 265);
+    doc.text(splitFund, 14, y);
+    y += splitFund.length * 4 + 15;
     
     // Assinatura
     doc.setDrawColor(0);
     doc.line(80, y, 180, y);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.text(assinatura.nome || "_________________________", 130, y + 5, { align: "center" });
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setFont(undefined, 'normal');
-    doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, y + 11, { align: "center" });
-    doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, y + 17, { align: "center" });
-    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 130, y + 23, { align: "center" });
+    doc.text(`Cargo: ${assinatura.cargo || "_________"}`, 130, y + 11, { align: "center" });
+    doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, y + 17, { align: "center" });
+    doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, y + 23, { align: "center" });
+    doc.text(`Data: ${dataAtual}`, 130, y + 29, { align: "center" });
     
     // Rodapé
-    doc.setFontSize(7);
+    doc.setFontSize(6);
     doc.setTextColor(128, 128, 128);
-    doc.text("Documento gerado pelo Sistema ESPEP MASTER - Mapa Comparativo de Preços", 148, 200, { align: "center" });
+    doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" });
     doc.text(`Página ${doc.internal.getNumberOfPages()}`, 280, 200);
     
-    doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}.pdf`);
-    showAlert('PDF gerado com sucesso!', 'success');
+    doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}_Lei14133.pdf`);
+    showAlert('PDF gerado com sucesso conforme Lei 14.133/2021!', 'success');
 };
 
 window.voltar = () => {
