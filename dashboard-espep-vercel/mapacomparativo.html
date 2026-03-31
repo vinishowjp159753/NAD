@@ -266,6 +266,7 @@ canvas {
     color: #0d3b66;
     margin-bottom: 10px;
     font-size: 0.9rem;
+    font-weight: bold;
 }
 
 .legenda-grafico p {
@@ -389,14 +390,15 @@ canvas {
                 <h4>💰 Comparativo de Valores por Empresa</h4>
                 <canvas id="graficoBarras"></canvas>
                 <div class="legenda-grafico">
-                    <h5>📌 Interpretação do Gráfico de Barras</h5>
-                    <p>Este gráfico apresenta o <strong>valor total proposto por cada empresa participante</strong> do processo licitatório, considerando todos os itens cotados.</p>
+                    <h5>📌 INTERPRETAÇÃO DO GRÁFICO DE BARRAS</h5>
+                    <p>Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório, considerando todos os itens cotados no Mapa Comparativo de Preços.</p>
+                    <p><strong>Elementos do Gráfico:</strong></p>
                     <ul>
-                        <li><strong>📊 Cada barra</strong> representa uma empresa participante</li>
-                        <li><strong>📈 Altura da barra</strong> = valor total da proposta (soma de todos os itens)</li>
-                        <li><strong>📉 Importante</strong>, os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li>
+                        <li>Cada barra representa uma empresa participante;</li>
+                        <li>A altura da barra corresponde ao valor total da proposta (soma de todos os itens);</li>
+                        <li>Os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li>
                     </ul>
-                    <p style="margin-top: 10px;"><strong>Base Legal:</strong> Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</p>
+                    <p><em>Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
                 </div>
             </div>
         </div>
@@ -1021,6 +1023,9 @@ window.gerarPDF = async () => {
             },
             margin: { left: 10, right: 10 }
         });
+        y = doc.lastAutoTable.finalY + 10;
+    } else {
+        y += 10;
     }
     
     // PÁGINA 3: GRÁFICO DE BARRAS COM EXPLICAÇÃO
@@ -1042,23 +1047,23 @@ window.gerarPDF = async () => {
         y += 10;
     }
     
-    // Explicação do gráfico
-    doc.setFontSize(10);
+    // Explicação do gráfico - Formatação correta sem caracteres estranhos
+    doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
-    doc.text("📌 INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y);
+    doc.text("INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y);
     y += 7;
     
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont(undefined, 'normal');
     doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y);
-    y += 4;
+    y += 5;
     doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y);
     y += 8;
     
     doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
     doc.text("Elementos do Gráfico:", 14, y);
-    y += 6;
+    y += 5;
     doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     doc.text("• Cada barra representa uma empresa participante;", 14, y);
@@ -1073,55 +1078,9 @@ window.gerarPDF = async () => {
     doc.setFontSize(8);
     doc.setFont(undefined, 'italic');
     doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y);
-    y += 12;
+    y += 15;
     
-    // PÁGINA 4: RESUMO ESTATÍSTICO
-    doc.addPage();
-    y = 15;
-    doc.setFillColor(13, 59, 102);
-    doc.rect(0, 0, 297, 22, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("RESUMO ESTATÍSTICO - CRITÉRIO DE JULGAMENTO (Art. 26, Lei 14.133/2021)", 148, 14, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-    y = 28;
-    
-    const empresasTotais = new Map();
-    let totalGeral = 0;
-    itens.forEach(item => {
-        item.cotacoes.forEach(cot => {
-            const total = cot.valor * item.qtd;
-            totalGeral += total;
-            empresasTotais.set(cot.empresa, (empresasTotais.get(cot.empresa) || 0) + total);
-        });
-    });
-    
-    const statsBody = [];
-    empresasTotais.forEach((total, empresa) => {
-        const percentual = (total / totalGeral * 100).toFixed(2);
-        statsBody.push([empresa, `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, `${percentual}%`]);
-    });
-    
-    doc.autoTable({
-        startY: y,
-        head: [["Empresa", "Valor Total Proposto", "Participação"]],
-        body: statsBody,
-        styles: { fontSize: 9, cellPadding: 4 },
-        headStyles: { fillColor: [13, 59, 102] },
-        margin: { left: 30, right: 30 }
-    });
-    y = doc.lastAutoTable.finalY + 12;
-    
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text("INDICADORES GERAIS:", 14, y);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Valor Global das Propostas: R$ ${totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 14, y + 6);
-    doc.text(`Número de Empresas Participantes: ${empresasTotais.size}`, 14, y + 12);
-    doc.text(`Número de Itens Cotados: ${itens.length}`, 14, y + 18);
-    doc.text(`Média de Propostas por Item: ${(itens.reduce((acc, i) => acc + i.cotacoes.length, 0) / itens.length).toFixed(1)}`, 14, y + 24);
-    
-    // PÁGINA 5: JUSTIFICATIVA E ASSINATURA
+    // PÁGINA 4: JUSTIFICATIVA E ASSINATURA
     doc.addPage();
     y = 15;
     doc.setFillColor(13, 59, 102);
@@ -1134,6 +1093,14 @@ window.gerarPDF = async () => {
     
     const vencedor = document.getElementById('vencedorSelect').value;
     const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
+    
+    // Calcular total geral para estatísticas
+    let totalGeral = 0;
+    itens.forEach(item => {
+        item.cotacoes.forEach(cot => {
+            totalGeral += cot.valor * item.qtd;
+        });
+    });
     
     doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
@@ -1157,7 +1124,7 @@ window.gerarPDF = async () => {
     if (tipoContratacao === 'contrato' && vencedor) {
         const totalVencedor = calcularTotalVencedor(vencedor);
         const totalContrato = totalVencedor * 12;
-        const economiaPercentual = ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2);
+        const economiaPercentual = totalGeral > 0 ? ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2) : "0";
         justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\n`;
         justificativa += `Considerando a contratação por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\n`;
         justificativa += `A proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
