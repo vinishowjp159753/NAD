@@ -1,1212 +1,615 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESPEP - Sistema MASTER - Lei 14.133/2021</title>
-
-<!-- PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
-<!-- Chart.js para gráficos -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-}
-
-header {
-    background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-header h1 {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
-}
-
-header p {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 20px auto;
-    padding: 20px;
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-}
-
-.card h3, .card h4 {
-    margin-bottom: 15px;
-    color: #0d3b66;
-    border-left: 4px solid #f39c12;
-    padding-left: 10px;
-}
-
-button {
-    background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    margin: 3px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 0.9rem;
-}
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
-}
-
-.btn-edit {
-    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-}
-
-.btn-info {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-}
-
-input, select {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin: 5px;
-    font-size: 0.9rem;
-    transition: border-color 0.3s;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: #0d3b66;
-    box-shadow: 0 0 0 3px rgba(13,59,102,0.1);
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    overflow-x: auto;
-    display: block;
-}
-
-th {
-    background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%);
-    color: #fff;
-    padding: 10px 6px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    position: sticky;
-    top: 0;
-}
-
-td {
-    border: 1px solid #ddd;
-    padding: 6px;
-    font-size: 0.75rem;
-}
-
-tr:hover {
-    background: #f5f5f5;
-}
-
-.menor {
-    background: #d1fae5;
-    font-weight: bold;
-}
-
-.hidden {
-    display: none;
-}
-
-.loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 1.2rem;
-    color: #0d3b66;
-}
-
-.form-group {
-    display: inline-block;
-    margin: 5px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 0.8rem;
-    color: #666;
-    margin-bottom: 3px;
-}
-
-.radio-group {
-    display: flex;
-    gap: 20px;
-    margin: 10px 0;
-    align-items: center;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-}
-
-.radio-group input[type="radio"] {
-    width: auto;
-    margin: 0;
-}
-
-.info-box {
-    background: #e3f2fd;
-    border-left: 4px solid #2196f3;
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-}
-
-.total-contrato {
-    background: #c8e6c9;
-    border-left: 4px solid #4caf50;
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 6px;
-    font-weight: bold;
-}
-
-.grafico-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.grafico-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.grafico-card h4 {
-    margin-bottom: 15px;
-    text-align: center;
-    color: #0d3b66;
-    font-size: 1.1rem;
-}
-
-canvas {
-    max-height: 400px;
-    width: 100% !important;
-}
-
-.legenda-grafico {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    border-left: 4px solid #0d3b66;
-}
-
-.legenda-grafico h5 {
-    color: #0d3b66;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    font-weight: bold;
-}
-
-.legenda-grafico p {
-    font-size: 0.85rem;
-    color: #555;
-    line-height: 1.5;
-    margin-bottom: 8px;
-}
-
-.legenda-grafico ul {
-    margin-left: 20px;
-    margin-top: 8px;
-}
-
-.legenda-grafico li {
-    font-size: 0.8rem;
-    color: #666;
-    margin-bottom: 4px;
-}
-
-.lei-badge {
-    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-    color: #fff;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    display: inline-block;
-    margin-left: 10px;
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .card {
-        padding: 15px;
-    }
-    
-    input, select, button {
-        width: 100%;
-        margin: 5px 0;
-    }
-    
-    th, td {
-        font-size: 0.65rem;
-        padding: 4px;
-    }
-    
-    .grafico-card {
-        padding: 12px;
-    }
-    
-    canvas {
-        max-height: 250px;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESPEP - Sistema MASTER - Lei 14.133/2021</title>
+    <!-- PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        header { background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); color: #fff; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        header p { font-size: 0.9rem; opacity: 0.9; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 20px; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .card h3, .card h4 { margin-bottom: 15px; color: #0d3b66; border-left: 4px solid #f39c12; padding-left: 10px; }
+        button { background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; margin: 3px; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-danger { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); }
+        .btn-edit { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+        .btn-success { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
+        .btn-info { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+        input, select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin: 5px; font-size: 0.9rem; transition: border-color 0.3s; }
+        input:focus, select:focus { outline: none; border-color: #0d3b66; box-shadow: 0 0 0 3px rgba(13,59,102,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; overflow-x: auto; display: block; }
+        th { background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); color: #fff; padding: 10px 6px; font-weight: 600; font-size: 0.75rem; position: sticky; top: 0; }
+        td { border: 1px solid #ddd; padding: 6px; font-size: 0.75rem; }
+        tr:hover { background: #f5f5f5; }
+        .menor { background: #d1fae5; font-weight: bold; }
+        .hidden { display: none; }
+        .loading { text-align: center; padding: 40px; font-size: 1.2rem; color: #0d3b66; }
+        .form-group { display: inline-block; margin: 5px; }
+        .form-group label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 3px; }
+        .radio-group { display: flex; gap: 20px; margin: 10px 0; align-items: center; }
+        .radio-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .radio-group input[type="radio"] { width: auto; margin: 0; }
+        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 0.85rem; }
+        .total-contrato { background: #c8e6c9; border-left: 4px solid #4caf50; padding: 10px; margin-top: 10px; border-radius: 6px; font-weight: bold; }
+        .grafico-container { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+        .grafico-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .grafico-card h4 { margin-bottom: 15px; text-align: center; color: #0d3b66; font-size: 1.1rem; }
+        canvas { max-height: 400px; width: 100% !important; }
+        .legenda-grafico { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #0d3b66; }
+        .legenda-grafico h5 { color: #0d3b66; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; }
+        .legenda-grafico p { font-size: 0.85rem; color: #555; line-height: 1.5; margin-bottom: 8px; }
+        .legenda-grafico ul { margin-left: 20px; margin-top: 8px; }
+        .legenda-grafico li { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+        .lei-badge { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: inline-block; margin-left: 10px; }
+        .empresa-select-group { display: flex; align-items: center; gap: 10px; margin: 5px; }
+        .empresa-select-group select { flex: 1; }
+        .empresa-select-group button { margin: 0; white-space: nowrap; }
+        @media (max-width: 768px) { .container { padding: 10px; } .card { padding: 15px; } input, select, button { width: 100%; margin: 5px 0; } th, td { font-size: 0.65rem; padding: 4px; } .grafico-card { padding: 12px; } canvas { max-height: 250px; } .empresa-select-group { flex-direction: column; } }
+    </style>
 </head>
-
 <body>
-
-<header>
-    <h1>📊 Sistema ESPEP MASTER <span class="lei-badge">Lei 14.133/2021</span></h1>
-    <p>Gestão de Processos de Compras Públicas conforme a Nova Lei de Licitações</p>
-</header>
-
-<div class="container">
-
-<div id="telaProcessos">
-    <div class="card">
-        <h3>📋 Novo Processo</h3>
-        <div class="form-group">
-            <label>Número do Processo *</label>
-            <input id="numero" placeholder="Ex: 2024/0001">
+    <header>
+        <h1>📊 Sistema ESPEP MASTER <span class="lei-badge">Lei 14.133/2021</span></h1>
+        <p>Gestão de Processos de Compras Públicas conforme a Nova Lei de Licitações</p>
+    </header>
+    <div class="container">
+        <div id="telaProcessos">
+            <div class="card">
+                <h3>📋 Novo Processo</h3>
+                <div class="form-group"><label>Número do Processo *</label><input id="numero" placeholder="Ex: 2024/0001"></div>
+                <div class="form-group"><label>Órgão *</label><input id="orgao" placeholder="Ex: Secretaria de Administração"></div>
+                <div class="form-group"><label>Data *</label><input id="data" type="date"></div>
+                <button onclick="criarProcesso()">✅ Criar Processo</button>
+                <button onclick="carregarProcessos()" class="btn-info">🔄 Recarregar</button>
+            </div>
+            <div class="card">
+                <h3>📁 Processos Cadastrados</h3>
+                <div id="listaProcessos"></div>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Órgão *</label>
-            <input id="orgao" placeholder="Ex: Secretaria de Administração">
-        </div>
-        <div class="form-group">
-            <label>Data *</label>
-            <input id="data" type="date">
-        </div>
-        <button onclick="criarProcesso()">✅ Criar Processo</button>
-        <button onclick="carregarProcessos()" class="btn-info">🔄 Recarregar</button>
-    </div>
-    
-    <div class="card">
-        <h3>📁 Processos Cadastrados</h3>
-        <div id="listaProcessos"></div>
-    </div>
-</div>
-
-<div id="telaMapa" class="hidden">
-    <button onclick="voltar()" class="btn-info">⬅ Voltar para Processos</button>
-    <h3 id="tituloProcesso" style="margin: 15px 0;"></h3>
-    
-    <!-- Tabela de Itens e Cotações -->
-    <div class="card" style="overflow-x: auto;">
-        <h3>📊 Mapa Comparativo de Preços <span class="lei-badge">Art. 23, §1º, Lei 14.133/2021</span></h3>
-        <table id="tabelaPrincipal">
-            <thead>
-                <tr>
-                    <th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unid</th>
-                    <th>Empresa</th><th>CNPJ</th><th>Vl.Unit</th><th>Total</th><th>Origem</th>
-                    <th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-        </table>
-    </div>
-
-    <!-- Gráfico de Barras -->
-    <div class="card">
-        <h3>📈 Análise Gráfica das Propostas <span class="lei-badge">Art. 25, Lei 14.133/2021</span></h3>
-        <div class="grafico-container">
-            <div class="grafico-card">
-                <h4>💰 Comparativo de Valores por Empresa</h4>
-                <canvas id="graficoBarras"></canvas>
-                <div class="legenda-grafico">
-                    <h5>📌 INTERPRETAÇÃO DO GRÁFICO DE BARRAS</h5>
-                    <p>Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório, considerando todos os itens cotados no Mapa Comparativo de Preços.</p>
-                    <p><strong>Elementos do Gráfico:</strong></p>
-                    <ul>
-                        <li>Cada barra representa uma empresa participante;</li>
-                        <li>A altura da barra corresponde ao valor total da proposta (soma de todos os itens);</li>
-                        <li>Os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li>
-                    </ul>
-                    <p><em>Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
+        <div id="telaMapa" class="hidden">
+            <button onclick="voltar()" class="btn-info">⬅ Voltar para Processos</button>
+            <h3 id="tituloProcesso" style="margin: 15px 0;"></h3>
+            
+            <div class="card" style="overflow-x: auto;">
+                <h3>📊 Mapa Comparativo de Preços <span class="lei-badge">Art. 23, §1º, Lei 14.133/2021</span></h3>
+                <table id="tabelaPrincipal">
+                    <thead>
+                        <tr><th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unid</th><th>Empresa</th><th>CNPJ</th><th>Vl.Unit</th><th>Total</th><th>Origem</th><th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th><th>Ações</th></tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3>📈 Análise Gráfica das Propostas <span class="lei-badge">Art. 25, Lei 14.133/2021</span></h3>
+                <div class="grafico-container">
+                    <div class="grafico-card">
+                        <h4>💰 Comparativo de Valores por Empresa</h4>
+                        <canvas id="graficoBarras"></canvas>
+                        <div class="legenda-grafico">
+                            <h5>📌 INTERPRETAÇÃO DO GRÁFICO DE BARRAS</h5>
+                            <p>Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório, considerando todos os itens cotados no Mapa Comparativo de Preços.</p>
+                            <p><strong>Elementos do Gráfico:</strong></p>
+                            <ul><li>Cada barra representa uma empresa participante;</li><li>A altura da barra corresponde ao valor total da proposta (soma de todos os itens);</li><li>Os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li></ul>
+                            <p><em>Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            
+            <div class="card">
+                <h4>➕ Adicionar Item ao Processo</h4>
+                <div class="form-group"><input id="codigoItem" placeholder="Código do Item"></div>
+                <div class="form-group"><input id="descItem" placeholder="Descrição *" required></div>
+                <div class="form-group"><input id="qtdItem" type="number" placeholder="Quantidade *" required></div>
+                <div class="form-group"><input id="undItem" placeholder="Unidade (Ex: UN, KG, M)"></div>
+                <button onclick="addItem()" class="btn-success">➕ Adicionar Item</button>
+            </div>
+            
+            <div class="card">
+                <h4>💰 Adicionar Cotação</h4>
+                <div class="form-group"><label>Item</label><select id="itemSelect"></select></div>
+                <div class="empresa-select-group">
+                    <select id="empresaSelect" onchange="selecionarEmpresa()">
+                        <option value="">-- Selecione uma empresa existente ou digite nova --</option>
+                    </select>
+                    <button onclick="mostrarNovaEmpresa()" class="btn-info" type="button">➕ Nova Empresa</button>
+                </div>
+                <div id="novaEmpresaDiv" class="hidden">
+                    <div class="form-group"><input id="empresaNova" placeholder="Nova Empresa *"></div>
+                    <div class="form-group"><input id="cnpjNova" placeholder="CNPJ da Nova Empresa *"></div>
+                    <button onclick="adicionarNovaEmpresa()" class="btn-success" type="button">✅ Adicionar e Usar</button>
+                    <button onclick="cancelarNovaEmpresa()" class="btn-danger" type="button">❌ Cancelar</button>
+                </div>
+                <div id="empresaExistenteDiv">
+                    <div class="form-group"><input id="cnpj" placeholder="CNPJ *" required></div>
+                </div>
+                <div class="form-group"><input id="valor" type="number" placeholder="Valor Unitário (R$) *" required></div>
+                <div class="form-group"><input id="origem" placeholder="Origem (Ex: Cotação, Pregão)"></div>
+                <button onclick="addCotacao()" class="btn-success">💰 Adicionar Cotação</button>
+            </div>
+            
+            <div class="card">
+                <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 28, Lei 14.133/2021</span></h4>
+                <div class="radio-group">
+                    <label><input type="radio" name="tipoContratacao" value="contrato" checked> 📝 Contrato (12 meses)</label>
+                    <label><input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (Art. 75)</label>
+                </div>
+                <div id="infoContrato" class="info-box">ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 28 da Lei 14.133/2021.</div>
+                <div id="infoDispensa" class="info-box hidden">ℹ️ Dispensa de licitação com fundamento no Art. 75 da Lei 14.133/2021. Não há previsão de contrato plurianual, aplicando-se N/A.</div>
+            </div>
+            
+            <div class="card">
+                <h4>✍️ Assinatura do Responsável</h4>
+                <div class="form-group"><input id="nomeResp" placeholder="Nome Completo *" required></div>
+                <div class="form-group"><input id="matriculaResp" placeholder="Matrícula *" required></div>
+                <div class="form-group"><input id="setorResp" placeholder="Setor/Lotação *" required></div>
+                <div class="form-group"><input id="cargoResp" placeholder="Cargo/Função *" required></div>
+                <button onclick="salvarAssinatura()" class="btn-info">💾 Salvar Assinatura</button>
+            </div>
+            
+            <div class="card">
+                <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 26, Lei 14.133/2021</span></h4>
+                <select id="vencedorSelect"></select>
+                <div id="totalContratoDisplay" class="total-contrato hidden">💰 Valor Total do Contrato (12 meses): <strong id="valorTotalContrato">R$ 0,00</strong></div>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">⚠️ Critério de julgamento: menor preço, conforme Art. 26, inciso I da Lei 14.133/2021.</p>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF (Lei 14.133/2021)</button>
+                <button onclick="exportarExcel()" class="btn-info" style="flex: 1;">📊 Exportar para Excel</button>
             </div>
         </div>
     </div>
-
-    <!-- Adicionar Item -->
-    <div class="card">
-        <h4>➕ Adicionar Item ao Processo</h4>
-        <div class="form-group"><input id="codigoItem" placeholder="Código do Item"></div>
-        <div class="form-group"><input id="descItem" placeholder="Descrição *" required></div>
-        <div class="form-group"><input id="qtdItem" type="number" placeholder="Quantidade *" required></div>
-        <div class="form-group"><input id="undItem" placeholder="Unidade (Ex: UN, KG, M)"></div>
-        <button onclick="addItem()" class="btn-success">➕ Adicionar Item</button>
-    </div>
-
-    <!-- Adicionar Cotação -->
-    <div class="card">
-        <h4>💰 Adicionar Cotação</h4>
-        <div class="form-group">
-            <label>Item</label>
-            <select id="itemSelect"></select>
-        </div>
-        <div class="form-group"><input id="empresa" placeholder="Empresa *" required></div>
-        <div class="form-group"><input id="cnpj" placeholder="CNPJ *" required></div>
-        <div class="form-group"><input id="valor" type="number" placeholder="Valor Unitário (R$) *" required></div>
-        <div class="form-group"><input id="origem" placeholder="Origem (Ex: Cotação, Pregão)"></div>
-        <button onclick="addCotacao()" class="btn-success">💰 Adicionar Cotação</button>
-    </div>
-
-    <!-- Configurações do Contrato -->
-    <div class="card">
-        <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 28, Lei 14.133/2021</span></h4>
-        <div class="radio-group">
-            <label>
-                <input type="radio" name="tipoContratacao" value="contrato" checked> 📝 Contrato (12 meses)
-            </label>
-            <label>
-                <input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (Art. 75)
-            </label>
-        </div>
-        <div id="infoContrato" class="info-box">
-            ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 28 da Lei 14.133/2021.
-        </div>
-        <div id="infoDispensa" class="info-box hidden">
-            ℹ️ Dispensa de licitação com fundamento no Art. 75 da Lei 14.133/2021. Não há previsão de contrato plurianual, aplicando-se N/A.
-        </div>
-    </div>
-
-    <!-- Assinatura -->
-    <div class="card">
-        <h4>✍️ Assinatura do Responsável</h4>
-        <div class="form-group"><input id="nomeResp" placeholder="Nome Completo *" required></div>
-        <div class="form-group"><input id="matriculaResp" placeholder="Matrícula *" required></div>
-        <div class="form-group"><input id="setorResp" placeholder="Setor/Lotação *" required></div>
-        <div class="form-group"><input id="cargoResp" placeholder="Cargo/Função *" required></div>
-        <button onclick="salvarAssinatura()" class="btn-info">💾 Salvar Assinatura</button>
-    </div>
-
-    <!-- Fornecedor Vencedor -->
-    <div class="card">
-        <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 26, Lei 14.133/2021</span></h4>
-        <select id="vencedorSelect"></select>
-        <div id="totalContratoDisplay" class="total-contrato hidden">
-            💰 Valor Total do Contrato (12 meses): <strong id="valorTotalContrato">R$ 0,00</strong>
-        </div>
-        <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
-            ⚠️ Critério de julgamento: menor preço, conforme Art. 26, inciso I da Lei 14.133/2021.
-        </p>
-    </div>
-
-    <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF (Lei 14.133/2021)</button>
-        <button onclick="exportarExcel()" class="btn-info" style="flex: 1;">📊 Exportar para Excel</button>
-    </div>
-</div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-    getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// Firebase Config
-const firebaseConfig = {
-    apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0",
-    authDomain: "nad1-3fbbf.firebaseapp.com",
-    projectId: "nad1-3fbbf"
-};
-
-let db;
-try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-} catch (error) {
-    console.error("Erro Firebase:", error);
-}
-
-let processoAtual = null;
-let itens = [];
-let assinatura = {};
-let graficoBarras = null;
-
-// Funções Auxiliares
-function showAlert(message, type = 'success') {
-    Swal.fire({
-        title: type === 'success' ? 'Sucesso!' : 'Erro!',
-        text: message,
-        icon: type,
-        timer: 3000,
-        showConfirmButton: false
-    });
-}
-
-function validateFields(fields) {
-    for (let field of fields) {
-        if (!field.value || field.value.trim() === '') {
-            showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error');
-            return false;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0", authDomain: "nad1-3fbbf.firebaseapp.com", projectId: "nad1-3fbbf" };
+        let db;
+        try { const app = initializeApp(firebaseConfig); db = getFirestore(app); } catch (error) { console.error("Erro Firebase:", error); }
+        
+        let processoAtual = null;
+        let itens = [];
+        let assinatura = {};
+        let graficoBarras = null;
+        let empresasCache = new Map(); // Cache de empresas do processo atual
+        
+        function showAlert(message, type = 'success') { Swal.fire({ title: type === 'success' ? 'Sucesso!' : 'Erro!', text: message, icon: type, timer: 3000, showConfirmButton: false }); }
+        function validateFields(fields) { for (let field of fields) { if (!field.value || field.value.trim() === '') { showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error'); return false; } } return true; }
+        
+        function calcularTotalVencedor(empresaSelecionada) {
+            let totalGeral = 0;
+            itens.forEach(item => { if (item.cotacoes && item.cotacoes.length > 0) { const cotacaoVencedora = item.cotacoes.find(c => c.empresa === empresaSelecionada); if (cotacaoVencedora) { totalGeral += cotacaoVencedora.valor * item.qtd; } } });
+            return totalGeral;
         }
-    }
-    return true;
-}
-
-function calcularTotalVencedor(empresaSelecionada) {
-    let totalGeral = 0;
-    itens.forEach(item => {
-        if (item.cotacoes && item.cotacoes.length > 0) {
-            const cotacaoVencedora = item.cotacoes.find(c => c.empresa === empresaSelecionada);
-            if (cotacaoVencedora) {
-                totalGeral += cotacaoVencedora.valor * item.qtd;
-            }
+        
+        function stats(v) {
+            if (!v || v.length === 0) return { media: 0, mediana: 0, desvio: 0, min: 0, max: 0 };
+            const sorted = [...v].sort((a, b) => a - b);
+            const media = v.reduce((a, b) => a + b, 0) / v.length;
+            const mediana = sorted[Math.floor(sorted.length / 2)];
+            const desvio = Math.sqrt(v.reduce((a, b) => a + Math.pow(b - media, 2), 0) / v.length);
+            return { media, mediana, desvio, min: sorted[0], max: sorted[sorted.length - 1] };
         }
-    });
-    return totalGeral;
-}
-
-function stats(v) {
-    if (!v || v.length === 0) return { media: 0, mediana: 0, desvio: 0, min: 0, max: 0 };
-    const sorted = [...v].sort((a, b) => a - b);
-    const media = v.reduce((a, b) => a + b, 0) / v.length;
-    const mediana = sorted[Math.floor(sorted.length / 2)];
-    const desvio = Math.sqrt(v.reduce((a, b) => a + Math.pow(b - media, 2), 0) / v.length);
-    return { media, mediana, desvio, min: sorted[0], max: sorted[sorted.length - 1] };
-}
-
-// Processos
-window.criarProcesso = async () => {
-    const numeroField = document.getElementById('numero');
-    const orgaoField = document.getElementById('orgao');
-    const dataField = document.getElementById('data');
-    if (!validateFields([numeroField, orgaoField, dataField])) return;
-    try {
-        await addDoc(collection(db, "processos"), {
-            numero: numeroField.value,
-            orgao: orgaoField.value,
-            data: dataField.value,
-            createdAt: new Date().toISOString()
-        });
-        showAlert('Processo criado com sucesso!', 'success');
-        numeroField.value = '';
-        orgaoField.value = '';
-        dataField.value = '';
-        await carregarProcessos();
-    } catch (error) {
-        showAlert('Erro ao criar processo', 'error');
-    }
-};
-
-window.carregarProcessos = async () => {
-    const listaElement = document.getElementById('listaProcessos');
-    try {
-        const snap = await getDocs(collection(db, "processos"));
-        if (snap.empty) {
-            listaElement.innerHTML = '<p style="text-align: center; color: #666;">Nenhum processo cadastrado</p>';
-            return;
+        
+        // Funções para gerenciar empresas
+        function atualizarListaEmpresas() {
+            const empresasSet = new Set();
+            itens.forEach(item => {
+                item.cotacoes.forEach(cot => {
+                    empresasSet.add(JSON.stringify({ nome: cot.empresa, cnpj: cot.cnpj }));
+                });
+            });
+            
+            empresasCache.clear();
+            empresasSet.forEach(empJson => {
+                const emp = JSON.parse(empJson);
+                empresasCache.set(emp.nome, emp.cnpj);
+            });
+            
+            const empresaSelect = document.getElementById('empresaSelect');
+            empresaSelect.innerHTML = '<option value="">-- Selecione uma empresa existente ou digite nova --</option>';
+            Array.from(empresasCache.keys()).sort().forEach(nome => {
+                empresaSelect.innerHTML += `<option value="${nome.replace(/"/g, '&quot;')}">${nome}</option>`;
+            });
         }
-        listaElement.innerHTML = '<div style="display: grid; gap: 10px;">';
-        snap.forEach(d => {
-            const p = d.data();
-            listaElement.innerHTML += `
-                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <div><strong>📄 ${p.numero}</strong><br><small>${p.orgao} - ${new Date(p.data).toLocaleDateString('pt-BR')}</small></div>
-                    <button onclick="abrir('${d.id}','${p.numero.replace(/'/g, "\\'")}')" class="btn-success">Abrir</button>
-                </div>
-            `;
-        });
-        listaElement.innerHTML += '</div>';
-    } catch (error) {
-        listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>';
-    }
-};
-
-window.abrir = async (id, num) => {
-    processoAtual = id;
-    document.getElementById('tituloProcesso').innerHTML = `<strong>Processo:</strong> ${num}`;
-    document.getElementById('telaProcessos').classList.add('hidden');
-    document.getElementById('telaMapa').classList.remove('hidden');
-    await carregarItens();
-};
-
-// Itens e Cotações
-window.addItem = async () => {
-    const codigoField = document.getElementById('codigoItem');
-    const descField = document.getElementById('descItem');
-    const qtdField = document.getElementById('qtdItem');
-    const undField = document.getElementById('undItem');
-    if (!validateFields([descField, qtdField])) return;
-    try {
-        await addDoc(collection(db, "itens"), {
-            processo: processoAtual,
-            codigo: codigoField.value || '-',
-            descricao: descField.value,
-            qtd: parseFloat(qtdField.value),
-            und: undField.value || 'UN',
-            createdAt: new Date().toISOString()
-        });
-        showAlert('Item adicionado!', 'success');
-        codigoField.value = '';
-        descField.value = '';
-        qtdField.value = '';
-        undField.value = '';
-        await carregarItens();
-    } catch (error) {
-        showAlert('Erro ao adicionar item', 'error');
-    }
-};
-
-window.addCotacao = async () => {
-    const itemSelect = document.getElementById('itemSelect');
-    const empresaField = document.getElementById('empresa');
-    const cnpjField = document.getElementById('cnpj');
-    const valorField = document.getElementById('valor');
-    const origemField = document.getElementById('origem');
-    if (!validateFields([itemSelect, empresaField, cnpjField, valorField])) return;
-    try {
-        await addDoc(collection(db, "cotacoes"), {
-            processo: processoAtual,
-            item: itemSelect.value,
-            empresa: empresaField.value,
-            cnpj: cnpjField.value,
-            valor: parseFloat(valorField.value),
-            origem: origemField.value || 'Cotação',
-            createdAt: new Date().toISOString()
-        });
-        showAlert('Cotação adicionada!', 'success');
-        empresaField.value = '';
-        cnpjField.value = '';
-        valorField.value = '';
-        origemField.value = '';
-        await carregarItens();
-    } catch (error) {
-        showAlert('Erro ao adicionar cotação', 'error');
-    }
-};
-
-window.editarItem = async (id, desc) => {
-    const { value: novaDesc } = await Swal.fire({
-        title: 'Editar Item',
-        input: 'text',
-        inputLabel: 'Nova descrição',
-        inputValue: desc,
-        showCancelButton: true
-    });
-    if (novaDesc && novaDesc !== desc) {
-        await updateDoc(doc(db, "itens", id), { descricao: novaDesc });
-        await carregarItens();
-    }
-};
-
-window.excluirItem = async (id) => {
-    const result = await Swal.fire({
-        title: 'Confirmar exclusão',
-        text: 'Excluirá todas as cotações relacionadas!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sim, excluir!'
-    });
-    if (result.isConfirmed) {
-        const cot = await getDocs(query(collection(db, "cotacoes"), where("item", "==", id)));
-        const batch = writeBatch(db);
-        cot.forEach(c => batch.delete(doc(db, "cotacoes", c.id)));
-        batch.delete(doc(db, "itens", id));
-        await batch.commit();
-        await carregarItens();
-    }
-};
-
-window.editarCotacao = async (id, empresa) => {
-    const { value: novaEmpresa } = await Swal.fire({
-        title: 'Editar Cotação',
-        input: 'text',
-        inputLabel: 'Nome da empresa',
-        inputValue: empresa,
-        showCancelButton: true
-    });
-    if (novaEmpresa && novaEmpresa !== empresa) {
-        await updateDoc(doc(db, "cotacoes", id), { empresa: novaEmpresa });
-        await carregarItens();
-    }
-};
-
-window.excluirCotacao = async (id) => {
-    const result = await Swal.fire({
-        title: 'Confirmar exclusão',
-        text: 'Tem certeza?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sim, excluir!'
-    });
-    if (result.isConfirmed) {
-        await deleteDoc(doc(db, "cotacoes", id));
-        await carregarItens();
-    }
-};
-
-// Gráfico de Barras
-function atualizarGrafico() {
-    const empresas = new Map();
-    itens.forEach(item => {
-        item.cotacoes.forEach(cot => {
-            const total = cot.valor * item.qtd;
-            if (empresas.has(cot.empresa)) {
-                empresas.set(cot.empresa, empresas.get(cot.empresa) + total);
+        
+        window.selecionarEmpresa = function() {
+            const select = document.getElementById('empresaSelect');
+            const empresaSelecionada = select.value;
+            const cnpjField = document.getElementById('cnpj');
+            const empresaNovaDiv = document.getElementById('novaEmpresaDiv');
+            const empresaExistenteDiv = document.getElementById('empresaExistenteDiv');
+            
+            if (empresaSelecionada) {
+                const cnpj = empresasCache.get(empresaSelecionada);
+                if (cnpj) cnpjField.value = cnpj;
+                empresaNovaDiv.classList.add('hidden');
+                empresaExistenteDiv.classList.remove('hidden');
             } else {
-                empresas.set(cot.empresa, total);
+                cnpjField.value = '';
+                empresaNovaDiv.classList.add('hidden');
+                empresaExistenteDiv.classList.remove('hidden');
             }
-        });
-    });
-    
-    const labels = Array.from(empresas.keys());
-    const valores = Array.from(empresas.values());
-    const cores = ['#0d3b66', '#1a4d7a', '#2a5f8a', '#3a729a', '#4a85aa', '#5a98ba', '#6aabca', '#7abeda'];
-    
-    if (graficoBarras) {
-        graficoBarras.destroy();
-    }
-    
-    const ctx = document.getElementById('graficoBarras').getContext('2d');
-    graficoBarras = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Valor Total (R$)',
-                data: valores,
-                backgroundColor: cores,
-                borderRadius: 8,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { 
-                    callbacks: { 
-                        label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 
-                    } 
+        };
+        
+        window.mostrarNovaEmpresa = function() {
+            document.getElementById('novaEmpresaDiv').classList.remove('hidden');
+            document.getElementById('empresaExistenteDiv').classList.add('hidden');
+            document.getElementById('empresaSelect').value = '';
+            document.getElementById('cnpj').value = '';
+            document.getElementById('empresaNova').value = '';
+            document.getElementById('cnpjNova').value = '';
+        };
+        
+        window.adicionarNovaEmpresa = function() {
+            const novaEmpresa = document.getElementById('empresaNova');
+            const novoCnpj = document.getElementById('cnpjNova');
+            
+            if (!novaEmpresa.value.trim()) {
+                showAlert('Digite o nome da nova empresa!', 'error');
+                return;
+            }
+            if (!novoCnpj.value.trim()) {
+                showAlert('Digite o CNPJ da nova empresa!', 'error');
+                return;
+            }
+            
+            // Adiciona ao cache
+            empresasCache.set(novaEmpresa.value.trim(), novoCnpj.value.trim());
+            
+            // Atualiza o select
+            const select = document.getElementById('empresaSelect');
+            select.innerHTML = '<option value="">-- Selecione uma empresa existente ou digite nova --</option>';
+            Array.from(empresasCache.keys()).sort().forEach(nome => {
+                select.innerHTML += `<option value="${nome.replace(/"/g, '&quot;')}">${nome}</option>`;
+            });
+            
+            // Seleciona a nova empresa
+            select.value = novaEmpresa.value.trim();
+            
+            // Preenche os campos
+            document.getElementById('cnpj').value = novoCnpj.value.trim();
+            
+            // Esconde o formulário de nova empresa
+            document.getElementById('novaEmpresaDiv').classList.add('hidden');
+            document.getElementById('empresaExistenteDiv').classList.remove('hidden');
+            
+            showAlert(`Empresa "${novaEmpresa.value.trim()}" adicionada com sucesso!`, 'success');
+            
+            // Limpa os campos
+            novaEmpresa.value = '';
+            novoCnpj.value = '';
+        };
+        
+        window.cancelarNovaEmpresa = function() {
+            document.getElementById('novaEmpresaDiv').classList.add('hidden');
+            document.getElementById('empresaExistenteDiv').classList.remove('hidden');
+            document.getElementById('empresaNova').value = '';
+            document.getElementById('cnpjNova').value = '';
+        };
+        
+        window.criarProcesso = async () => {
+            const numeroField = document.getElementById('numero');
+            const orgaoField = document.getElementById('orgao');
+            const dataField = document.getElementById('data');
+            if (!validateFields([numeroField, orgaoField, dataField])) return;
+            try {
+                await addDoc(collection(db, "processos"), { numero: numeroField.value, orgao: orgaoField.value, data: dataField.value, createdAt: new Date().toISOString() });
+                showAlert('Processo criado com sucesso!', 'success');
+                numeroField.value = ''; orgaoField.value = ''; dataField.value = '';
+                await carregarProcessos();
+            } catch (error) { showAlert('Erro ao criar processo', 'error'); }
+        };
+        
+        window.carregarProcessos = async () => {
+            const listaElement = document.getElementById('listaProcessos');
+            try {
+                const snap = await getDocs(collection(db, "processos"));
+                if (snap.empty) { listaElement.innerHTML = '<p style="text-align: center; color: #666;">Nenhum processo cadastrado</p>'; return; }
+                listaElement.innerHTML = '<div style="display: grid; gap: 10px;">';
+                snap.forEach(d => { const p = d.data(); listaElement.innerHTML += `<div style="background: #f8f9fa; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;"><div><strong>📄 ${p.numero}</strong><br><small>${p.orgao} - ${new Date(p.data).toLocaleDateString('pt-BR')}</small></div><button onclick="abrir('${d.id}','${p.numero.replace(/'/g, "\\'")}')" class="btn-success">Abrir</button></div>`; });
+                listaElement.innerHTML += '</div>';
+            } catch (error) { listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>'; }
+        };
+        
+        window.abrir = async (id, num) => {
+            processoAtual = id;
+            document.getElementById('tituloProcesso').innerHTML = `<strong>Processo:</strong> ${num}`;
+            document.getElementById('telaProcessos').classList.add('hidden');
+            document.getElementById('telaMapa').classList.remove('hidden');
+            await carregarItens();
+        };
+        
+        window.addItem = async () => {
+            const codigoField = document.getElementById('codigoItem');
+            const descField = document.getElementById('descItem');
+            const qtdField = document.getElementById('qtdItem');
+            const undField = document.getElementById('undItem');
+            if (!validateFields([descField, qtdField])) return;
+            try {
+                await addDoc(collection(db, "itens"), { processo: processoAtual, codigo: codigoField.value || '-', descricao: descField.value, qtd: parseFloat(qtdField.value), und: undField.value || 'UN', createdAt: new Date().toISOString() });
+                showAlert('Item adicionado!', 'success');
+                codigoField.value = ''; descField.value = ''; qtdField.value = ''; undField.value = '';
+                await carregarItens();
+            } catch (error) { showAlert('Erro ao adicionar item', 'error'); }
+        };
+        
+        window.addCotacao = async () => {
+            const itemSelect = document.getElementById('itemSelect');
+            const empresaField = document.getElementById('empresaSelect');
+            const empresaNovaDiv = document.getElementById('novaEmpresaDiv');
+            const cnpjField = document.getElementById('cnpj');
+            
+            let empresaNome, empresaCnpj;
+            
+            // Verifica se está usando uma empresa existente ou nova
+            if (!empresaNovaDiv.classList.contains('hidden')) {
+                // Usando nova empresa
+                const novaEmpresa = document.getElementById('empresaNova');
+                const novoCnpj = document.getElementById('cnpjNova');
+                if (!novaEmpresa.value.trim()) { showAlert('Digite o nome da empresa!', 'error'); return; }
+                if (!novoCnpj.value.trim()) { showAlert('Digite o CNPJ da empresa!', 'error'); return; }
+                empresaNome = novaEmpresa.value.trim();
+                empresaCnpj = novoCnpj.value.trim();
+            } else {
+                // Usando empresa existente
+                if (!empresaField.value) { showAlert('Selecione ou adicione uma empresa!', 'error'); return; }
+                empresaNome = empresaField.value;
+                empresaCnpj = cnpjField.value.trim();
+                if (!empresaCnpj) { showAlert('CNPJ é obrigatório!', 'error'); return; }
+            }
+            
+            const valorField = document.getElementById('valor');
+            const origemField = document.getElementById('origem');
+            
+            if (!validateFields([valorField])) return;
+            
+            try {
+                await addDoc(collection(db, "cotacoes"), {
+                    processo: processoAtual,
+                    item: itemSelect.value,
+                    empresa: empresaNome,
+                    cnpj: empresaCnpj,
+                    valor: parseFloat(valorField.value),
+                    origem: origemField.value || 'Cotação',
+                    createdAt: new Date().toISOString()
+                });
+                showAlert('Cotação adicionada!', 'success');
+                
+                // Limpa os campos
+                valorField.value = '';
+                origemField.value = '';
+                
+                // Se usou nova empresa, limpa os campos dela também
+                if (!empresaNovaDiv.classList.contains('hidden')) {
+                    document.getElementById('empresaNova').value = '';
+                    document.getElementById('cnpjNova').value = '';
+                    cancelarNovaEmpresa();
                 }
-            },
-            scales: { 
-                y: { 
-                    beginAtZero: true, 
-                    ticks: { 
-                        callback: (v) => `R$ ${v.toLocaleString()}` 
-                    },
-                    title: {
-                        display: true,
-                        text: 'Valor Total (R$)',
-                        font: { size: 10 }
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Empresas Participantes',
-                        font: { size: 10 }
-                    }
-                }
+                
+                await carregarItens();
+            } catch (error) { showAlert('Erro ao adicionar cotação', 'error'); }
+        };
+        
+        window.editarItem = async (id, desc) => {
+            const { value: novaDesc } = await Swal.fire({ title: 'Editar Item', input: 'text', inputLabel: 'Nova descrição', inputValue: desc, showCancelButton: true });
+            if (novaDesc && novaDesc !== desc) { await updateDoc(doc(db, "itens", id), { descricao: novaDesc }); await carregarItens(); }
+        };
+        
+        window.excluirItem = async (id) => {
+            const result = await Swal.fire({ title: 'Confirmar exclusão', text: 'Excluirá todas as cotações relacionadas!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sim, excluir!' });
+            if (result.isConfirmed) {
+                const cot = await getDocs(query(collection(db, "cotacoes"), where("item", "==", id)));
+                const batch = writeBatch(db);
+                cot.forEach(c => batch.delete(doc(db, "cotacoes", c.id)));
+                batch.delete(doc(db, "itens", id));
+                await batch.commit();
+                await carregarItens();
             }
+        };
+        
+        window.editarCotacao = async (id, empresa) => {
+            const { value: novaEmpresa } = await Swal.fire({ title: 'Editar Cotação', input: 'text', inputLabel: 'Nome da empresa', inputValue: empresa, showCancelButton: true });
+            if (novaEmpresa && novaEmpresa !== empresa) { await updateDoc(doc(db, "cotacoes", id), { empresa: novaEmpresa }); await carregarItens(); }
+        };
+        
+        window.excluirCotacao = async (id) => {
+            const result = await Swal.fire({ title: 'Confirmar exclusão', text: 'Tem certeza?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sim, excluir!' });
+            if (result.isConfirmed) { await deleteDoc(doc(db, "cotacoes", id)); await carregarItens(); }
+        };
+        
+        function atualizarGrafico() {
+            const empresas = new Map();
+            itens.forEach(item => { item.cotacoes.forEach(cot => { const total = cot.valor * item.qtd; if (empresas.has(cot.empresa)) { empresas.set(cot.empresa, empresas.get(cot.empresa) + total); } else { empresas.set(cot.empresa, total); } }); });
+            const labels = Array.from(empresas.keys());
+            const valores = Array.from(empresas.values());
+            const cores = ['#0d3b66', '#1a4d7a', '#2a5f8a', '#3a729a', '#4a85aa', '#5a98ba', '#6aabca', '#7abeda'];
+            if (graficoBarras) { graficoBarras.destroy(); }
+            const ctx = document.getElementById('graficoBarras').getContext('2d');
+            graficoBarras = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: cores, borderRadius: 8, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } } }, scales: { y: { beginAtZero: true, ticks: { callback: (v) => `R$ ${v.toLocaleString()}` }, title: { display: true, text: 'Valor Total (R$)', font: { size: 10 } } }, x: { title: { display: true, text: 'Empresas Participantes', font: { size: 10 } } } } } });
         }
-    });
-}
-
-// Carregar e Renderizar
-window.carregarItens = async () => {
-    if (!processoAtual) return;
-    try {
-        itens = [];
-        const snap = await getDocs(query(collection(db, "itens"), where("processo", "==", processoAtual)));
-        snap.forEach(d => itens.push({ id: d.id, ...d.data(), cotacoes: [] }));
-        const cot = await getDocs(query(collection(db, "cotacoes"), where("processo", "==", processoAtual)));
-        cot.forEach(d => {
-            const c = { id: d.id, ...d.data() };
-            const item = itens.find(i => i.id === c.item);
-            if (item) item.cotacoes.push(c);
-        });
         
-        const fornecedores = new Set();
-        itens.forEach(item => item.cotacoes.forEach(c => fornecedores.add(c.empresa)));
-        const vencedorSelect = document.getElementById('vencedorSelect');
-        vencedorSelect.innerHTML = '<option value="">Selecione o fornecedor vencedor</option>';
-        Array.from(fornecedores).sort().forEach(f => {
-            vencedorSelect.innerHTML += `<option value="${f.replace(/"/g, '&quot;')}">${f}</option>`;
-        });
+        window.carregarItens = async () => {
+            if (!processoAtual) return;
+            try {
+                itens = [];
+                const snap = await getDocs(query(collection(db, "itens"), where("processo", "==", processoAtual)));
+                snap.forEach(d => itens.push({ id: d.id, ...d.data(), cotacoes: [] }));
+                const cot = await getDocs(query(collection(db, "cotacoes"), where("processo", "==", processoAtual)));
+                cot.forEach(d => { const c = { id: d.id, ...d.data() }; const item = itens.find(i => i.id === c.item); if (item) item.cotacoes.push(c); });
+                
+                // Atualiza lista de empresas
+                atualizarListaEmpresas();
+                
+                const fornecedores = new Set();
+                itens.forEach(item => item.cotacoes.forEach(c => fornecedores.add(c.empresa)));
+                const vencedorSelect = document.getElementById('vencedorSelect');
+                vencedorSelect.innerHTML = '<option value="">Selecione o fornecedor vencedor</option>';
+                Array.from(fornecedores).sort().forEach(f => { vencedorSelect.innerHTML += `<option value="${f.replace(/"/g, '&quot;')}">${f}</option>`; });
+                
+                const itemSelect = document.getElementById('itemSelect');
+                itemSelect.innerHTML = '';
+                itens.forEach(i => { itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao}</option>`; });
+                
+                render();
+                atualizarGrafico();
+                atualizarTotalContrato();
+            } catch (error) { showAlert('Erro ao carregar itens', 'error'); }
+        };
         
-        const itemSelect = document.getElementById('itemSelect');
-        itemSelect.innerHTML = '';
-        itens.forEach(i => {
-            itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao}</option>`;
-        });
+        function render() {
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = '';
+            if (itens.length === 0) { tbody.innerHTML = '<tr><td colspan="16" style="text-align: center;">Nenhum item cadastrado</td></tr>'; return; }
+            itens.forEach((item, i) => {
+                if (!item.cotacoes || item.cotacoes.length === 0) return;
+                const totais = item.cotacoes.map(c => c.valor * item.qtd);
+                const s = stats(totais);
+                const menor = Math.min(...totais);
+                const cotacoesOrdenadas = [...item.cotacoes].sort((a, b) => (a.valor * item.qtd) - (b.valor * item.qtd));
+                cotacoesOrdenadas.forEach((c, j) => {
+                    const total = c.valor * item.qtd;
+                    const row = tbody.insertRow();
+                    row.className = total === menor ? 'menor' : '';
+                    row.insertCell(0).innerHTML = i + 1;
+                    row.insertCell(1).innerHTML = item.codigo || '-';
+                    row.insertCell(2).innerHTML = item.descricao.substring(0, 30);
+                    row.insertCell(3).innerHTML = item.qtd;
+                    row.insertCell(4).innerHTML = item.und || 'UN';
+                    row.insertCell(5).innerHTML = c.empresa.substring(0, 25);
+                    row.insertCell(6).innerHTML = c.cnpj;
+                    row.insertCell(7).innerHTML = `R$ ${c.valor.toFixed(2)}`;
+                    row.insertCell(8).innerHTML = `R$ ${total.toFixed(2)}`;
+                    row.insertCell(9).innerHTML = c.origem || '-';
+                    if (j === 0) {
+                        row.insertCell(10).innerHTML = `R$ ${s.media.toFixed(2)}`;
+                        row.insertCell(11).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
+                        row.insertCell(12).innerHTML = `R$ ${s.desvio.toFixed(2)}`;
+                        row.insertCell(13).innerHTML = `R$ ${s.min.toFixed(2)}`;
+                        row.insertCell(14).innerHTML = `R$ ${s.max.toFixed(2)}`;
+                    } else { for (let k = 10; k <= 14; k++) row.insertCell(k).innerHTML = ''; }
+                    const actionsCell = row.insertCell(15);
+                    actionsCell.innerHTML = `<button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">✏️</button> <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.7rem;">🗑️</button>`;
+                    if (j === 0) { actionsCell.innerHTML += `<button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">📝</button> <button onclick="excluirItem('${item.id}')" style="font-size: 0.7rem;">❌</button>`; }
+                });
+            });
+        }
         
-        render();
-        atualizarGrafico();
-        atualizarTotalContrato();
-    } catch (error) {
-        showAlert('Erro ao carregar itens', 'error');
-    }
-};
-
-function render() {
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = '';
-    if (itens.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="16" style="text-align: center;">Nenhum item cadastrado</td></tr>';
-        return;
-    }
-    itens.forEach((item, i) => {
-        if (!item.cotacoes || item.cotacoes.length === 0) return;
-        const totais = item.cotacoes.map(c => c.valor * item.qtd);
-        const s = stats(totais);
-        const menor = Math.min(...totais);
-        const cotacoesOrdenadas = [...item.cotacoes].sort((a, b) => (a.valor * item.qtd) - (b.valor * item.qtd));
-        cotacoesOrdenadas.forEach((c, j) => {
-            const total = c.valor * item.qtd;
-            const row = tbody.insertRow();
-            row.className = total === menor ? 'menor' : '';
-            row.insertCell(0).innerHTML = i + 1;
-            row.insertCell(1).innerHTML = item.codigo || '-';
-            row.insertCell(2).innerHTML = item.descricao.substring(0, 30);
-            row.insertCell(3).innerHTML = item.qtd;
-            row.insertCell(4).innerHTML = item.und || 'UN';
-            row.insertCell(5).innerHTML = c.empresa.substring(0, 25);
-            row.insertCell(6).innerHTML = c.cnpj;
-            row.insertCell(7).innerHTML = `R$ ${c.valor.toFixed(2)}`;
-            row.insertCell(8).innerHTML = `R$ ${total.toFixed(2)}`;
-            row.insertCell(9).innerHTML = c.origem || '-';
-            if (j === 0) {
-                row.insertCell(10).innerHTML = `R$ ${s.media.toFixed(2)}`;
-                row.insertCell(11).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
-                row.insertCell(12).innerHTML = `R$ ${s.desvio.toFixed(2)}`;
-                row.insertCell(13).innerHTML = `R$ ${s.min.toFixed(2)}`;
-                row.insertCell(14).innerHTML = `R$ ${s.max.toFixed(2)}`;
-            } else {
-                for (let k = 10; k <= 14; k++) row.insertCell(k).innerHTML = '';
-            }
-            const actionsCell = row.insertCell(15);
-            actionsCell.innerHTML = `
-                <button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">✏️</button>
-                <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.7rem;">🗑️</button>
-            `;
-            if (j === 0) {
-                actionsCell.innerHTML += `
-                    <button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">📝</button>
-                    <button onclick="excluirItem('${item.id}')" style="font-size: 0.7rem;">❌</button>
-                `;
-            }
+        window.salvarAssinatura = () => {
+            const nomeField = document.getElementById('nomeResp');
+            const matriculaField = document.getElementById('matriculaResp');
+            const setorField = document.getElementById('setorResp');
+            const cargoField = document.getElementById('cargoResp');
+            if (!validateFields([nomeField, matriculaField, setorField, cargoField])) return;
+            assinatura = { nome: nomeField.value, matricula: matriculaField.value, setor: setorField.value, cargo: cargoField.value, data: new Date().toISOString() };
+            showAlert('Assinatura salva!', 'success');
+        };
+        
+        window.exportarExcel = () => {
+            try {
+                const tabela = document.getElementById('tabelaPrincipal');
+                const html = tabela.outerHTML;
+                const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `mapa_comparativo_${new Date().toISOString().slice(0,19)}.xls`;
+                link.click();
+                showAlert('Excel gerado!', 'success');
+            } catch (error) { showAlert('Erro ao gerar Excel', 'error'); }
+        };
+        
+        function atualizarTotalContrato() {
+            const vencedorSelect = document.getElementById('vencedorSelect');
+            const empresaSelecionada = vencedorSelect.value;
+            const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
+            const totalContratoDisplay = document.getElementById('totalContratoDisplay');
+            const valorTotalContrato = document.getElementById('valorTotalContrato');
+            if (empresaSelecionada && tipoContratacao === 'contrato') {
+                const totalVencedor = calcularTotalVencedor(empresaSelecionada);
+                const totalContrato = totalVencedor * 12;
+                valorTotalContrato.innerHTML = `R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                totalContratoDisplay.classList.remove('hidden');
+            } else { totalContratoDisplay.classList.add('hidden'); }
+        }
+        
+        window.gerarPDF = async () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
+            const canvasGrafico = document.getElementById('graficoBarras');
+            let imgGrafico = null;
+            if (canvasGrafico) { try { imgGrafico = canvasGrafico.toDataURL('image/png', 1.0); } catch(e) {} }
+            let y = 15;
+            const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+            
+            doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 210, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont(undefined, 'bold'); doc.text("RELATÓRIO DE ANÁLISE", 148, 55, { align: "center" }); doc.setFontSize(28); doc.text("MAPA COMPARATIVO", 148, 75, { align: "center" }); doc.setFontSize(24); doc.text("DE PREÇOS", 148, 95, { align: "center" }); doc.setFontSize(12); doc.text("NOS TERMOS DA LEI Nº 14.133/2021", 148, 115, { align: "center" }); doc.setFontSize(10); doc.text("NOVA LEI DE LICITAÇÕES E CONTRATOS ADMINISTRATIVOS", 148, 122, { align: "center" }); doc.setFontSize(11); doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 148, 145, { align: "center" }); doc.text(`Processo: ${numeroProcesso}`, 148, 155, { align: "center" }); doc.text(`Data: ${dataAtual}`, 148, 160, { align: "center" }); doc.setTextColor(0, 0, 0);
+            
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("MAPA COMPARATIVO DE PREÇOS - Art. 23, §1º da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DADOS DO PROCESSO:", 14, y); doc.setFont(undefined, 'normal'); doc.text(`Número: ${numeroProcesso}`, 14, y + 6); doc.text(`Órgão: ${document.getElementById('orgao')?.value || 'Não informado'}`, 14, y + 12); doc.text(`Data de Emissão: ${dataAtual}`, 14, y + 18); y += 26;
+            
+            const body = [];
+            itens.forEach((item) => {
+                if (!item.cotacoes || item.cotacoes.length === 0) return;
+                const totais = item.cotacoes.map(c => c.valor * item.qtd);
+                const s = stats(totais);
+                const ranking = item.cotacoes.map(c => ({ ...c, total: c.valor * item.qtd, valorUnitario: c.valor })).sort((a, b) => a.total - b.total);
+                ranking.forEach((c, index) => { body.push([ (item.codigo || '-').substring(0, 8), item.descricao.length > 28 ? item.descricao.substring(0, 25) + '...' : item.descricao, item.qtd.toString(), (item.und || 'UN').substring(0, 3), c.empresa.length > 22 ? c.empresa.substring(0, 19) + '...' : c.empresa, c.cnpj, `R$ ${c.valorUnitario.toFixed(2)}`, `R$ ${c.total.toFixed(2)}`, (c.origem || '-').substring(0, 10), (index + 1).toString(), `R$ ${s.media.toFixed(2)}`, `R$ ${s.mediana.toFixed(2)}`, `R$ ${s.desvio.toFixed(2)}`, `R$ ${s.min.toFixed(2)}`, `R$ ${s.max.toFixed(2)}` ]); });
+            });
+            if (body.length > 0) { doc.autoTable({ startY: y, head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Média", "Med", "Desv", "Mín", "Máx"]], body: body, styles: { fontSize: 6, cellPadding: 1.5 }, headStyles: { fillColor: [13, 59, 102], fontSize: 6 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 38 }, 2: { cellWidth: 8 }, 3: { cellWidth: 7 }, 4: { cellWidth: 38 }, 5: { cellWidth: 25 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 14 }, 9: { cellWidth: 6 }, 10: { cellWidth: 14 }, 11: { cellWidth: 12 }, 12: { cellWidth: 12 }, 13: { cellWidth: 14 }, 14: { cellWidth: 14 } }, margin: { left: 10, right: 10 } }); y = doc.lastAutoTable.finalY + 10; } else { y += 10; }
+            
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("ANÁLISE GRÁFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; if (imgGrafico) { doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90); y += 100; } else { y += 10; }
+            doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y); y += 7; doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y); y += 5; doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y); y += 8; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("Elementos do Gráfico:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("• Cada barra representa uma empresa participante;", 14, y); y += 4; doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y); y += 4; doc.text("• os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.", 14, y); y += 8; doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y); y += 15;
+            
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("JUSTIFICATIVA DA CONTRATAÇÃO - LEI Nº 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28;
+            const vencedor = document.getElementById('vencedorSelect').value;
+            const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
+            let totalGeral = 0; itens.forEach(item => { item.cotacoes.forEach(cot => { totalGeral += cot.valor * item.qtd; }); });
+            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("Com fundamento no Art. 26, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento", 14, y); y += 4; doc.text("pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y); y += 10; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal');
+            let justificativa = "";
+            if (tipoContratacao === 'contrato' && vencedor) {
+                const totalVencedor = calcularTotalVencedor(vencedor);
+                const totalContrato = totalVencedor * 12;
+                const economiaPercentual = totalGeral > 0 ? ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2) : "0";
+                justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\nConsiderando a contratação por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
+            } else if (tipoContratacao === 'dispensa') {
+                justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\nTrata-se de processo de dispensa de licitação fundamentada no Art. 75 da Lei nº 14.133/2021, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual.\n\nA proposta atende aos requisitos legais de economicidade e eficiência, sendo a mais vantajosa para a Administração no contexto da dispensa licitatória.`;
+            } else { justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, nos termos da Lei nº 14.133/2021.`; }
+            const splitText = doc.splitTextToSize(justificativa, 265); doc.text(splitText, 14, y); y += splitText.length * 4 + 12;
+            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("FUNDAMENTAÇÃO LEGAL:", 14, y); y += 5; doc.setFontSize(7); doc.setFont(undefined, 'normal');
+            const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 26, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
+            const splitFund = doc.splitTextToSize(fundamentacao, 265); doc.text(splitFund, 14, y); y += splitFund.length * 4 + 15;
+            doc.setDrawColor(0); doc.line(80, y, 180, y); doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text(assinatura.nome || "_________________________", 130, y + 5, { align: "center" }); doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.text(`Cargo: ${assinatura.cargo || "_________"}`, 130, y + 11, { align: "center" }); doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, y + 17, { align: "center" }); doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, y + 23, { align: "center" }); doc.text(`Data: ${dataAtual}`, 130, y + 29, { align: "center" });
+            doc.setFontSize(6); doc.setTextColor(128, 128, 128); doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" }); doc.text(`Página ${doc.internal.getNumberOfPages()}`, 280, 200);
+            doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}_Lei14133.pdf`);
+            showAlert('PDF gerado com sucesso conforme Lei 14.133/2021!', 'success');
+        };
+        
+        window.voltar = () => {
+            document.getElementById('telaMapa').classList.add('hidden');
+            document.getElementById('telaProcessos').classList.remove('hidden');
+            processoAtual = null; itens = []; assinatura = {}; empresasCache.clear();
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const radios = document.querySelectorAll('input[name="tipoContratacao"]');
+            radios.forEach(radio => { radio.addEventListener('change', () => { const tipo = radio.value; const infoContrato = document.getElementById('infoContrato'); const infoDispensa = document.getElementById('infoDispensa'); if (tipo === 'contrato') { infoContrato.classList.remove('hidden'); infoDispensa.classList.add('hidden'); } else { infoContrato.classList.add('hidden'); infoDispensa.classList.remove('hidden'); } atualizarTotalContrato(); }); });
+            const vencedorSelect = document.getElementById('vencedorSelect'); if (vencedorSelect) { vencedorSelect.addEventListener('change', atualizarTotalContrato); }
         });
-    });
-}
-
-window.salvarAssinatura = () => {
-    const nomeField = document.getElementById('nomeResp');
-    const matriculaField = document.getElementById('matriculaResp');
-    const setorField = document.getElementById('setorResp');
-    const cargoField = document.getElementById('cargoResp');
-    if (!validateFields([nomeField, matriculaField, setorField, cargoField])) return;
-    assinatura = {
-        nome: nomeField.value,
-        matricula: matriculaField.value,
-        setor: setorField.value,
-        cargo: cargoField.value,
-        data: new Date().toISOString()
-    };
-    showAlert('Assinatura salva!', 'success');
-};
-
-window.exportarExcel = () => {
-    try {
-        const tabela = document.getElementById('tabelaPrincipal');
-        const html = tabela.outerHTML;
-        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `mapa_comparativo_${new Date().toISOString().slice(0,19)}.xls`;
-        link.click();
-        showAlert('Excel gerado!', 'success');
-    } catch (error) {
-        showAlert('Erro ao gerar Excel', 'error');
-    }
-};
-
-function atualizarTotalContrato() {
-    const vencedorSelect = document.getElementById('vencedorSelect');
-    const empresaSelecionada = vencedorSelect.value;
-    const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
-    const totalContratoDisplay = document.getElementById('totalContratoDisplay');
-    const valorTotalContrato = document.getElementById('valorTotalContrato');
-    if (empresaSelecionada && tipoContratacao === 'contrato') {
-        const totalVencedor = calcularTotalVencedor(empresaSelecionada);
-        const totalContrato = totalVencedor * 12;
-        valorTotalContrato.innerHTML = `R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        totalContratoDisplay.classList.remove('hidden');
-    } else {
-        totalContratoDisplay.classList.add('hidden');
-    }
-}
-
-// PDF com Lei 14.133/2021
-window.gerarPDF = async () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
-    
-    // Capturar gráfico
-    const canvasGrafico = document.getElementById('graficoBarras');
-    let imgGrafico = null;
-    if (canvasGrafico) {
-        try {
-            imgGrafico = canvasGrafico.toDataURL('image/png', 1.0);
-        } catch(e) {}
-    }
-    
-    let y = 15;
-    const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
-    const dataAtual = new Date().toLocaleDateString('pt-BR');
-    
-    // PÁGINA 1: CAPA
-    doc.setFillColor(13, 59, 102);
-    doc.rect(0, 0, 297, 210, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont(undefined, 'bold');
-    doc.text("RELATÓRIO DE ANÁLISE", 148, 55, { align: "center" });
-    doc.setFontSize(28);
-    doc.text("MAPA COMPARATIVO", 148, 75, { align: "center" });
-    doc.setFontSize(24);
-    doc.text("DE PREÇOS", 148, 95, { align: "center" });
-    doc.setFontSize(12);
-    doc.text("NOS TERMOS DA LEI Nº 14.133/2021", 148, 115, { align: "center" });
-    doc.setFontSize(10);
-    doc.text("NOVA LEI DE LICITAÇÕES E CONTRATOS ADMINISTRATIVOS", 148, 122, { align: "center" });
-    doc.setFontSize(11);
-    doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 148, 145, { align: "center" });
-    doc.text(`Processo: ${numeroProcesso}`, 148, 155, { align: "center" });
-    doc.text(`Data: ${dataAtual}`, 148, 160, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-    
-    // PÁGINA 2: TABELA COMPARATIVA
-    doc.addPage();
-    y = 15;
-    
-    doc.setFillColor(13, 59, 102);
-    doc.rect(0, 0, 297, 22, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("MAPA COMPARATIVO DE PREÇOS - Art. 23, §1º da Lei 14.133/2021", 148, 14, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-    y = 28;
-    
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
-    doc.text("DADOS DO PROCESSO:", 14, y);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Número: ${numeroProcesso}`, 14, y + 6);
-    doc.text(`Órgão: ${document.getElementById('orgao')?.value || 'Não informado'}`, 14, y + 12);
-    doc.text(`Data de Emissão: ${dataAtual}`, 14, y + 18);
-    y += 26;
-    
-    const body = [];
-    itens.forEach((item) => {
-        if (!item.cotacoes || item.cotacoes.length === 0) return;
-        const totais = item.cotacoes.map(c => c.valor * item.qtd);
-        const s = stats(totais);
-        const ranking = item.cotacoes.map(c => ({ ...c, total: c.valor * item.qtd, valorUnitario: c.valor })).sort((a, b) => a.total - b.total);
-        ranking.forEach((c, index) => {
-            body.push([
-                (item.codigo || '-').substring(0, 8),
-                item.descricao.length > 28 ? item.descricao.substring(0, 25) + '...' : item.descricao,
-                item.qtd.toString(),
-                (item.und || 'UN').substring(0, 3),
-                c.empresa.length > 22 ? c.empresa.substring(0, 19) + '...' : c.empresa,
-                c.cnpj,
-                `R$ ${c.valorUnitario.toFixed(2)}`,
-                `R$ ${c.total.toFixed(2)}`,
-                (c.origem || '-').substring(0, 10),
-                (index + 1).toString(),
-                `R$ ${s.media.toFixed(2)}`,
-                `R$ ${s.mediana.toFixed(2)}`,
-                `R$ ${s.desvio.toFixed(2)}`,
-                `R$ ${s.min.toFixed(2)}`,
-                `R$ ${s.max.toFixed(2)}`
-            ]);
-        });
-    });
-    
-    if (body.length > 0) {
-        doc.autoTable({
-            startY: y,
-            head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Média", "Med", "Desv", "Mín", "Máx"]],
-            body: body,
-            styles: { fontSize: 6, cellPadding: 1.5 },
-            headStyles: { fillColor: [13, 59, 102], fontSize: 6 },
-            columnStyles: {
-                0: { cellWidth: 10 }, 1: { cellWidth: 38 }, 2: { cellWidth: 8 }, 3: { cellWidth: 7 },
-                4: { cellWidth: 38 }, 5: { cellWidth: 25 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 },
-                8: { cellWidth: 14 }, 9: { cellWidth: 6 }, 10: { cellWidth: 14 }, 11: { cellWidth: 12 },
-                12: { cellWidth: 12 }, 13: { cellWidth: 14 }, 14: { cellWidth: 14 }
-            },
-            margin: { left: 10, right: 10 }
-        });
-        y = doc.lastAutoTable.finalY + 10;
-    } else {
-        y += 10;
-    }
-    
-    // PÁGINA 3: GRÁFICO DE BARRAS COM EXPLICAÇÃO
-    doc.addPage();
-    y = 15;
-    doc.setFillColor(13, 59, 102);
-    doc.rect(0, 0, 297, 22, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("ANÁLISE GRÁFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-    y = 28;
-    
-    // Adicionar gráfico
-    if (imgGrafico) {
-        doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90);
-        y += 100;
-    } else {
-        y += 10;
-    }
-    
-    // Explicação do gráfico - Formatação correta sem caracteres estranhos
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text("INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y);
-    y += 7;
-    
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-    doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y);
-    y += 5;
-    doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y);
-    y += 8;
-    
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
-    doc.text("Elementos do Gráfico:", 14, y);
-    y += 5;
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text("• Cada barra representa uma empresa participante;", 14, y);
-    y += 4;
-    doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y);
-    y += 4;
-    doc.text("• os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.", 14, y);
-    y += 8;
-    
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'italic');
-    doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y);
-    y += 15;
-    
-    // PÁGINA 4: JUSTIFICATIVA E ASSINATURA
-    doc.addPage();
-    y = 15;
-    doc.setFillColor(13, 59, 102);
-    doc.rect(0, 0, 297, 22, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("JUSTIFICATIVA DA CONTRATAÇÃO - LEI Nº 14.133/2021", 148, 14, { align: "center" });
-    doc.setTextColor(0, 0, 0);
-    y = 28;
-    
-    const vencedor = document.getElementById('vencedorSelect').value;
-    const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
-    
-    // Calcular total geral para estatísticas
-    let totalGeral = 0;
-    itens.forEach(item => {
-        item.cotacoes.forEach(cot => {
-            totalGeral += cot.valor * item.qtd;
-        });
-    });
-    
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
-    doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y);
-    y += 5;
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text("Com fundamento no Art. 26, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento", 14, y);
-    y += 4;
-    doc.text("pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y);
-    y += 10;
-    
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
-    doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y);
-    y += 5;
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    
-    let justificativa = "";
-    if (tipoContratacao === 'contrato' && vencedor) {
-        const totalVencedor = calcularTotalVencedor(vencedor);
-        const totalContrato = totalVencedor * 12;
-        const economiaPercentual = totalGeral > 0 ? ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2) : "0";
-        justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\n`;
-        justificativa += `Considerando a contratação por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\n`;
-        justificativa += `A proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
-    } else if (tipoContratacao === 'dispensa') {
-        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\n`;
-        justificativa += `Trata-se de processo de dispensa de licitação fundamentada no Art. 75 da Lei nº 14.133/2021, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual.\n\n`;
-        justificativa += `A proposta atende aos requisitos legais de economicidade e eficiência, sendo a mais vantajosa para a Administração no contexto da dispensa licitatória.`;
-    } else {
-        justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, nos termos da Lei nº 14.133/2021.`;
-    }
-    
-    const splitText = doc.splitTextToSize(justificativa, 265);
-    doc.text(splitText, 14, y);
-    y += splitText.length * 4 + 12;
-    
-    // FUNDAMENTAÇÃO LEGAL
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
-    doc.text("FUNDAMENTAÇÃO LEGAL:", 14, y);
-    y += 5;
-    doc.setFontSize(7);
-    doc.setFont(undefined, 'normal');
-    const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 26, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
-    const splitFund = doc.splitTextToSize(fundamentacao, 265);
-    doc.text(splitFund, 14, y);
-    y += splitFund.length * 4 + 15;
-    
-    // Assinatura
-    doc.setDrawColor(0);
-    doc.line(80, y, 180, y);
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
-    doc.text(assinatura.nome || "_________________________", 130, y + 5, { align: "center" });
-    doc.setFontSize(7);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Cargo: ${assinatura.cargo || "_________"}`, 130, y + 11, { align: "center" });
-    doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, y + 17, { align: "center" });
-    doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, y + 23, { align: "center" });
-    doc.text(`Data: ${dataAtual}`, 130, y + 29, { align: "center" });
-    
-    // Rodapé
-    doc.setFontSize(6);
-    doc.setTextColor(128, 128, 128);
-    doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" });
-    doc.text(`Página ${doc.internal.getNumberOfPages()}`, 280, 200);
-    
-    doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}_Lei14133.pdf`);
-    showAlert('PDF gerado com sucesso conforme Lei 14.133/2021!', 'success');
-};
-
-window.voltar = () => {
-    document.getElementById('telaMapa').classList.add('hidden');
-    document.getElementById('telaProcessos').classList.remove('hidden');
-    processoAtual = null;
-    itens = [];
-    assinatura = {};
-};
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const radios = document.querySelectorAll('input[name="tipoContratacao"]');
-    radios.forEach(radio => {
-        radio.addEventListener('change', () => {
-            const tipo = radio.value;
-            const infoContrato = document.getElementById('infoContrato');
-            const infoDispensa = document.getElementById('infoDispensa');
-            if (tipo === 'contrato') {
-                infoContrato.classList.remove('hidden');
-                infoDispensa.classList.add('hidden');
-            } else {
-                infoContrato.classList.add('hidden');
-                infoDispensa.classList.remove('hidden');
-            }
-            atualizarTotalContrato();
-        });
-    });
-    const vencedorSelect = document.getElementById('vencedorSelect');
-    if (vencedorSelect) {
-        vencedorSelect.addEventListener('change', atualizarTotalContrato);
-    }
-});
-
-carregarProcessos();
-</script>
-
+        carregarProcessos();
+    </script>
 </body>
 </html>
