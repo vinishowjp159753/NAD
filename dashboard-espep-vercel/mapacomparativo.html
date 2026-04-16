@@ -109,7 +109,7 @@
                             <p>Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório, considerando todos os itens cotados no Mapa Comparativo de Preços.</p>
                             <p><strong>Elementos do Gráfico:</strong></p>
                             <ul><li>Cada barra representa uma empresa participante;</li><li>A altura da barra corresponde ao valor total da proposta (soma de todos os itens);</li><li>Os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li></ul>
-                            <p><em>Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
+                            <p><em>Base Legal: Art. 33, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
                         </div>
                     </div>
                 </div>
@@ -148,12 +148,12 @@
             </div>
             
             <div class="card">
-                <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 28, Lei 14.133/2021</span></h4>
+                <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 105, Lei 14.133/2021</span></h4>
                 <div class="radio-group">
                     <label><input type="radio" name="tipoContratacao" value="contrato" checked> 📝 Contrato (12 meses)</label>
                     <label><input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (Art. 75)</label>
                 </div>
-                <div id="infoContrato" class="info-box">ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 28 da Lei 14.133/2021.</div>
+                <div id="infoContrato" class="info-box">ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 105 da Lei 14.133/2021.</div>
                 <div id="infoDispensa" class="info-box hidden">ℹ️ Dispensa de licitação com fundamento no Art. 75 da Lei 14.133/2021. Não há previsão de contrato plurianual, aplicando-se N/A.</div>
             </div>
             
@@ -167,7 +167,7 @@
             </div>
             
             <div class="card">
-                <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 26, Lei 14.133/2021</span></h4>
+                <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 33, Lei 14.133/2021</span></h4>
                 <select id="vencedorSelect" onchange="mostrarValorFornecedor()">
                     <option value="">Selecione o fornecedor vencedor</option>
                 </select>
@@ -179,7 +179,7 @@
                 </div>
                 
                 <div id="totalContratoDisplay" class="total-contrato hidden">💰 Valor Total do Contrato (12 meses): <strong id="valorTotalContrato">R$ 0,00</strong></div>
-                <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">⚠️ Critério de julgamento: menor preço, conforme Art. 26, inciso I da Lei 14.133/2021.</p>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">⚠️ Critério de julgamento: menor preço, conforme Art. 33, inciso I da Lei 14.133/2021.</p>
             </div>
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -757,7 +757,7 @@
             
             // Página do gráfico
             doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("ANÁLISE GRÁFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; if (imgGrafico) { doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90); y += 100; } else { y += 10; }
-            doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y); y += 7; doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y); y += 5; doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y); y += 8; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("Elementos do Gráfico:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("• Cada barra representa uma empresa participante;", 14, y); y += 4; doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y); y += 4; doc.text("• Os valores representados no gráfico são referentes às propostas enviadas pelas empresas.", 14, y); y += 8; doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y); y += 15;
+            doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y); y += 7; doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y); y += 5; doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y); y += 8; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("Elementos do Gráfico:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("• Cada barra representa uma empresa participante;", 14, y); y += 4; doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y); y += 4; doc.text("• Os valores representados no gráfico são referentes às propostas enviadas pelas empresas.", 14, y); y += 8; doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.text("Base Legal: Art. 33, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y); y += 15;
             
             // Página de justificativa
             doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("JUSTIFICATIVA DA CONTRATAÇÃO - LEI Nº 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28;
@@ -765,19 +765,19 @@
             const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
             let totalGeral = 0; itens.forEach(item => { item.cotacoes.forEach(cot => { totalGeral += cot.valor * item.qtd; }); });
             
-            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("Com fundamento no Art. 26, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento", 14, y); y += 4; doc.text("pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y); y += 10; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal');
+            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("Com fundamento no Art. 33, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento", 14, y); y += 4; doc.text("pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y); y += 10; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal');
             let justificativa = "";
             if (tipoContratacao === 'contrato' && vencedor) {
                 const { total: totalVencedor } = calcularValorFornecedor(vencedor);
                 const totalContrato = totalVencedor * 12;
                 const economiaPercentual = totalGeral > 0 ? ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2) : "0";
-                justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\nConsiderando a contratação por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
+                justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\nConsiderando a contratação por 12 (doze) meses, conforme Art. 105 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
             } else if (tipoContratacao === 'dispensa') {
                 justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\nTrata-se de processo de dispensa de licitação fundamentada no Art. 75 da Lei nº 14.133/2021, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual.\n\nA proposta atende aos requisitos legais de economicidade e eficiência, sendo a mais vantajosa para a Administração no contexto da dispensa licitatória.`;
             } else { justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, nos termos da Lei nº 14.133/2021.`; }
             const splitText = doc.splitTextToSize(justificativa, 265); doc.text(splitText, 14, y); y += splitText.length * 4 + 12;
             doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("FUNDAMENTAÇÃO LEGAL:", 14, y); y += 5; doc.setFontSize(7); doc.setFont(undefined, 'normal');
-            const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 26, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
+            const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 33, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 105 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
             const splitFund = doc.splitTextToSize(fundamentacao, 265); doc.text(splitFund, 14, y); y += splitFund.length * 4 + 15;
             
             // ========== DESTAQUE DO FORNECEDOR VENCEDOR ==========
