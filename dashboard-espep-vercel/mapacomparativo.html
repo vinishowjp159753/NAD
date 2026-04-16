@@ -780,44 +780,44 @@
             const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 33, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 105 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
             const splitFund = doc.splitTextToSize(fundamentacao, 265); doc.text(splitFund, 14, y); y += splitFund.length * 4 + 15;
             
-            // ========== DESTAQUE DO FORNECEDOR VENCEDOR ==========
-            if (vencedor) {
-                const { total: totalVencedor } = calcularValorFornecedor(vencedor);
-                
-                // Retângulo de destaque
-                const boxY = y;
-                doc.setFillColor(39, 174, 96); // Verde
-                doc.rect(40, boxY - 5, 217, 35, 'F');
-                
-                // Borda dourada
-                doc.setDrawColor(243, 156, 18);
-                doc.setLineWidth(1.5);
-                doc.rect(40, boxY - 5, 217, 35);
-                
-                // Texto do destaque
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text("🏆 FORNECEDOR VENCEDOR", 148, boxY + 5, { align: "center" });
-                
-                doc.setFontSize(13);
-                doc.text(vencedor, 148, boxY + 15, { align: "center" });
-                
-                doc.setFontSize(14);
-                doc.text(`R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 148, boxY + 25, { align: "center" });
-                
-                y = boxY + 35;
-            } else {
-                // Caso não tenha fornecedor selecionado
-                const boxY = y;
-                doc.setFillColor(243, 156, 18); // Laranja de alerta
-                doc.rect(40, boxY - 5, 217, 20, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(11);
-                doc.setFont(undefined, 'bold');
-                doc.text("⚠️ NENHUM FORNECEDOR VENCEDOR SELECIONADO", 148, boxY + 8, { align: "center" });
-                y = boxY + 25;
-            }
+           // ========== DESTAQUE DO FORNECEDOR VENCEDOR ==========
+if (vencedor) {
+    const { total: totalVencedor } = calcularValorFornecedor(vencedor);
+    
+    // Retangulo de destaque
+    const boxY = y;
+    doc.setFillColor(39, 174, 96); // Verde
+    doc.rect(40, boxY - 5, 217, 35, 'F');
+    
+    // Borda dourada
+    doc.setDrawColor(243, 156, 18);
+    doc.setLineWidth(1.5);
+    doc.rect(40, boxY - 5, 217, 35);
+    
+    // Texto do destaque - Usando texto simples
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text("FORNECEDOR VENCEDOR", 148, boxY + 5, { align: "center" });
+    
+    doc.setFontSize(13);
+    doc.text(vencedor, 148, boxY + 15, { align: "center" });
+    
+    doc.setFontSize(14);
+    doc.text(`R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 148, boxY + 25, { align: "center" });
+    
+    y = boxY + 35;
+} else {
+    // Caso nao tenha fornecedor selecionado
+    const boxY = y;
+    doc.setFillColor(243, 156, 18); // Laranja de alerta
+    doc.rect(40, boxY - 5, 217, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text("NENHUM FORNECEDOR VENCEDOR SELECIONADO", 148, boxY + 8, { align: "center" });
+    y = boxY + 25;
+}
             
             y += 10;
             
