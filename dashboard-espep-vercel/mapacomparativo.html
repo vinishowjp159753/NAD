@@ -109,7 +109,7 @@
                             <p>Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório, considerando todos os itens cotados no Mapa Comparativo de Preços.</p>
                             <p><strong>Elementos do Gráfico:</strong></p>
                             <ul><li>Cada barra representa uma empresa participante;</li><li>A altura da barra corresponde ao valor total da proposta (soma de todos os itens);</li><li>Os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li></ul>
-                            <p><em>Base Legal: Art. 33, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
+                            <p><em>Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
                         </div>
                     </div>
                 </div>
@@ -148,12 +148,12 @@
             </div>
             
             <div class="card">
-                <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 105, Lei 14.133/2021</span></h4>
+                <h4>📅 Configurações da Contratação <span class="lei-badge">Art. 28, Lei 14.133/2021</span></h4>
                 <div class="radio-group">
                     <label><input type="radio" name="tipoContratacao" value="contrato" checked> 📝 Contrato (12 meses)</label>
                     <label><input type="radio" name="tipoContratacao" value="dispensa"> 🔍 Dispensa de Licitação (Art. 75)</label>
                 </div>
-                <div id="infoContrato" class="info-box">ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 105 da Lei 14.133/2021.</div>
+                <div id="infoContrato" class="info-box">ℹ️ Para contratos de 12 meses, o valor total do contrato será calculado multiplicando o valor total da empresa vencedora por 12, conforme Art. 28 da Lei 14.133/2021.</div>
                 <div id="infoDispensa" class="info-box hidden">ℹ️ Dispensa de licitação com fundamento no Art. 75 da Lei 14.133/2021. Não há previsão de contrato plurianual, aplicando-se N/A.</div>
             </div>
             
@@ -167,7 +167,7 @@
             </div>
             
             <div class="card">
-                <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 33, Lei 14.133/2021</span></h4>
+                <h4>🏆 Fornecedor Vencedor Geral <span class="lei-badge">Art. 26, Lei 14.133/2021</span></h4>
                 <select id="vencedorSelect" onchange="mostrarValorFornecedor()">
                     <option value="">Selecione o fornecedor vencedor</option>
                 </select>
@@ -179,7 +179,7 @@
                 </div>
                 
                 <div id="totalContratoDisplay" class="total-contrato hidden">💰 Valor Total do Contrato (12 meses): <strong id="valorTotalContrato">R$ 0,00</strong></div>
-                <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">⚠️ Critério de julgamento: menor preço, conforme Art. 33, inciso I da Lei 14.133/2021.</p>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">⚠️ Critério de julgamento: menor preço, conforme Art. 26, inciso I da Lei 14.133/2021.</p>
             </div>
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -245,7 +245,7 @@
                     detalhesHtml += `<p><strong>Total de Itens Participantes:</strong> ${itens.length}</p>`;
                     detalhesHtml += `<hr>`;
                     detalhesHtml += `<table style="width: 100%; font-size: 12px; border-collapse: collapse;">`;
-                    detalhesHtml += `<tr style="background: #0d3b66; color: white;"><th style="padding: 5px;">Item</th><th style="padding: 5px;">Descrição</th><th style="padding: 5px;">Qtd</th><th style="padding: 5px;">Vl. Unit</th><th style="padding: 5px;">Total</th><tr>`;
+                    detalhesHtml += `<tr style="background: #0d3b66; color: white;"><th style="padding: 5px;">Item</th><th style="padding: 5px;">Descrição</th><th style="padding: 5px;">Qtd</th><th style="padding: 5px;">Vl. Unit</th><th style="padding: 5px;">Total</th></tr>`;
                     
                     itens.forEach((item, idx) => {
                         detalhesHtml += `<tr style="border-bottom: 1px solid #ddd;">`;
@@ -737,10 +737,10 @@
             const dataAtual = new Date().toLocaleDateString('pt-BR');
             
             // Capa
-            doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 210, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont(undefined, 'bold'); doc.text("RELATÓRIO DE ANÁLISE", 148, 55, { align: "center" }); doc.setFontSize(28); doc.text("MAPA COMPARATIVO", 148, 75, { align: "center" }); doc.setFontSize(24); doc.text("DE PREÇOS", 148, 95, { align: "center" }); doc.setFontSize(12); doc.text("NOS TERMOS DA LEI Nº 14.133/2021", 148, 115, { align: "center" }); doc.setFontSize(10); doc.text("NOVA LEI DE LICITAÇÕES E CONTRATOS ADMINISTRATIVOS", 148, 122, { align: "center" }); doc.setFontSize(11); doc.text("ESCOLA DE SERVIÇO PÚBLICO DO ESTADO DA PARAÍBA - ESPEP", 148, 145, { align: "center" }); doc.text(`Processo: ${numeroProcesso}`, 148, 155, { align: "center" }); doc.text(`Data: ${dataAtual}`, 148, 160, { align: "center" }); doc.setTextColor(0, 0, 0);
+            doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 210, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.setFont(undefined, 'bold'); doc.text("RELATORIO DE ANALISE", 148, 55, { align: "center" }); doc.setFontSize(28); doc.text("MAPA COMPARATIVO", 148, 75, { align: "center" }); doc.setFontSize(24); doc.text("DE PRECOS", 148, 95, { align: "center" }); doc.setFontSize(12); doc.text("NOS TERMOS DA LEI Nº 14.133/2021", 148, 115, { align: "center" }); doc.setFontSize(10); doc.text("NOVA LEI DE LICITACOES E CONTRATOS ADMINISTRATIVOS", 148, 122, { align: "center" }); doc.setFontSize(11); doc.text("ESCOLA DE SERVICO PUBLICO DO ESTADO DA PARAIBA - ESPEP", 148, 145, { align: "center" }); doc.text(`Processo: ${numeroProcesso}`, 148, 155, { align: "center" }); doc.text(`Data: ${dataAtual}`, 148, 160, { align: "center" }); doc.setTextColor(0, 0, 0);
             
-            // Página da tabela
-            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("MAPA COMPARATIVO DE PREÇOS - Art. 23, §1º da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DADOS DO PROCESSO:", 14, y); doc.setFont(undefined, 'normal'); doc.text(`Número: ${numeroProcesso}`, 14, y + 6); doc.text(`Órgão: ${document.getElementById('orgao')?.value || 'Não informado'}`, 14, y + 12); doc.text(`Data de Emissão: ${dataAtual}`, 14, y + 18); y += 26;
+            // Pagina da tabela
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("MAPA COMPARATIVO DE PRECOS - Art. 23, §1º da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DADOS DO PROCESSO:", 14, y); doc.setFont(undefined, 'normal'); doc.text(`Numero: ${numeroProcesso}`, 14, y + 6); doc.text(`Orgao: ${document.getElementById('orgao')?.value || 'Nao informado'}`, 14, y + 12); doc.text(`Data de Emissao: ${dataAtual}`, 14, y + 18); y += 26;
             
             const body = [];
             itens.forEach((item) => {
@@ -751,80 +751,104 @@
                 ranking.forEach((c, index) => { body.push([ (item.codigo || '-').substring(0, 8), item.descricao.length > 28 ? item.descricao.substring(0, 25) + '...' : item.descricao, item.qtd.toString(), (item.und || 'UN').substring(0, 3), c.empresa.length > 22 ? c.empresa.substring(0, 19) + '...' : c.empresa, c.cnpj, `R$ ${c.valorUnitario.toFixed(2)}`, `R$ ${c.total.toFixed(2)}`, (c.origem || '-').substring(0, 10), (index + 1).toString(), `R$ ${s.media.toFixed(2)}`, `R$ ${s.mediana.toFixed(2)}`, `R$ ${s.desvio.toFixed(2)}`, `R$ ${s.min.toFixed(2)}`, `R$ ${s.max.toFixed(2)}` ]); });
             });
             if (body.length > 0) { 
-                doc.autoTable({ startY: y, head: [["Cód", "Descrição", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Média", "Med", "Desv", "Mín", "Máx"]], body: body, styles: { fontSize: 6, cellPadding: 1.5 }, headStyles: { fillColor: [13, 59, 102], fontSize: 6 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 38 }, 2: { cellWidth: 8 }, 3: { cellWidth: 7 }, 4: { cellWidth: 38 }, 5: { cellWidth: 25 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 14 }, 9: { cellWidth: 6 }, 10: { cellWidth: 14 }, 11: { cellWidth: 12 }, 12: { cellWidth: 12 }, 13: { cellWidth: 14 }, 14: { cellWidth: 14 } }, margin: { left: 10, right: 10 } }); 
+                doc.autoTable({ startY: y, head: [["Cod", "Descricao", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Media", "Med", "Desv", "Min", "Max"]], body: body, styles: { fontSize: 6, cellPadding: 1.5 }, headStyles: { fillColor: [13, 59, 102], fontSize: 6 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 38 }, 2: { cellWidth: 8 }, 3: { cellWidth: 7 }, 4: { cellWidth: 38 }, 5: { cellWidth: 25 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 14 }, 9: { cellWidth: 6 }, 10: { cellWidth: 14 }, 11: { cellWidth: 12 }, 12: { cellWidth: 12 }, 13: { cellWidth: 14 }, 14: { cellWidth: 14 } }, margin: { left: 10, right: 10 } }); 
                 y = doc.lastAutoTable.finalY + 10;
             }
             
-            // Página do gráfico
-            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("ANÁLISE GRÁFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; if (imgGrafico) { doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90); y += 100; } else { y += 10; }
-            doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("INTERPRETAÇÃO DO GRÁFICO DE BARRAS", 14, y); y += 7; doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text("Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório,", 14, y); y += 5; doc.text("considerando todos os itens cotados no Mapa Comparativo de Preços.", 14, y); y += 8; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("Elementos do Gráfico:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("• Cada barra representa uma empresa participante;", 14, y); y += 4; doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y); y += 4; doc.text("• Os valores representados no gráfico são referentes às propostas enviadas pelas empresas.", 14, y); y += 8; doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.text("Base Legal: Art. 33, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.", 14, y); y += 15;
+            // Pagina do grafico
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("ANALISE GRAFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; if (imgGrafico) { doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90); y += 100; } else { y += 10; }
+            doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("INTERPRETACAO DO GRAFICO DE BARRAS", 14, y); y += 7; doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text("Este grafico apresenta o valor total proposto por cada empresa participante do processo licitatorio,", 14, y); y += 5; doc.text("considerando todos os itens cotados no Mapa Comparativo de Precos.", 14, y); y += 8; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("Elementos do Grafico:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("• Cada barra representa uma empresa participante;", 14, y); y += 4; doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y); y += 4; doc.text("• Os valores representados no grafico sao referentes as propostas enviadas pelas empresas.", 14, y); y += 8; doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Criterio de Julgamento pelo Menor Preco.", 14, y); y += 15;
             
-            // Página de justificativa
-            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("JUSTIFICATIVA DA CONTRATAÇÃO - LEI Nº 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28;
+            // Pagina de justificativa
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("JUSTIFICATIVA DA CONTRATACAO - LEI No 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28;
             const vencedor = document.getElementById('vencedorSelect').value;
             const tipoContratacao = document.querySelector('input[name="tipoContratacao"]:checked').value;
             let totalGeral = 0; itens.forEach(item => { item.cotacoes.forEach(cot => { totalGeral += cot.valor * item.qtd; }); });
             
-            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DO CRITÉRIO DE JULGAMENTO:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("Com fundamento no Art. 33, inciso I da Lei nº 14.133/2021, adotou-se o critério de julgamento", 14, y); y += 4; doc.text("pelo MENOR PREÇO, considerando a proposta mais vantajosa para a Administração Pública.", 14, y); y += 10; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DA ANÁLISE DAS PROPOSTAS:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal');
+            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DO CRITERIO DE JULGAMENTO:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("Com fundamento no Art. 26, inciso I da Lei no 14.133/2021, adotou-se o criterio de julgamento", 14, y); y += 4; doc.text("pelo MENOR PRECO, considerando a proposta mais vantajosa para a Administracao Publica.", 14, y); y += 10; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("DA ANALISE DAS PROPOSTAS:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal');
             let justificativa = "";
             if (tipoContratacao === 'contrato' && vencedor) {
                 const { total: totalVencedor } = calcularValorFornecedor(vencedor);
                 const totalContrato = totalVencedor * 12;
                 const economiaPercentual = totalGeral > 0 ? ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2) : "0";
-                justificativa = `Após análise criteriosa das propostas apresentadas no Mapa Comparativo de Preços, verifica-se que a empresa ${vencedor} apresentou o menor preço global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o período inicial de contratação.\n\nConsiderando a contratação por 12 (doze) meses, conforme Art. 105 da Lei 14.133/2021, o valor total do contrato será de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relação à média do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administração Pública, atendendo aos princípios constitucionais da economicidade, eficiência e vantajosidade, nos termos da Lei nº 14.133/2021.`;
+                justificativa = `Apos analise criteriosa das propostas apresentadas no Mapa Comparativo de Precos, verifica-se que a empresa ${vencedor} apresentou o menor preco global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o periodo inicial de contratacao.\n\nConsiderando a contratacao por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato sera de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relacao a media do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administracao Publica, atendendo aos principios constitucionais da economicidade, eficiencia e vantajosidade, nos termos da Lei no 14.133/2021.`;
             } else if (tipoContratacao === 'dispensa') {
-                justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública.\n\nTrata-se de processo de dispensa de licitação fundamentada no Art. 75 da Lei nº 14.133/2021, onde não há previsão de contrato com vigência prolongada, aplicando-se o regime de N/A (Não se Aplica) para fins de estimativa de contrato plurianual.\n\nA proposta atende aos requisitos legais de economicidade e eficiência, sendo a mais vantajosa para a Administração no contexto da dispensa licitatória.`;
-            } else { justificativa = `Após análise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preço global, sendo considerada a proposta mais vantajosa para a Administração Pública, nos termos da Lei nº 14.133/2021.`; }
+                justificativa = `Apos analise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preco global, sendo considerada a proposta mais vantajosa para a Administracao Publica.\n\nTrata-se de processo de dispensa de licitacao fundamentada no Art. 75 da Lei no 14.133/2021, onde nao ha previsao de contrato com vigencia prolongada, aplicando-se o regime de N/A (Nao se Aplica) para fins de estimativa de contrato plurianual.\n\nA proposta atende aos requisitos legais de economicidade e eficiencia, sendo a mais vantajosa para a Administracao no contexto da dispensa licitatoria.`;
+            } else { justificativa = `Apos analise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preco global, sendo considerada a proposta mais vantajosa para a Administracao Publica, nos termos da Lei no 14.133/2021.`; }
             const splitText = doc.splitTextToSize(justificativa, 265); doc.text(splitText, 14, y); y += splitText.length * 4 + 12;
-            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("FUNDAMENTAÇÃO LEGAL:", 14, y); y += 5; doc.setFontSize(7); doc.setFont(undefined, 'normal');
-            const fundamentacao = `- Lei nº 14.133/2021 - Nova Lei de Licitações e Contratos Administrativos\n- Art. 23, §1º - Mapa Comparativo de Preços\n- Art. 25 - Análise de Propostas\n- Art. 33, inciso I - Critério de Julgamento pelo Menor Preço\n- Art. 105 - Contratos Administrativos\n- Art. 75 - Hipóteses de Dispensa de Licitação\n- Princípios da Economicidade, Eficiência e Vantajosidade (Art. 5º)`;
+            doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("FUNDAMENTACAO LEGAL:", 14, y); y += 5; doc.setFontSize(7); doc.setFont(undefined, 'normal');
+            const fundamentacao = `- Lei no 14.133/2021 - Nova Lei de Licitacoes e Contratos Administrativos\n- Art. 23, §1o - Mapa Comparativo de Precos\n- Art. 25 - Analise de Propostas\n- Art. 26, inciso I - Criterio de Julgamento pelo Menor Preco\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipoteses de Dispensa de Licitacao\n- Principios da Economicidade, Eficiencia e Vantajosidade (Art. 5o)`;
             const splitFund = doc.splitTextToSize(fundamentacao, 265); doc.text(splitFund, 14, y); y += splitFund.length * 4 + 15;
             
-           // ========== DESTAQUE DO FORNECEDOR VENCEDOR ==========
-if (vencedor) {
-    const { total: totalVencedor } = calcularValorFornecedor(vencedor);
-    
-    // Retangulo de destaque
-    const boxY = y;
-    doc.setFillColor(39, 174, 96); // Verde
-    doc.rect(40, boxY - 5, 217, 35, 'F');
-    
-    // Borda dourada
-    doc.setDrawColor(243, 156, 18);
-    doc.setLineWidth(1.5);
-    doc.rect(40, boxY - 5, 217, 35);
-    
-    // Texto do destaque - Usando texto simples
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    doc.text("FORNECEDOR VENCEDOR", 148, boxY + 5, { align: "center" });
-    
-    doc.setFontSize(13);
-    doc.text(vencedor, 148, boxY + 15, { align: "center" });
-    
-    doc.setFontSize(14);
-    doc.text(`R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 148, boxY + 25, { align: "center" });
-    
-    y = boxY + 35;
-} else {
-    // Caso nao tenha fornecedor selecionado
-    const boxY = y;
-    doc.setFillColor(243, 156, 18); // Laranja de alerta
-    doc.rect(40, boxY - 5, 217, 20, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text("NENHUM FORNECEDOR VENCEDOR SELECIONADO", 148, boxY + 8, { align: "center" });
-    y = boxY + 25;
-}
+            // ========== DESTAQUE DO FORNECEDOR VENCEDOR ==========
+            if (vencedor) {
+                const { total: totalVencedor } = calcularValorFornecedor(vencedor);
+                
+                const boxY = y;
+                doc.setFillColor(39, 174, 96);
+                doc.rect(40, boxY - 5, 217, 35, 'F');
+                
+                doc.setDrawColor(243, 156, 18);
+                doc.setLineWidth(1.5);
+                doc.rect(40, boxY - 5, 217, 35);
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text("FORNECEDOR COM MENOR PREÇO", 148, boxY + 5, { align: "center" });
+                
+                doc.setFontSize(13);
+                doc.text(vencedor, 148, boxY + 15, { align: "center" });
+                
+                doc.setFontSize(14);
+                doc.text(`R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 148, boxY + 25, { align: "center" });
+                
+                y = boxY + 45;
+            } else {
+                const boxY = y;
+                doc.setFillColor(243, 156, 18);
+                doc.rect(40, boxY - 5, 217, 20, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text("NENHUM FORNECEDOR VENCEDOR SELECIONADO", 148, boxY + 8, { align: "center" });
+                y = boxY + 30;
+            }
             
-            y += 10;
+            // ========== ASSINATURA ==========
+            // Linha da assinatura
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            doc.line(80, y, 220, y);
             
-            // Assinatura
-            doc.setDrawColor(0); doc.line(80, y, 180, y); doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text(assinatura.nome || "_________________________", 130, y + 5, { align: "center" }); doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.text(`Cargo: ${assinatura.cargo || "_________"}`, 130, y + 11, { align: "center" }); doc.text(`Matrícula: ${assinatura.matricula || "_________"}`, 130, y + 17, { align: "center" }); doc.text(`Setor: ${assinatura.setor || "_________"}`, 130, y + 23, { align: "center" }); doc.text(`Data: ${dataAtual}`, 130, y + 29, { align: "center" });
+            // Nome do responsavel
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(assinatura.nome || "_________________________", 150, y + 5, { align: "center" });
             
-            doc.setFontSize(6); doc.setTextColor(128, 128, 128); doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei nº 14.133/2021", 148, 200, { align: "center" }); doc.text(`Página ${doc.internal.getNumberOfPages()}`, 280, 200);
+            // Cargo
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Cargo: ${assinatura.cargo || "_________________________"}`, 150, y + 12, { align: "center" });
+            
+            // Matricula
+            doc.text(`Matricula: ${assinatura.matricula || "_________________________"}`, 150, y + 19, { align: "center" });
+            
+            // Setor
+            doc.text(`Setor: ${assinatura.setor || "_________________________"}`, 150, y + 26, { align: "center" });
+            
+            // Data
+            doc.text(`Data: ${dataAtual}`, 150, y + 33, { align: "center" });
+            
+            // Ajustar y para o rodape
+            y = y + 45;
+            
+            // Rodape
+            doc.setFontSize(6);
+            doc.setTextColor(128, 128, 128);
+            doc.text("Documento gerado pelo Sistema ESPEP MASTER em conformidade com a Lei no 14.133/2021", 148, 200, { align: "center" });
+            doc.text(`Pagina ${doc.internal.getNumberOfPages()}`, 280, 200);
             doc.save(`Relatorio_${numeroProcesso.replace(/\//g, '_')}_Lei14133.pdf`);
             showAlert('PDF gerado com sucesso conforme Lei 14.133/2021!', 'success');
         };
