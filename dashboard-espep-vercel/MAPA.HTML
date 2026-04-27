@@ -66,12 +66,52 @@
         .empresa-select-group button { margin: 0; white-space: nowrap; }
         
         /* Modal Excel */
-        .modal-excel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-        .modal-excel-content { background: #fff; border-radius: 16px; width: 90%; max-width: 1200px; max-height: 90vh; overflow: hidden; animation: fadeIn 0.3s ease; }
-        .modal-excel-header { background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-excel { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.7); 
+            z-index: 2000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-excel-content { 
+            background: #fff; 
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 1200px; 
+            max-height: 90vh; 
+            overflow: hidden; 
+            animation: fadeIn 0.3s ease; 
+        }
+        .modal-excel-header { 
+            background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); 
+            color: #fff; 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         .modal-excel-header h3 { margin: 0; border-left: none; color: white; }
-        .close-modal { background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; padding: 0; margin: 0; }
-        .close-modal:hover { transform: none; box-shadow: none; opacity: 0.8; }
+        .close-modal { 
+            background: none; 
+            border: none; 
+            color: #fff; 
+            font-size: 28px; 
+            cursor: pointer; 
+            padding: 0; 
+            margin: 0;
+            line-height: 1;
+        }
+        .close-modal:hover { 
+            transform: none; 
+            box-shadow: none; 
+            opacity: 0.8;
+            background: none;
+        }
         .modal-excel-body { padding: 20px; max-height: calc(90vh - 60px); overflow-y: auto; }
         .previa-table { width: 100%; font-size: 12px; border-collapse: collapse; }
         .previa-table th, .previa-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
@@ -213,57 +253,57 @@
                 <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF (Lei 14.133/2021)</button>
                 <button onclick="exportarExcel()" class="btn-info" style="flex: 1;">📊 Exportar para Excel</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal Excel para importação (aparece apenas quando o processo está aberto) -->
-    <div id="modalExcel" class="modal-excel hidden">
-        <div class="modal-excel-content">
-            <div class="modal-excel-header">
-                <h3>📊 Importar Planilha de Itens</h3>
-                <button onclick="fecharModalExcel()" class="close-modal">&times;</button>
-            </div>
-            <div class="modal-excel-body">
-                <div id="step1">
-                    <label>Selecione o arquivo Excel (.xlsx, .xls):</label>
-                    <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="lerExcel()">
-                    <div class="info-box" style="margin-top: 15px;">
-                        <strong>📌 Instruções:</strong><br>
-                        A planilha deve conter os dados dos itens. Na próxima tela você vai indicar quais colunas correspondem a cada campo.
+            
+            <!-- MODAL EXCEL DENTRO DO PROCESSO -->
+            <div id="modalExcel" class="modal-excel hidden">
+                <div class="modal-excel-content">
+                    <div class="modal-excel-header">
+                        <h3>📊 Importar Planilha de Itens</h3>
+                        <button onclick="fecharModalExcel()" class="close-modal">&times;</button>
                     </div>
-                </div>
-                <div id="step2" class="hidden">
-                    <h4>Prévia dos dados:</h4>
-                    <div style="overflow-x: auto; max-height: 300px;">
-                        <table id="previaExcel" class="previa-table">
-                            <thead id="previaHeader"></thead>
-                            <tbody id="previaBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="mapeamento-excel">
-                        <h4>Mapeamento de Colunas:</h4>
-                        <div class="mapeamento-grid">
-                            <div class="mapeamento-item">
-                                <label>Código do Item:</label>
-                                <select id="mapCodigo"></select>
-                            </div>
-                            <div class="mapeamento-item">
-                                <label>Descrição do Item *:</label>
-                                <select id="mapDescricao"></select>
-                            </div>
-                            <div class="mapeamento-item">
-                                <label>Quantidade *:</label>
-                                <select id="mapQuantidade"></select>
-                            </div>
-                            <div class="mapeamento-item">
-                                <label>Unidade:</label>
-                                <select id="mapUnidade"></select>
+                    <div class="modal-excel-body">
+                        <div id="step1">
+                            <label>Selecione o arquivo Excel (.xlsx, .xls):</label>
+                            <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="lerExcel()">
+                            <div class="info-box" style="margin-top: 15px;">
+                                <strong>📌 Instruções:</strong><br>
+                                A planilha deve conter os dados dos itens. Na próxima tela você vai indicar quais colunas correspondem a cada campo.
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-excel-buttons">
-                        <button onclick="fecharModalExcel()" class="btn-danger">Cancelar</button>
-                        <button onclick="importarItensExcel()" class="btn-success">✅ Importar Itens</button>
+                        <div id="step2" class="hidden">
+                            <h4>Prévia dos dados:</h4>
+                            <div style="overflow-x: auto; max-height: 300px;">
+                                <table id="previaExcel" class="previa-table">
+                                    <thead id="previaHeader"></thead>
+                                    <tbody id="previaBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mapeamento-excel">
+                                <h4>Mapeamento de Colunas:</h4>
+                                <div class="mapeamento-grid">
+                                    <div class="mapeamento-item">
+                                        <label>Código do Item:</label>
+                                        <select id="mapCodigo"></select>
+                                    </div>
+                                    <div class="mapeamento-item">
+                                        <label>Descrição do Item *:</label>
+                                        <select id="mapDescricao"></select>
+                                    </div>
+                                    <div class="mapeamento-item">
+                                        <label>Quantidade *:</label>
+                                        <select id="mapQuantidade"></select>
+                                    </div>
+                                    <div class="mapeamento-item">
+                                        <label>Unidade:</label>
+                                        <select id="mapUnidade"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-excel-buttons">
+                                <button onclick="fecharModalExcel()" class="btn-danger">Cancelar</button>
+                                <button onclick="importarItensExcel()" class="btn-success">✅ Importar Itens</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -818,7 +858,8 @@
                 showAlert('Nenhum processo aberto!', 'error');
                 return;
             }
-            document.getElementById('modalExcel').classList.remove('hidden');
+            const modal = document.getElementById('modalExcel');
+            modal.classList.remove('hidden');
             document.getElementById('step1').classList.remove('hidden');
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('excelFile').value = '';
@@ -826,7 +867,8 @@
         };
 
         window.fecharModalExcel = function() {
-            document.getElementById('modalExcel').classList.add('hidden');
+            const modal = document.getElementById('modalExcel');
+            modal.classList.add('hidden');
         };
 
         window.lerExcel = function() {
