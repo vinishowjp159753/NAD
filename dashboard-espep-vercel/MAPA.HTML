@@ -78,6 +78,9 @@
             justify-content: center; 
             align-items: center; 
         }
+        .modal-excel[inert] {
+            display: none;
+        }
         .modal-excel-content { 
             background: #fff; 
             border-radius: 16px; 
@@ -257,7 +260,7 @@
     </div>
 
     <!-- MODAL EXCEL - FORA DO CONTAINER PARA FUNCIONAR CORRETAMENTE -->
-    <div id="modalExcel" class="modal-excel hidden">
+    <div id="modalExcel" class="modal-excel hidden" inert>
         <div class="modal-excel-content">
             <div class="modal-excel-header">
                 <h3>📊 Importar Planilha de Itens</h3>
@@ -410,7 +413,7 @@
                     detalhesHtml += `<tr style="background: #c8e6c9; font-weight: bold;">`;
                     detalhesHtml += `<td colspan="4" style="padding: 5px; text-align: right;">TOTAL:</td>`;
                     detalhesHtml += `<td style="padding: 5px;">R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>`;
-                    detalhesHtml += `</tr>`;
+                    detalhesHtml += `<tr>`;
                     detalhesHtml += `</table></div>`;
                     
                     Swal.fire({
@@ -899,6 +902,7 @@
             }
             const modal = document.getElementById('modalExcel');
             modal.classList.remove('hidden');
+            modal.removeAttribute('inert');
             document.getElementById('step1').classList.remove('hidden');
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('excelFile').value = '';
@@ -909,6 +913,11 @@
         window.fecharModalExcel = function() {
             const modal = document.getElementById('modalExcel');
             modal.classList.add('hidden');
+            modal.setAttribute('inert', '');
+            // Remover foco do modal
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
         };
 
         window.lerExcel = function() {
@@ -1196,6 +1205,8 @@
             const radios = document.querySelectorAll('input[name="tipoContratacao"]');
             radios.forEach(radio => { radio.addEventListener('change', () => { const tipo = radio.value; const infoContrato = document.getElementById('infoContrato'); const infoDispensa = document.getElementById('infoDispensa'); if (tipo === 'contrato') { infoContrato.classList.remove('hidden'); infoDispensa.classList.add('hidden'); } else { infoContrato.classList.add('hidden'); infoDispensa.classList.remove('hidden'); } atualizarTotalContrato(); }); });
         });
+        
+        // Inicializar
         carregarProcessos();
     </script>
 </body>
