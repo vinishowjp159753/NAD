@@ -11,6 +11,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SheetJS para Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
@@ -28,6 +30,8 @@
         .btn-edit { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
         .btn-success { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
         .btn-info { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+        .btn-excel { background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); }
+        .btn-warning { background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%); }
         input, select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin: 5px; font-size: 0.9rem; transition: border-color 0.3s; }
         input:focus, select:focus { outline: none; border-color: #0d3b66; box-shadow: 0 0 0 3px rgba(13,59,102,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; overflow-x: auto; display: block; }
@@ -61,7 +65,70 @@
         .empresa-select-group { display: flex; align-items: center; gap: 10px; margin: 5px; }
         .empresa-select-group select { flex: 1; }
         .empresa-select-group button { margin: 0; white-space: nowrap; }
-        @media (max-width: 768px) { .container { padding: 10px; } .card { padding: 15px; } input, select, button { width: 100%; margin: 5px 0; } th, td { font-size: 0.65rem; padding: 4px; } .grafico-card { padding: 12px; } canvas { max-height: 300px; } .empresa-select-group { flex-direction: column; } }
+        
+        /* Modal Excel */
+        .modal-excel { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.7); 
+            z-index: 2000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-excel[inert] {
+            display: none;
+        }
+        .modal-excel-content { 
+            background: #fff; 
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 1200px; 
+            max-height: 90vh; 
+            overflow: hidden; 
+            animation: fadeIn 0.3s ease; 
+        }
+        .modal-excel-header { 
+            background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); 
+            color: #fff; 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .modal-excel-header h3 { margin: 0; border-left: none; color: white; }
+        .close-modal { 
+            background: none; 
+            border: none; 
+            color: #fff; 
+            font-size: 28px; 
+            cursor: pointer; 
+            padding: 0; 
+            margin: 0;
+            line-height: 1;
+        }
+        .close-modal:hover { 
+            transform: none; 
+            box-shadow: none; 
+            opacity: 0.8;
+            background: none;
+        }
+        .modal-excel-body { padding: 20px; max-height: calc(90vh - 60px); overflow-y: auto; }
+        .previa-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+        .previa-table th, .previa-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .previa-table th { background: #f0f0f0; color: #333; position: sticky; top: 0; }
+        .mapeamento-excel { margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee; }
+        .mapeamento-excel h4 { margin-bottom: 15px; color: #0d3b66; }
+        .mapeamento-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .mapeamento-item { display: flex; flex-direction: column; gap: 5px; }
+        .mapeamento-item label { font-weight: bold; font-size: 0.85rem; color: #555; }
+        .mapeamento-item select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
+        .modal-excel-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
+        
+        @media (max-width: 768px) { .container { padding: 10px; } .card { padding: 15px; } input, select, button { width: 100%; margin: 5px 0; } th, td { font-size: 0.65rem; padding: 4px; } .grafico-card { padding: 12px; } canvas { max-height: 300px; } .empresa-select-group { flex-direction: column; } .mapeamento-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -70,6 +137,7 @@
         <p>Gestão de Processos de Compras Públicas conforme a Nova Lei de Licitações</p>
     </header>
     <div class="container">
+        <!-- TELA DE PROCESSOS (INICIAL) -->
         <div id="telaProcessos">
             <div class="card">
                 <h3>📋 Novo Processo</h3>
@@ -84,6 +152,8 @@
                 <div id="listaProcessos"></div>
             </div>
         </div>
+        
+        <!-- TELA DO MAPA (DENTRO DO PROCESSO) -->
         <div id="telaMapa" class="hidden">
             <button onclick="voltar()" class="btn-info">⬅ Voltar para Processos</button>
             <h3 id="tituloProcesso" style="margin: 15px 0;"></h3>
@@ -121,7 +191,9 @@
                 <div class="form-group"><input id="descItem" placeholder="Descrição *" required></div>
                 <div class="form-group"><input id="qtdItem" type="number" placeholder="Quantidade *" required></div>
                 <div class="form-group"><input id="undItem" placeholder="Unidade (Ex: UN, KG, M)"></div>
-                <button onclick="addItem()" class="btn-success">➕ Adicionar Item</button>
+                <button onclick="addItem()" class="btn-success">➕ Adicionar Individual</button>
+                <button onclick="abrirModalExcel()" class="btn-excel">📊 Importar Excel</button>
+                <button onclick="excluirDuplicatas()" class="btn-warning">🗑️ Eliminar Duplicatas</button>
             </div>
             
             <div class="card">
@@ -188,13 +260,81 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL EXCEL - FORA DO CONTAINER PARA FUNCIONAR CORRETAMENTE -->
+    <div id="modalExcel" class="modal-excel hidden" inert>
+        <div class="modal-excel-content">
+            <div class="modal-excel-header">
+                <h3>📊 Importar Planilha de Itens</h3>
+                <button onclick="fecharModalExcel()" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-excel-body">
+                <div id="step1">
+                    <label>Selecione o arquivo Excel (.xlsx, .xls):</label>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls">
+                    <button onclick="lerExcel()" class="btn-info" style="margin-top: 10px;">📖 Ler Arquivo</button>
+                    <div class="info-box" style="margin-top: 15px;">
+                        <strong>📌 Instruções:</strong><br>
+                        A planilha deve conter os dados dos itens. Após ler o arquivo, você vai indicar quais colunas correspondem a cada campo.
+                    </div>
+                </div>
+                <div id="step2" class="hidden">
+                    <h4>Prévia dos dados:</h4>
+                    <div style="overflow-x: auto; max-height: 300px;">
+                        <table id="previaExcel" class="previa-table">
+                            <thead id="previaHeader"></thead>
+                            <tbody id="previaBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="mapeamento-excel">
+                        <h4>Mapeamento de Colunas:</h4>
+                        <div class="mapeamento-grid">
+                            <div class="mapeamento-item">
+                                <label>Código do Item:</label>
+                                <select id="mapCodigo"></select>
+                            </div>
+                            <div class="mapeamento-item">
+                                <label>Descrição do Item *:</label>
+                                <select id="mapDescricao"></select>
+                            </div>
+                            <div class="mapeamento-item">
+                                <label>Quantidade *:</label>
+                                <select id="mapQuantidade"></select>
+                            </div>
+                            <div class="mapeamento-item">
+                                <label>Unidade:</label>
+                                <select id="mapUnidade"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-excel-buttons">
+                        <button onclick="fecharModalExcel()" class="btn-danger">Cancelar</button>
+                        <button onclick="importarItensExcel()" class="btn-success">✅ Importar Itens</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
+        // Importar Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        const firebaseConfig = { apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0", authDomain: "nad1-3fbbf.firebaseapp.com", projectId: "nad1-3fbbf" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0", 
+            authDomain: "nad1-3fbbf.firebaseapp.com", 
+            projectId: "nad1-3fbbf" 
+        };
+        
         let db;
-        try { const app = initializeApp(firebaseConfig); db = getFirestore(app); } catch (error) { console.error("Erro Firebase:", error); }
+        try { 
+            const app = initializeApp(firebaseConfig); 
+            db = getFirestore(app); 
+            console.log("Firebase conectado");
+        } catch (error) { 
+            console.error("Erro Firebase:", error);
+        }
         
         let processoAtual = null;
         let itens = [];
@@ -202,8 +342,23 @@
         let graficoBarras = null;
         let empresasCache = new Map();
         
-        function showAlert(message, type = 'success') { Swal.fire({ title: type === 'success' ? 'Sucesso!' : 'Erro!', text: message, icon: type, timer: 3000, showConfirmButton: false }); }
-        function validateFields(fields) { for (let field of fields) { if (!field.value || field.value.trim() === '') { showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error'); return false; } } return true; }
+        // Variáveis para importação Excel
+        let excelData = null;
+        let excelHeaders = [];
+        
+        function showAlert(message, type = 'success') { 
+            Swal.fire({ title: type === 'success' ? 'Sucesso!' : 'Erro!', text: message, icon: type, timer: 3000, showConfirmButton: false }); 
+        }
+        
+        function validateFields(fields) { 
+            for (let field of fields) { 
+                if (!field.value || field.value.trim() === '') { 
+                    showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error'); 
+                    return false; 
+                } 
+            } 
+            return true; 
+        }
         
         function calcularValorFornecedor(empresaSelecionada) {
             let totalGeral = 0;
@@ -384,7 +539,10 @@
                 showAlert('Processo criado com sucesso!', 'success');
                 numeroField.value = ''; orgaoField.value = ''; dataField.value = '';
                 await carregarProcessos();
-            } catch (error) { showAlert('Erro ao criar processo', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao criar processo: ' + error.message, 'error'); 
+            }
         };
         
         window.carregarProcessos = async () => {
@@ -395,7 +553,10 @@
                 listaElement.innerHTML = '<div style="display: grid; gap: 10px;">';
                 snap.forEach(d => { const p = d.data(); listaElement.innerHTML += `<div style="background: #f8f9fa; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;"><div><strong>📄 ${p.numero}</strong><br><small>${p.orgao} - ${new Date(p.data).toLocaleDateString('pt-BR')}</small></div><button onclick="abrir('${d.id}','${p.numero.replace(/'/g, "\\'")}')" class="btn-success">Abrir</button></div>`; });
                 listaElement.innerHTML += '</div>';
-            } catch (error) { listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>'; }
+            } catch (error) { 
+                console.error(error);
+                listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>'; 
+            }
         };
         
         window.abrir = async (id, num) => {
@@ -417,7 +578,115 @@
                 showAlert('Item adicionado!', 'success');
                 codigoField.value = ''; descField.value = ''; qtdField.value = ''; undField.value = '';
                 await carregarItens();
-            } catch (error) { showAlert('Erro ao adicionar item', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao adicionar item', 'error'); 
+            }
+        };
+        
+        // ========== FUNÇÃO PARA EXCLUIR DUPLICATAS ==========
+        window.excluirDuplicatas = async () => {
+            if (!processoAtual) {
+                showAlert('Nenhum processo aberto!', 'error');
+                return;
+            }
+            
+            const result = await Swal.fire({
+                title: '⚠️ Atenção!',
+                text: 'Esta ação vai eliminar itens duplicados no processo atual. Itens com mesmo código ou descrição serão removidos, mantendo apenas o primeiro. Deseja continuar?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e67e22',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, eliminar duplicatas!',
+                cancelButtonText: 'Cancelar'
+            });
+            
+            if (!result.isConfirmed) return;
+            
+            try {
+                // Buscar todos os itens do processo atual
+                const snap = await getDocs(query(collection(db, "itens"), where("processo", "==", processoAtual)));
+                const todosItens = [];
+                snap.forEach(d => {
+                    todosItens.push({ id: d.id, ...d.data() });
+                });
+                
+                if (todosItens.length === 0) {
+                    showAlert('Nenhum item encontrado neste processo!', 'info');
+                    return;
+                }
+                
+                // Mapa para identificar duplicatas
+                const mapaCodigo = new Map();
+                const mapaDescricao = new Map();
+                const idsParaExcluir = [];
+                
+                todosItens.forEach(item => {
+                    const codigo = item.codigo || '';
+                    const descricao = item.descricao || '';
+                    
+                    let isDuplicado = false;
+                    
+                    // Verificar duplicidade por código (se código não vazio)
+                    if (codigo && codigo !== '-') {
+                        if (mapaCodigo.has(codigo)) {
+                            isDuplicado = true;
+                        } else {
+                            mapaCodigo.set(codigo, item.id);
+                        }
+                    }
+                    
+                    // Verificar duplicidade por descrição
+                    if (descricao && !isDuplicado) {
+                        const descLower = descricao.toLowerCase().trim();
+                        if (mapaDescricao.has(descLower)) {
+                            isDuplicado = true;
+                        } else {
+                            mapaDescricao.set(descLower, item.id);
+                        }
+                    }
+                    
+                    if (isDuplicado) {
+                        idsParaExcluir.push(item.id);
+                    }
+                });
+                
+                if (idsParaExcluir.length === 0) {
+                    showAlert('Nenhum item duplicado encontrado!', 'info');
+                    return;
+                }
+                
+                // Confirmar exclusão com detalhes
+                const confirmDelete = await Swal.fire({
+                    title: '🗑️ Confirmar exclusão',
+                    html: `<p>Serão excluídos <strong>${idsParaExcluir.length}</strong> itens duplicados.</p>
+                           <p>Os itens restantes serão mantidos normalmente.</p>
+                           <p style="color: #e67e22;"><strong>Esta ação não pode ser desfeita!</strong></p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Sim, excluir duplicatas!',
+                    cancelButtonText: 'Cancelar'
+                });
+                
+                if (!confirmDelete.isConfirmed) return;
+                
+                // Excluir os itens duplicados em lote
+                const batch = writeBatch(db);
+                idsParaExcluir.forEach(id => {
+                    const itemRef = doc(db, "itens", id);
+                    batch.delete(itemRef);
+                });
+                await batch.commit();
+                
+                showAlert(`✅ ${idsParaExcluir.length} itens duplicados foram removidos com sucesso!`, 'success');
+                await carregarItens(); // Recarregar itens
+                
+            } catch (error) {
+                console.error('Erro ao excluir duplicatas:', error);
+                showAlert('Erro ao excluir duplicatas: ' + error.message, 'error');
+            }
         };
         
         window.addCotacao = async () => {
@@ -469,7 +738,10 @@
                 }
                 
                 await carregarItens();
-            } catch (error) { showAlert('Erro ao adicionar cotação', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao adicionar cotação', 'error'); 
+            }
         };
         
         window.editarItem = async (id, desc) => {
@@ -648,7 +920,10 @@
                 atualizarTotalContrato();
                 
                 document.getElementById('valorFornecedorDisplay').classList.add('hidden');
-            } catch (error) { showAlert('Erro ao carregar itens', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao carregar itens: ' + error.message, 'error'); 
+            }
         };
         
         function render() {
@@ -726,6 +1001,184 @@
             } else { totalContratoDisplay.classList.add('hidden'); }
         }
         
+        // ========== FUNÇÕES DE IMPORTAÇÃO EXCEL ==========
+        window.abrirModalExcel = function() {
+            if (!processoAtual) {
+                showAlert('Nenhum processo aberto!', 'error');
+                return;
+            }
+            const modal = document.getElementById('modalExcel');
+            modal.classList.remove('hidden');
+            modal.removeAttribute('inert');
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('excelFile').value = '';
+            excelData = null;
+            excelHeaders = [];
+        };
+
+        window.fecharModalExcel = function() {
+            const modal = document.getElementById('modalExcel');
+            modal.classList.add('hidden');
+            modal.setAttribute('inert', '');
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        };
+
+        window.lerExcel = function() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('Selecione um arquivo Excel primeiro!', 'error');
+                return;
+            }
+            
+            showAlert('Lendo arquivo...', 'info');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                    
+                    if (!jsonData || jsonData.length < 2) {
+                        showAlert('Planilha vazia ou formato inválido!', 'error');
+                        return;
+                    }
+                    
+                    excelHeaders = jsonData[0].map(h => h?.toString().trim() || `Coluna_${h}`);
+                    excelData = jsonData.slice(1).filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
+                    
+                    if (excelData.length === 0) {
+                        showAlert('Nenhum dado encontrado na planilha!', 'error');
+                        return;
+                    }
+                    
+                    mostrarPreviaExcel();
+                    preencherMapeamentoSelects();
+                    
+                    document.getElementById('step1').classList.add('hidden');
+                    document.getElementById('step2').classList.remove('hidden');
+                    
+                    showAlert(`Arquivo lido com sucesso! Encontradas ${excelData.length} linhas de dados.`, 'success');
+                } catch (error) {
+                    console.error(error);
+                    showAlert('Erro ao ler o arquivo: ' + error.message, 'error');
+                }
+            };
+            reader.onerror = function() {
+                showAlert('Erro ao ler o arquivo!', 'error');
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        function mostrarPreviaExcel() {
+            const headerRow = document.getElementById('previaHeader');
+            const bodyTable = document.getElementById('previaBody');
+            
+            headerRow.innerHTML = '<tr>' + excelHeaders.map(h => `<th>${h.substring(0, 30)}</th>`).join('') + '</td>';
+            
+            const previewRows = excelData.slice(0, 10);
+            bodyTable.innerHTML = previewRows.map(row => {
+                return '<tr>' + row.map(cell => `<td>${cell?.toString().substring(0, 40) || ''}<table>`).join('') + '</tr>';
+            }).join('');
+            
+            if (excelData.length > 10) {
+                bodyTable.innerHTML += `<tr><td colspan="${excelHeaders.length}" style="text-align: center; background: #f0f0f0;">... e mais ${excelData.length - 10} linhas</td></tr>`;
+            }
+        }
+
+        function preencherMapeamentoSelects() {
+            const selects = ['mapCodigo', 'mapDescricao', 'mapQuantidade', 'mapUnidade'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">-- Selecione a coluna --</option>';
+                excelHeaders.forEach((header, idx) => {
+                    select.innerHTML += `<option value="${idx}">${header}</option>`;
+                });
+            });
+            
+            // Detecção automática
+            excelHeaders.forEach((header, idx) => {
+                const lowerHeader = header.toLowerCase();
+                if (lowerHeader.includes('cod') || lowerHeader.includes('código') || lowerHeader === 'id') {
+                    document.getElementById('mapCodigo').value = idx;
+                }
+                if (lowerHeader.includes('desc') || lowerHeader.includes('descrição') || lowerHeader.includes('nome') || lowerHeader.includes('item')) {
+                    document.getElementById('mapDescricao').value = idx;
+                }
+                if (lowerHeader.includes('qtd') || lowerHeader.includes('quant') || lowerHeader === 'quantidade') {
+                    document.getElementById('mapQuantidade').value = idx;
+                }
+                if (lowerHeader.includes('unid') || lowerHeader.includes('unidade') || lowerHeader === 'und') {
+                    document.getElementById('mapUnidade').value = idx;
+                }
+            });
+        }
+
+        window.importarItensExcel = async function() {
+            if (!processoAtual) {
+                showAlert('Nenhum processo aberto!', 'error');
+                fecharModalExcel();
+                return;
+            }
+            
+            const mapDescricao = document.getElementById('mapDescricao').value;
+            const mapQuantidade = document.getElementById('mapQuantidade').value;
+            
+            if (!mapDescricao || !mapQuantidade) {
+                showAlert('As colunas de Descrição e Quantidade são obrigatórias!', 'error');
+                return;
+            }
+            
+            const mapCodigo = document.getElementById('mapCodigo').value;
+            const mapUnidade = document.getElementById('mapUnidade').value;
+            
+            let importados = 0;
+            let erros = 0;
+            
+            for (const row of excelData) {
+                const descricao = row[parseInt(mapDescricao)]?.toString().trim();
+                const qtd = parseFloat(row[parseInt(mapQuantidade)]);
+                
+                if (!descricao || isNaN(qtd) || qtd <= 0) {
+                    erros++;
+                    continue;
+                }
+                
+                const codigo = mapCodigo !== "" ? (row[parseInt(mapCodigo)]?.toString().trim() || '-') : '-';
+                const unidade = mapUnidade !== "" ? (row[parseInt(mapUnidade)]?.toString().trim() || 'UN') : 'UN';
+                
+                try {
+                    await addDoc(collection(db, "itens"), {
+                        processo: processoAtual,
+                        codigo: codigo,
+                        descricao: descricao,
+                        qtd: qtd,
+                        und: unidade,
+                        createdAt: new Date().toISOString()
+                    });
+                    importados++;
+                } catch (error) {
+                    erros++;
+                    console.error('Erro ao importar item:', error);
+                }
+            }
+            
+            fecharModalExcel();
+            
+            if (importados > 0) {
+                showAlert(`✅ ${importados} itens importados com sucesso! ${erros > 0 ? `⚠️ ${erros} itens ignorados por dados inválidos.` : ''}`, 'success');
+                await carregarItens();
+            } else {
+                showAlert('Nenhum item foi importado. Verifique os dados da planilha.', 'error');
+            }
+        };
+        
         window.gerarPDF = async () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
@@ -780,7 +1233,7 @@
             const fundamentacao = `- Lei no 14.133/2021 - Nova Lei de Licitacoes e Contratos Administrativos\n- Art. 23, §1o - Mapa Comparativo de Precos\n- Art. 25 - Analise de Propostas\n- Art. 26, inciso I - Criterio de Julgamento pelo Menor Preco\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipoteses de Dispensa de Licitacao\n- Principios da Economicidade, Eficiencia e Vantajosidade (Art. 5o)`;
             const splitFund = doc.splitTextToSize(fundamentacao, 265); doc.text(splitFund, 14, y); y += splitFund.length * 4 + 15;
             
-            // ========== DESTAQUE DO FORNECEDOR VENCEDOR ==========
+            // Destaque do fornecedor vencedor
             if (vencedor) {
                 const { total: totalVencedor } = calcularValorFornecedor(vencedor);
                 
@@ -815,33 +1268,23 @@
                 y = boxY + 30;
             }
             
-            // ========== ASSINATURA ==========
-            // Linha da assinatura
+            // Assinatura
             doc.setDrawColor(0);
             doc.setLineWidth(0.5);
             doc.line(80, y, 220, y);
             
-            // Nome do responsavel
             doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(0, 0, 0);
             doc.text(assinatura.nome || "_________________________", 150, y + 5, { align: "center" });
             
-            // Cargo
             doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
             doc.text(`Cargo: ${assinatura.cargo || "_________________________"}`, 150, y + 12, { align: "center" });
-            
-            // Matricula
             doc.text(`Matricula: ${assinatura.matricula || "_________________________"}`, 150, y + 19, { align: "center" });
-            
-            // Setor
             doc.text(`Setor: ${assinatura.setor || "_________________________"}`, 150, y + 26, { align: "center" });
-            
-            // Data
             doc.text(`Data: ${dataAtual}`, 150, y + 33, { align: "center" });
             
-            // Ajustar y para o rodape
             y = y + 45;
             
             // Rodape
@@ -856,13 +1299,18 @@
         window.voltar = () => {
             document.getElementById('telaMapa').classList.add('hidden');
             document.getElementById('telaProcessos').classList.remove('hidden');
-            processoAtual = null; itens = []; assinatura = {}; empresasCache.clear();
+            processoAtual = null; 
+            itens = []; 
+            assinatura = {}; 
+            empresasCache.clear();
+            fecharModalExcel();
         };
         
         document.addEventListener('DOMContentLoaded', () => {
             const radios = document.querySelectorAll('input[name="tipoContratacao"]');
             radios.forEach(radio => { radio.addEventListener('change', () => { const tipo = radio.value; const infoContrato = document.getElementById('infoContrato'); const infoDispensa = document.getElementById('infoDispensa'); if (tipo === 'contrato') { infoContrato.classList.remove('hidden'); infoDispensa.classList.add('hidden'); } else { infoContrato.classList.add('hidden'); infoDispensa.classList.remove('hidden'); } atualizarTotalContrato(); }); });
         });
+        
         carregarProcessos();
     </script>
 </body>
