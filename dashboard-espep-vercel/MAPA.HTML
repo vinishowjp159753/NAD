@@ -310,14 +310,26 @@
         </div>
     </div>
 
-    <script>
-        // Importar Firebase dinamicamente
+    <script type="module">
+        // Importar Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        const firebaseConfig = { apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0", authDomain: "nad1-3fbbf.firebaseapp.com", projectId: "nad1-3fbbf" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDO4A2KN_AUmGgkKuIP_A9ynOEIGinZph0", 
+            authDomain: "nad1-3fbbf.firebaseapp.com", 
+            projectId: "nad1-3fbbf" 
+        };
+        
         let db;
-        try { const app = initializeApp(firebaseConfig); db = getFirestore(app); console.log("Firebase conectado"); } catch (error) { console.error("Erro Firebase:", error); }
+        try { 
+            const app = initializeApp(firebaseConfig); 
+            db = getFirestore(app); 
+            console.log("Firebase conectado");
+        } catch (error) { 
+            console.error("Erro Firebase:", error);
+            alert("Erro ao conectar com Firebase: " + error.message);
+        }
         
         let processoAtual = null;
         let itens = [];
@@ -329,8 +341,19 @@
         let excelData = null;
         let excelHeaders = [];
         
-        function showAlert(message, type = 'success') { Swal.fire({ title: type === 'success' ? 'Sucesso!' : 'Erro!', text: message, icon: type, timer: 3000, showConfirmButton: false }); }
-        function validateFields(fields) { for (let field of fields) { if (!field.value || field.value.trim() === '') { showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error'); return false; } } return true; }
+        function showAlert(message, type = 'success') { 
+            Swal.fire({ title: type === 'success' ? 'Sucesso!' : 'Erro!', text: message, icon: type, timer: 3000, showConfirmButton: false }); 
+        }
+        
+        function validateFields(fields) { 
+            for (let field of fields) { 
+                if (!field.value || field.value.trim() === '') { 
+                    showAlert(`O campo ${field.placeholder || field.id} é obrigatório!`, 'error'); 
+                    return false; 
+                } 
+            } 
+            return true; 
+        }
         
         function calcularValorFornecedor(empresaSelecionada) {
             let totalGeral = 0;
@@ -511,7 +534,10 @@
                 showAlert('Processo criado com sucesso!', 'success');
                 numeroField.value = ''; orgaoField.value = ''; dataField.value = '';
                 await carregarProcessos();
-            } catch (error) { showAlert('Erro ao criar processo', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao criar processo: ' + error.message, 'error'); 
+            }
         };
         
         window.carregarProcessos = async () => {
@@ -522,7 +548,10 @@
                 listaElement.innerHTML = '<div style="display: grid; gap: 10px;">';
                 snap.forEach(d => { const p = d.data(); listaElement.innerHTML += `<div style="background: #f8f9fa; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;"><div><strong>📄 ${p.numero}</strong><br><small>${p.orgao} - ${new Date(p.data).toLocaleDateString('pt-BR')}</small></div><button onclick="abrir('${d.id}','${p.numero.replace(/'/g, "\\'")}')" class="btn-success">Abrir</button></div>`; });
                 listaElement.innerHTML += '</div>';
-            } catch (error) { listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>'; }
+            } catch (error) { 
+                console.error(error);
+                listaElement.innerHTML = '<p style="color: red;">Erro ao carregar processos</p>'; 
+            }
         };
         
         window.abrir = async (id, num) => {
@@ -544,7 +573,10 @@
                 showAlert('Item adicionado!', 'success');
                 codigoField.value = ''; descField.value = ''; qtdField.value = ''; undField.value = '';
                 await carregarItens();
-            } catch (error) { showAlert('Erro ao adicionar item', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao adicionar item', 'error'); 
+            }
         };
         
         window.addCotacao = async () => {
@@ -596,7 +628,10 @@
                 }
                 
                 await carregarItens();
-            } catch (error) { showAlert('Erro ao adicionar cotação', 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao adicionar cotação', 'error'); 
+            }
         };
         
         window.editarItem = async (id, desc) => {
@@ -775,7 +810,10 @@
                 atualizarTotalContrato();
                 
                 document.getElementById('valorFornecedorDisplay').classList.add('hidden');
-            } catch (error) { showAlert('Erro ao carregar itens: ' + error.message, 'error'); }
+            } catch (error) { 
+                console.error(error);
+                showAlert('Erro ao carregar itens: ' + error.message, 'error'); 
+            }
         };
         
         function render() {
@@ -988,7 +1026,6 @@
                 const unidade = mapUnidade !== "" ? (row[parseInt(mapUnidade)]?.toString().trim() || 'UN') : 'UN';
                 
                 try {
-                    // Usando a mesma função que o addItem usa para adicionar ao Firebase
                     await addDoc(collection(db, "itens"), {
                         processo: processoAtual,
                         codigo: codigo,
@@ -1008,7 +1045,7 @@
             
             if (importados > 0) {
                 showAlert(`✅ ${importados} itens importados com sucesso! ${erros > 0 ? `⚠️ ${erros} itens ignorados por dados inválidos.` : ''}`, 'success');
-                await carregarItens(); // Recarrega os itens para mostrar no mapa
+                await carregarItens();
             } else {
                 showAlert('Nenhum item foi importado. Verifique os dados da planilha.', 'error');
             }
