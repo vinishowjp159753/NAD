@@ -253,57 +253,58 @@
                 <button onclick="gerarPDF()" class="btn-success" style="flex: 1;">📄 Gerar PDF (Lei 14.133/2021)</button>
                 <button onclick="exportarExcel()" class="btn-info" style="flex: 1;">📊 Exportar para Excel</button>
             </div>
-            
-            <!-- MODAL EXCEL DENTRO DO PROCESSO -->
-            <div id="modalExcel" class="modal-excel hidden">
-                <div class="modal-excel-content">
-                    <div class="modal-excel-header">
-                        <h3>📊 Importar Planilha de Itens</h3>
-                        <button onclick="fecharModalExcel()" class="close-modal">&times;</button>
+        </div>
+    </div>
+
+    <!-- MODAL EXCEL - FORA DO CONTAINER PARA FUNCIONAR CORRETAMENTE -->
+    <div id="modalExcel" class="modal-excel hidden">
+        <div class="modal-excel-content">
+            <div class="modal-excel-header">
+                <h3>📊 Importar Planilha de Itens</h3>
+                <button onclick="fecharModalExcel()" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-excel-body">
+                <div id="step1">
+                    <label>Selecione o arquivo Excel (.xlsx, .xls):</label>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls">
+                    <button onclick="lerExcel()" class="btn-info" style="margin-top: 10px;">📖 Ler Arquivo</button>
+                    <div class="info-box" style="margin-top: 15px;">
+                        <strong>📌 Instruções:</strong><br>
+                        A planilha deve conter os dados dos itens. Após ler o arquivo, você vai indicar quais colunas correspondem a cada campo.
                     </div>
-                    <div class="modal-excel-body">
-                        <div id="step1">
-                            <label>Selecione o arquivo Excel (.xlsx, .xls):</label>
-                            <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="lerExcel()">
-                            <div class="info-box" style="margin-top: 15px;">
-                                <strong>📌 Instruções:</strong><br>
-                                A planilha deve conter os dados dos itens. Na próxima tela você vai indicar quais colunas correspondem a cada campo.
+                </div>
+                <div id="step2" class="hidden">
+                    <h4>Prévia dos dados:</h4>
+                    <div style="overflow-x: auto; max-height: 300px;">
+                        <table id="previaExcel" class="previa-table">
+                            <thead id="previaHeader"></thead>
+                            <tbody id="previaBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="mapeamento-excel">
+                        <h4>Mapeamento de Colunas:</h4>
+                        <div class="mapeamento-grid">
+                            <div class="mapeamento-item">
+                                <label>Código do Item:</label>
+                                <select id="mapCodigo"></select>
+                            </div>
+                            <div class="mapeamento-item">
+                                <label>Descrição do Item *:</label>
+                                <select id="mapDescricao"></select>
+                            </div>
+                            <div class="mapeamento-item">
+                                <label>Quantidade *:</label>
+                                <select id="mapQuantidade"></select>
+                            </div>
+                            <div class="mapeamento-item">
+                                <label>Unidade:</label>
+                                <select id="mapUnidade"></select>
                             </div>
                         </div>
-                        <div id="step2" class="hidden">
-                            <h4>Prévia dos dados:</h4>
-                            <div style="overflow-x: auto; max-height: 300px;">
-                                <table id="previaExcel" class="previa-table">
-                                    <thead id="previaHeader"></thead>
-                                    <tbody id="previaBody"></tbody>
-                                </table>
-                            </div>
-                            <div class="mapeamento-excel">
-                                <h4>Mapeamento de Colunas:</h4>
-                                <div class="mapeamento-grid">
-                                    <div class="mapeamento-item">
-                                        <label>Código do Item:</label>
-                                        <select id="mapCodigo"></select>
-                                    </div>
-                                    <div class="mapeamento-item">
-                                        <label>Descrição do Item *:</label>
-                                        <select id="mapDescricao"></select>
-                                    </div>
-                                    <div class="mapeamento-item">
-                                        <label>Quantidade *:</label>
-                                        <select id="mapQuantidade"></select>
-                                    </div>
-                                    <div class="mapeamento-item">
-                                        <label>Unidade:</label>
-                                        <select id="mapUnidade"></select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-excel-buttons">
-                                <button onclick="fecharModalExcel()" class="btn-danger">Cancelar</button>
-                                <button onclick="importarItensExcel()" class="btn-success">✅ Importar Itens</button>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="modal-excel-buttons">
+                        <button onclick="fecharModalExcel()" class="btn-danger">Cancelar</button>
+                        <button onclick="importarItensExcel()" class="btn-success">✅ Importar Itens</button>
                     </div>
                 </div>
             </div>
@@ -328,7 +329,6 @@
             console.log("Firebase conectado");
         } catch (error) { 
             console.error("Erro Firebase:", error);
-            alert("Erro ao conectar com Firebase: " + error.message);
         }
         
         let processoAtual = null;
@@ -903,6 +903,7 @@
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('excelFile').value = '';
             excelData = null;
+            excelHeaders = [];
         };
 
         window.fecharModalExcel = function() {
@@ -915,35 +916,47 @@
             const file = fileInput.files[0];
             
             if (!file) {
-                showAlert('Selecione um arquivo Excel!', 'error');
+                showAlert('Selecione um arquivo Excel primeiro!', 'error');
                 return;
             }
             
+            showAlert('Lendo arquivo...', 'info');
+            
             const reader = new FileReader();
             reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
-                
-                if (!jsonData || jsonData.length < 2) {
-                    showAlert('Planilha vazia ou formato inválido!', 'error');
-                    return;
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                    
+                    if (!jsonData || jsonData.length < 2) {
+                        showAlert('Planilha vazia ou formato inválido!', 'error');
+                        return;
+                    }
+                    
+                    excelHeaders = jsonData[0].map(h => h?.toString().trim() || `Coluna_${h}`);
+                    excelData = jsonData.slice(1).filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
+                    
+                    if (excelData.length === 0) {
+                        showAlert('Nenhum dado encontrado na planilha!', 'error');
+                        return;
+                    }
+                    
+                    mostrarPreviaExcel();
+                    preencherMapeamentoSelects();
+                    
+                    document.getElementById('step1').classList.add('hidden');
+                    document.getElementById('step2').classList.remove('hidden');
+                    
+                    showAlert(`Arquivo lido com sucesso! Encontradas ${excelData.length} linhas de dados.`, 'success');
+                } catch (error) {
+                    console.error(error);
+                    showAlert('Erro ao ler o arquivo: ' + error.message, 'error');
                 }
-                
-                excelHeaders = jsonData[0].map(h => h?.toString().trim() || `Coluna_${h}`);
-                excelData = jsonData.slice(1).filter(row => row.some(cell => cell && cell.toString().trim() !== ''));
-                
-                if (excelData.length === 0) {
-                    showAlert('Nenhum dado encontrado na planilha!', 'error');
-                    return;
-                }
-                
-                mostrarPreviaExcel();
-                preencherMapeamentoSelects();
-                
-                document.getElementById('step1').classList.add('hidden');
-                document.getElementById('step2').classList.remove('hidden');
+            };
+            reader.onerror = function() {
+                showAlert('Erro ao ler o arquivo!', 'error');
             };
             reader.readAsArrayBuffer(file);
         };
@@ -1175,6 +1188,8 @@
             itens = []; 
             assinatura = {}; 
             empresasCache.clear();
+            // Fechar modal se estiver aberto
+            fecharModalExcel();
         };
         
         document.addEventListener('DOMContentLoaded', () => {
