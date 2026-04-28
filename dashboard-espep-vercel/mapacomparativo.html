@@ -127,6 +127,8 @@
         .mapeamento-item label { font-weight: bold; font-size: 0.85rem; color: #555; }
         .mapeamento-item select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
         .modal-excel-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
+        .qtd-cotacoes { font-size: 0.7rem; color: #666; margin-left: 5px; }
+        .item-completo { color: #27ae60; font-weight: bold; }
         
         @media (max-width: 768px) { .container { padding: 10px; } .card { padding: 15px; } input, select, button { width: 100%; margin: 5px 0; } th, td { font-size: 0.65rem; padding: 4px; } .grafico-card { padding: 12px; } canvas { max-height: 300px; } .empresa-select-group { flex-direction: column; } .mapeamento-grid { grid-template-columns: 1fr; } }
     </style>
@@ -217,6 +219,9 @@
                 <div class="form-group"><input id="valor" type="number" placeholder="Valor Unitário (R$) *" required></div>
                 <div class="form-group"><input id="origem" placeholder="Origem (Ex: Cotação, Pregão)"></div>
                 <button onclick="addCotacao()" class="btn-success">💰 Adicionar Cotação</button>
+                <div id="infoItensCompletos" class="info-box hidden" style="margin-top: 10px; background: #c8e6c9;">
+                    ✅ Itens com 4 cotações já não aparecem mais na lista
+                </div>
             </div>
             
             <div class="card">
@@ -605,7 +610,6 @@
             if (!result.isConfirmed) return;
             
             try {
-                // Buscar todos os itens do processo atual
                 const snap = await getDocs(query(collection(db, "itens"), where("processo", "==", processoAtual)));
                 const todosItens = [];
                 snap.forEach(d => {
@@ -617,7 +621,6 @@
                     return;
                 }
                 
-                // Mapa para identificar duplicatas
                 const mapaCodigo = new Map();
                 const mapaDescricao = new Map();
                 const idsParaExcluir = [];
@@ -628,7 +631,6 @@
                     
                     let isDuplicado = false;
                     
-                    // Verificar duplicidade por código (se código não vazio)
                     if (codigo && codigo !== '-') {
                         if (mapaCodigo.has(codigo)) {
                             isDuplicado = true;
@@ -637,7 +639,6 @@
                         }
                     }
                     
-                    // Verificar duplicidade por descrição
                     if (descricao && !isDuplicado) {
                         const descLower = descricao.toLowerCase().trim();
                         if (mapaDescricao.has(descLower)) {
@@ -657,7 +658,6 @@
                     return;
                 }
                 
-                // Confirmar exclusão com detalhes
                 const confirmDelete = await Swal.fire({
                     title: '🗑️ Confirmar exclusão',
                     html: `<p>Serão excluídos <strong>${idsParaExcluir.length}</strong> itens duplicados.</p>
@@ -672,7 +672,6 @@
                 
                 if (!confirmDelete.isConfirmed) return;
                 
-                // Excluir os itens duplicados em lote
                 const batch = writeBatch(db);
                 idsParaExcluir.forEach(id => {
                     const itemRef = doc(db, "itens", id);
@@ -681,7 +680,7 @@
                 await batch.commit();
                 
                 showAlert(`✅ ${idsParaExcluir.length} itens duplicados foram removidos com sucesso!`, 'success');
-                await carregarItens(); // Recarregar itens
+                await carregarItens();
                 
             } catch (error) {
                 console.error('Erro ao excluir duplicatas:', error);
@@ -911,9 +910,43 @@
                 vencedorSelect.innerHTML = '<option value="">Selecione o fornecedor vencedor</option>';
                 Array.from(fornecedores).sort().forEach(f => { vencedorSelect.innerHTML += `<option value="${f.replace(/"/g, '&quot;')}">${f}</option>`; });
                 
+                // Atualizar select de itens - OCULTAR ITENS COM 4 OU MAIS COTAÇÕES
                 const itemSelect = document.getElementById('itemSelect');
-                itemSelect.innerHTML = '';
-                itens.forEach(i => { itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao}</option>`; });
+                itemSelect.innerHTML = '<option value="">-- Selecione um item --</option>';
+                
+                let itensDisponiveis = 0;
+                let itensCompletos = 0;
+                
+                itens.forEach(i => {
+                    const qtdCotacoes = i.cotacoes ? i.cotacoes.length : 0;
+                    
+                    if (qtdCotacoes < 4) {
+                        // Item com menos de 4 cotações - aparece no select
+                        itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao.substring(0, 40)} (${qtdCotacoes}/4 cotações)</option>`;
+                        itensDisponiveis++;
+                    } else {
+                        // Item com 4 ou mais cotações - NÃO aparece no select
+                        itensCompletos++;
+                    }
+                });
+                
+                // Mostrar/ocultar info box
+                const infoBox = document.getElementById('infoItensCompletos');
+                if (itensCompletos > 0) {
+                    infoBox.classList.remove('hidden');
+                    infoBox.innerHTML = `✅ ${itensCompletos} ${itensCompletos === 1 ? 'item atingiu' : 'itens atingiram'} o limite de 4 cotações e ${itensCompletos === 1 ? 'não aparece' : 'não aparecem'} mais na lista.`;
+                } else {
+                    infoBox.classList.add('hidden');
+                }
+                
+                if (itensDisponiveis === 0 && itens.length > 0) {
+                    itemSelect.innerHTML += '<option value="" disabled>-- Todos os itens já têm 4 cotações --</option>';
+                    const infoBoxTodos = document.getElementById('infoItensCompletos');
+                    if (infoBoxTodos) {
+                        infoBoxTodos.classList.remove('hidden');
+                        infoBoxTodos.innerHTML = `✅ Todos os ${itens.length} itens já atingiram o limite de 4 cotações!`;
+                    }
+                }
                 
                 render();
                 atualizarGrafico();
@@ -1080,11 +1113,11 @@
             const headerRow = document.getElementById('previaHeader');
             const bodyTable = document.getElementById('previaBody');
             
-            headerRow.innerHTML = '<tr>' + excelHeaders.map(h => `<th>${h.substring(0, 30)}</th>`).join('') + '</td>';
+            headerRow.innerHTML = '<tr>' + excelHeaders.map(h => `<th>${h.substring(0, 30)}</th>`).join('') + '</tr>';
             
             const previewRows = excelData.slice(0, 10);
             bodyTable.innerHTML = previewRows.map(row => {
-                return '<tr>' + row.map(cell => `<td>${cell?.toString().substring(0, 40) || ''}<table>`).join('') + '</tr>';
+                return '<tr>' + row.map(cell => `<td>${cell?.toString().substring(0, 40) || ''}</td>`).join('') + '</tr>';
             }).join('');
             
             if (excelData.length > 10) {
@@ -1102,7 +1135,6 @@
                 });
             });
             
-            // Detecção automática
             excelHeaders.forEach((header, idx) => {
                 const lowerHeader = header.toLowerCase();
                 if (lowerHeader.includes('cod') || lowerHeader.includes('código') || lowerHeader === 'id') {
