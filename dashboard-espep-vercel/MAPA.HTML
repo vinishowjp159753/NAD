@@ -31,6 +31,7 @@
         .btn-success { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
         .btn-info { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
         .btn-excel { background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); }
+        .btn-warning { background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%); }
         input, select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin: 5px; font-size: 0.9rem; transition: border-color 0.3s; }
         input:focus, select:focus { outline: none; border-color: #0d3b66; box-shadow: 0 0 0 3px rgba(13,59,102,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; overflow-x: auto; display: block; }
@@ -126,6 +127,8 @@
         .mapeamento-item label { font-weight: bold; font-size: 0.85rem; color: #555; }
         .mapeamento-item select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
         .modal-excel-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
+        .qtd-cotacoes { font-size: 0.7rem; color: #666; margin-left: 5px; }
+        .item-completo { color: #27ae60; font-weight: bold; }
         
         @media (max-width: 768px) { .container { padding: 10px; } .card { padding: 15px; } input, select, button { width: 100%; margin: 5px 0; } th, td { font-size: 0.65rem; padding: 4px; } .grafico-card { padding: 12px; } canvas { max-height: 300px; } .empresa-select-group { flex-direction: column; } .mapeamento-grid { grid-template-columns: 1fr; } }
     </style>
@@ -161,7 +164,7 @@
                 <h3>📊 Mapa Comparativo de Preços <span class="lei-badge">Art. 23, §1º, Lei 14.133/2021</span></h3>
                 <table id="tabelaPrincipal">
                     <thead>
-                        <tr><th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unid</th><th>Empresa</th><th>CNPJ</th><th>Vl.Unit</th><th>Total</th><th>Origem</th><th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín</th><th>Máx</th><th>Ações</th></tr>
+                        <tr><th>Item</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Unid</th><th>Empresa</th><th>CNPJ</th><th>Vl.Unit</th><th>Total</th><th>Origem</th><th>Mín Unit</th><th>Méd Unit</th><th>Média</th><th>Mediana</th><th>Desvio</th><th>Mín Total</th><th>Máx Total</th><th>Ações</th></tr>
                     </thead>
                     <tbody id="tbody"></tbody>
                 </table>
@@ -192,6 +195,7 @@
                 <div class="form-group"><input id="undItem" placeholder="Unidade (Ex: UN, KG, M)"></div>
                 <button onclick="addItem()" class="btn-success">➕ Adicionar Individual</button>
                 <button onclick="abrirModalExcel()" class="btn-excel">📊 Importar Excel</button>
+                <button onclick="excluirDuplicatas()" class="btn-warning">🗑️ Eliminar Duplicatas</button>
             </div>
             
             <div class="card">
@@ -215,6 +219,9 @@
                 <div class="form-group"><input id="valor" type="number" placeholder="Valor Unitário (R$) *" required></div>
                 <div class="form-group"><input id="origem" placeholder="Origem (Ex: Cotação, Pregão)"></div>
                 <button onclick="addCotacao()" class="btn-success">💰 Adicionar Cotação</button>
+                <div id="infoItensCompletos" class="info-box hidden" style="margin-top: 10px; background: #c8e6c9;">
+                    ✅ Itens com 4 cotações já não aparecem mais na lista
+                </div>
             </div>
             
             <div class="card">
@@ -413,7 +420,7 @@
                     detalhesHtml += `<tr style="background: #c8e6c9; font-weight: bold;">`;
                     detalhesHtml += `<td colspan="4" style="padding: 5px; text-align: right;">TOTAL:</td>`;
                     detalhesHtml += `<td style="padding: 5px;">R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>`;
-                    detalhesHtml += `<tr>`;
+                    detalhesHtml += `</tr>`;
                     detalhesHtml += `</table></div>`;
                     
                     Swal.fire({
@@ -579,6 +586,105 @@
             } catch (error) { 
                 console.error(error);
                 showAlert('Erro ao adicionar item', 'error'); 
+            }
+        };
+        
+        // ========== FUNÇÃO PARA EXCLUIR DUPLICATAS ==========
+        window.excluirDuplicatas = async () => {
+            if (!processoAtual) {
+                showAlert('Nenhum processo aberto!', 'error');
+                return;
+            }
+            
+            const result = await Swal.fire({
+                title: '⚠️ Atenção!',
+                text: 'Esta ação vai eliminar itens duplicados no processo atual. Itens com mesmo código ou descrição serão removidos, mantendo apenas o primeiro. Deseja continuar?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e67e22',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, eliminar duplicatas!',
+                cancelButtonText: 'Cancelar'
+            });
+            
+            if (!result.isConfirmed) return;
+            
+            try {
+                const snap = await getDocs(query(collection(db, "itens"), where("processo", "==", processoAtual)));
+                const todosItens = [];
+                snap.forEach(d => {
+                    todosItens.push({ id: d.id, ...d.data() });
+                });
+                
+                if (todosItens.length === 0) {
+                    showAlert('Nenhum item encontrado neste processo!', 'info');
+                    return;
+                }
+                
+                const mapaCodigo = new Map();
+                const mapaDescricao = new Map();
+                const idsParaExcluir = [];
+                
+                todosItens.forEach(item => {
+                    const codigo = item.codigo || '';
+                    const descricao = item.descricao || '';
+                    
+                    let isDuplicado = false;
+                    
+                    if (codigo && codigo !== '-') {
+                        if (mapaCodigo.has(codigo)) {
+                            isDuplicado = true;
+                        } else {
+                            mapaCodigo.set(codigo, item.id);
+                        }
+                    }
+                    
+                    if (descricao && !isDuplicado) {
+                        const descLower = descricao.toLowerCase().trim();
+                        if (mapaDescricao.has(descLower)) {
+                            isDuplicado = true;
+                        } else {
+                            mapaDescricao.set(descLower, item.id);
+                        }
+                    }
+                    
+                    if (isDuplicado) {
+                        idsParaExcluir.push(item.id);
+                    }
+                });
+                
+                if (idsParaExcluir.length === 0) {
+                    showAlert('Nenhum item duplicado encontrado!', 'info');
+                    return;
+                }
+                
+                const confirmDelete = await Swal.fire({
+                    title: '🗑️ Confirmar exclusão',
+                    html: `<p>Serão excluídos <strong>${idsParaExcluir.length}</strong> itens duplicados.</p>
+                           <p>Os itens restantes serão mantidos normalmente.</p>
+                           <p style="color: #e67e22;"><strong>Esta ação não pode ser desfeita!</strong></p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Sim, excluir duplicatas!',
+                    cancelButtonText: 'Cancelar'
+                });
+                
+                if (!confirmDelete.isConfirmed) return;
+                
+                const batch = writeBatch(db);
+                idsParaExcluir.forEach(id => {
+                    const itemRef = doc(db, "itens", id);
+                    batch.delete(itemRef);
+                });
+                await batch.commit();
+                
+                showAlert(`✅ ${idsParaExcluir.length} itens duplicados foram removidos com sucesso!`, 'success');
+                await carregarItens();
+                
+            } catch (error) {
+                console.error('Erro ao excluir duplicatas:', error);
+                showAlert('Erro ao excluir duplicatas: ' + error.message, 'error');
             }
         };
         
@@ -805,8 +911,33 @@
                 Array.from(fornecedores).sort().forEach(f => { vencedorSelect.innerHTML += `<option value="${f.replace(/"/g, '&quot;')}">${f}</option>`; });
                 
                 const itemSelect = document.getElementById('itemSelect');
-                itemSelect.innerHTML = '';
-                itens.forEach(i => { itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao}</option>`; });
+                itemSelect.innerHTML = '<option value="">-- Selecione um item --</option>';
+                
+                let itensDisponiveis = 0;
+                let itensCompletos = 0;
+                
+                itens.forEach(i => {
+                    const qtdCotacoes = i.cotacoes ? i.cotacoes.length : 0;
+                    
+                    if (qtdCotacoes < 4) {
+                        itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao.substring(0, 40)} (${qtdCotacoes}/4 cotações)</option>`;
+                        itensDisponiveis++;
+                    } else {
+                        itensCompletos++;
+                    }
+                });
+                
+                const infoBox = document.getElementById('infoItensCompletos');
+                if (itensCompletos > 0) {
+                    infoBox.classList.remove('hidden');
+                    infoBox.innerHTML = `✅ ${itensCompletos} ${itensCompletos === 1 ? 'item atingiu' : 'itens atingiram'} o limite de 4 cotações e ${itensCompletos === 1 ? 'não aparece' : 'não aparecem'} mais na lista.`;
+                } else {
+                    infoBox.classList.add('hidden');
+                }
+                
+                if (itensDisponiveis === 0 && itens.length > 0) {
+                    itemSelect.innerHTML += '<option value="" disabled>-- Todos os itens já têm 4 cotações --</option>';
+                }
                 
                 render();
                 atualizarGrafico();
@@ -822,17 +953,30 @@
         function render() {
             const tbody = document.getElementById('tbody');
             tbody.innerHTML = '';
-            if (itens.length === 0) { tbody.innerHTML = '<tr><td colspan="16" style="text-align: center;">Nenhum item cadastrado</td></tr>'; return; }
+            if (itens.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="18" style="text-align: center;">Nenhum item cadastrado</td><tr>'; 
+                return; 
+            }
+            
             itens.forEach((item, i) => {
                 if (!item.cotacoes || item.cotacoes.length === 0) return;
+                
+                // Estatísticas para valores TOTAIS
                 const totais = item.cotacoes.map(c => c.valor * item.qtd);
-                const s = stats(totais);
-                const menor = Math.min(...totais);
+                const sTotais = stats(totais);
+                
+                // Estatísticas para valores UNITÁRIOS
+                const valoresUnitarios = item.cotacoes.map(c => c.valor);
+                const sUnitarios = stats(valoresUnitarios);
+                
+                const menorTotal = Math.min(...totais);
                 const cotacoesOrdenadas = [...item.cotacoes].sort((a, b) => (a.valor * item.qtd) - (b.valor * item.qtd));
+                
                 cotacoesOrdenadas.forEach((c, j) => {
                     const total = c.valor * item.qtd;
                     const row = tbody.insertRow();
-                    row.className = total === menor ? 'menor' : '';
+                    row.className = total === menorTotal ? 'menor' : '';
+                    
                     row.insertCell(0).innerHTML = i + 1;
                     row.insertCell(1).innerHTML = item.codigo || '-';
                     row.insertCell(2).innerHTML = item.descricao.substring(0, 30);
@@ -843,16 +987,32 @@
                     row.insertCell(7).innerHTML = `R$ ${c.valor.toFixed(2)}`;
                     row.insertCell(8).innerHTML = `R$ ${total.toFixed(2)}`;
                     row.insertCell(9).innerHTML = c.origem || '-';
+                    
+                    // Mínimo e Média do VALOR UNITÁRIO (aparecem apenas na primeira linha do item)
                     if (j === 0) {
-                        row.insertCell(10).innerHTML = `R$ ${s.media.toFixed(2)}`;
-                        row.insertCell(11).innerHTML = `R$ ${s.mediana.toFixed(2)}`;
-                        row.insertCell(12).innerHTML = `R$ ${s.desvio.toFixed(2)}`;
-                        row.insertCell(13).innerHTML = `R$ ${s.min.toFixed(2)}`;
-                        row.insertCell(14).innerHTML = `R$ ${s.max.toFixed(2)}`;
-                    } else { for (let k = 10; k <= 14; k++) row.insertCell(k).innerHTML = ''; }
-                    const actionsCell = row.insertCell(15);
+                        row.insertCell(10).innerHTML = `<span style="background: #d1fae5; padding: 3px 6px; border-radius: 4px; font-weight: bold;">R$ ${sUnitarios.min.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>`;
+                        row.insertCell(11).innerHTML = `R$ ${sUnitarios.media.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    } else {
+                        row.insertCell(10).innerHTML = '';
+                        row.insertCell(11).innerHTML = '';
+                    }
+                    
+                    // Estatísticas do TOTAL (aparecem apenas na primeira linha do item)
+                    if (j === 0) {
+                        row.insertCell(12).innerHTML = `R$ ${sTotais.media.toFixed(2)}`;
+                        row.insertCell(13).innerHTML = `R$ ${sTotais.mediana.toFixed(2)}`;
+                        row.insertCell(14).innerHTML = `R$ ${sTotais.desvio.toFixed(2)}`;
+                        row.insertCell(15).innerHTML = `R$ ${sTotais.min.toFixed(2)}`;
+                        row.insertCell(16).innerHTML = `R$ ${sTotais.max.toFixed(2)}`;
+                    } else {
+                        for (let k = 12; k <= 16; k++) row.insertCell(k).innerHTML = '';
+                    }
+                    
+                    const actionsCell = row.insertCell(17);
                     actionsCell.innerHTML = `<button class="btn-edit" onclick="editarCotacao('${c.id}','${c.empresa.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">✏️</button> <button class="btn-danger" onclick="excluirCotacao('${c.id}')" style="font-size: 0.7rem;">🗑️</button>`;
-                    if (j === 0) { actionsCell.innerHTML += `<button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">📝</button> <button onclick="excluirItem('${item.id}')" style="font-size: 0.7rem;">❌</button>`; }
+                    if (j === 0) { 
+                        actionsCell.innerHTML += `<button onclick="editarItem('${item.id}','${item.descricao.replace(/'/g, "\\'")}')" style="font-size: 0.7rem;">📝</button> <button onclick="excluirItem('${item.id}')" style="font-size: 0.7rem;">❌</button>`; 
+                    }
                 });
             });
         }
@@ -914,7 +1074,6 @@
             const modal = document.getElementById('modalExcel');
             modal.classList.add('hidden');
             modal.setAttribute('inert', '');
-            // Remover foco do modal
             if (document.activeElement) {
                 document.activeElement.blur();
             }
@@ -982,7 +1141,7 @@
             }).join('');
             
             if (excelData.length > 10) {
-                bodyTable.innerHTML += `<tr><td colspan="${excelHeaders.length}" style="text-align: center; background: #f0f0f0;">... e mais ${excelData.length - 10} linhas</td></tr>`;
+                bodyTable.innerHTML += `<tr><td colspan="${excelHeaders.length}" style="text-align: center; background: #f0f0f0;">... e mais ${excelData.length - 10} linhas</td><tr>`;
             }
         }
 
@@ -996,7 +1155,6 @@
                 });
             });
             
-            // Detecção automática
             excelHeaders.forEach((header, idx) => {
                 const lowerHeader = header.toLowerCase();
                 if (lowerHeader.includes('cod') || lowerHeader.includes('código') || lowerHeader === 'id') {
@@ -1093,12 +1251,34 @@
             itens.forEach((item) => {
                 if (!item.cotacoes || item.cotacoes.length === 0) return;
                 const totais = item.cotacoes.map(c => c.valor * item.qtd);
-                const s = stats(totais);
+                const sTotais = stats(totais);
+                const valoresUnitarios = item.cotacoes.map(c => c.valor);
+                const sUnitarios = stats(valoresUnitarios);
                 const ranking = item.cotacoes.map(c => ({ ...c, total: c.valor * item.qtd, valorUnitario: c.valor })).sort((a, b) => a.total - b.total);
-                ranking.forEach((c, index) => { body.push([ (item.codigo || '-').substring(0, 8), item.descricao.length > 28 ? item.descricao.substring(0, 25) + '...' : item.descricao, item.qtd.toString(), (item.und || 'UN').substring(0, 3), c.empresa.length > 22 ? c.empresa.substring(0, 19) + '...' : c.empresa, c.cnpj, `R$ ${c.valorUnitario.toFixed(2)}`, `R$ ${c.total.toFixed(2)}`, (c.origem || '-').substring(0, 10), (index + 1).toString(), `R$ ${s.media.toFixed(2)}`, `R$ ${s.mediana.toFixed(2)}`, `R$ ${s.desvio.toFixed(2)}`, `R$ ${s.min.toFixed(2)}`, `R$ ${s.max.toFixed(2)}` ]); });
+                ranking.forEach((c, index) => { 
+                    body.push([ 
+                        (item.codigo || '-').substring(0, 8), 
+                        item.descricao.length > 28 ? item.descricao.substring(0, 25) + '...' : item.descricao, 
+                        item.qtd.toString(), 
+                        (item.und || 'UN').substring(0, 3), 
+                        c.empresa.length > 22 ? c.empresa.substring(0, 19) + '...' : c.empresa, 
+                        c.cnpj, 
+                        `R$ ${c.valorUnitario.toFixed(2)}`, 
+                        `R$ ${c.total.toFixed(2)}`, 
+                        (c.origem || '-').substring(0, 10), 
+                        (index + 1).toString(),
+                        index === 0 ? `R$ ${sUnitarios.min.toFixed(2)}` : '',
+                        index === 0 ? `R$ ${sUnitarios.media.toFixed(2)}` : '',
+                        index === 0 ? `R$ ${sTotais.media.toFixed(2)}` : '',
+                        index === 0 ? `R$ ${sTotais.mediana.toFixed(2)}` : '',
+                        index === 0 ? `R$ ${sTotais.desvio.toFixed(2)}` : '',
+                        index === 0 ? `R$ ${sTotais.min.toFixed(2)}` : '',
+                        index === 0 ? `R$ ${sTotais.max.toFixed(2)}` : ''
+                    ]); 
+                });
             });
             if (body.length > 0) { 
-                doc.autoTable({ startY: y, head: [["Cod", "Descricao", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Media", "Med", "Desv", "Min", "Max"]], body: body, styles: { fontSize: 6, cellPadding: 1.5 }, headStyles: { fillColor: [13, 59, 102], fontSize: 6 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 38 }, 2: { cellWidth: 8 }, 3: { cellWidth: 7 }, 4: { cellWidth: 38 }, 5: { cellWidth: 25 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 14 }, 9: { cellWidth: 6 }, 10: { cellWidth: 14 }, 11: { cellWidth: 12 }, 12: { cellWidth: 12 }, 13: { cellWidth: 14 }, 14: { cellWidth: 14 } }, margin: { left: 10, right: 10 } }); 
+                doc.autoTable({ startY: y, head: [["Cod", "Descricao", "Qtd", "Un", "Empresa", "CNPJ", "Unit", "Total", "Origem", "Rk", "Mín Unit", "Méd Unit", "Média", "Mediana", "Desvio", "Mín Total", "Máx Total"]], body: body, styles: { fontSize: 6, cellPadding: 1.5 }, headStyles: { fillColor: [13, 59, 102], fontSize: 6 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 38 }, 2: { cellWidth: 8 }, 3: { cellWidth: 7 }, 4: { cellWidth: 38 }, 5: { cellWidth: 25 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 14 }, 9: { cellWidth: 6 }, 10: { cellWidth: 14 }, 11: { cellWidth: 14 }, 12: { cellWidth: 14 }, 13: { cellWidth: 14 }, 14: { cellWidth: 14 }, 15: { cellWidth: 14 }, 16: { cellWidth: 14 } }, margin: { left: 10, right: 10 } }); 
                 y = doc.lastAutoTable.finalY + 10;
             }
             
@@ -1197,7 +1377,6 @@
             itens = []; 
             assinatura = {}; 
             empresasCache.clear();
-            // Fechar modal se estiver aberto
             fecharModalExcel();
         };
         
@@ -1206,7 +1385,6 @@
             radios.forEach(radio => { radio.addEventListener('change', () => { const tipo = radio.value; const infoContrato = document.getElementById('infoContrato'); const infoDispensa = document.getElementById('infoDispensa'); if (tipo === 'contrato') { infoContrato.classList.remove('hidden'); infoDispensa.classList.add('hidden'); } else { infoContrato.classList.add('hidden'); infoDispensa.classList.remove('hidden'); } atualizarTotalContrato(); }); });
         });
         
-        // Inicializar
         carregarProcessos();
     </script>
 </body>
