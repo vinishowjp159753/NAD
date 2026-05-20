@@ -6,14 +6,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Financeiro Pro</title>
+<title>Financeiro Pro Firebase</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 :root{
-    --bg:#f3f6fb;
+    --bg:#f4f7fb;
     --card:#ffffff;
     --primary:#2563eb;
     --success:#16a34a;
@@ -28,22 +28,17 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Inter, Arial, sans-serif;
+    font-family:Inter, Arial;
 }
 
 body{
     background:var(--bg);
     color:var(--text);
-    padding:20px;
+    padding:15px;
 }
 
 .header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px;
-    flex-wrap:wrap;
-    gap:15px;
+    margin-bottom:20px;
 }
 
 .header h1{
@@ -58,57 +53,44 @@ body{
 .dashboard{
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:20px;
+    gap:15px;
     margin-bottom:20px;
 }
 
 .kpi{
     background:var(--card);
-    padding:22px;
-    border-radius:24px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.04);
+    padding:20px;
+    border-radius:20px;
     border:1px solid var(--border);
 }
 
 .kpi h3{
-    color:var(--muted);
     font-size:14px;
-    margin-bottom:10px;
+    color:var(--muted);
 }
 
 .kpi p{
-    font-size:30px;
+    margin-top:10px;
+    font-size:28px;
     font-weight:bold;
 }
 
-.green{
-    color:var(--success);
-}
-
-.red{
-    color:var(--danger);
-}
-
-.blue{
-    color:var(--primary);
-}
-
-.orange{
-    color:var(--warning);
-}
+.green{color:var(--success);}
+.red{color:var(--danger);}
+.blue{color:var(--primary);}
+.orange{color:var(--warning);}
 
 .main{
     display:grid;
-    grid-template-columns:350px 1fr;
+    grid-template-columns:360px 1fr;
     gap:20px;
 }
 
 .card{
     background:var(--card);
-    border-radius:24px;
-    padding:22px;
+    padding:20px;
+    border-radius:20px;
     border:1px solid var(--border);
-    box-shadow:0 10px 30px rgba(0,0,0,0.04);
 }
 
 .card h2{
@@ -120,27 +102,17 @@ select,
 button{
     width:100%;
     padding:14px;
-    border-radius:14px;
+    margin-top:10px;
+    border-radius:12px;
     border:1px solid var(--border);
-    margin-top:12px;
-    font-size:15px;
-}
-
-input,
-select{
-    background:white;
 }
 
 button{
     background:var(--primary);
     color:white;
     border:none;
-    cursor:pointer;
     font-weight:bold;
-}
-
-button:hover{
-    opacity:0.95;
+    cursor:pointer;
 }
 
 .grid{
@@ -150,8 +122,8 @@ button:hover{
 }
 
 .table-container{
-    overflow:auto;
     margin-top:20px;
+    overflow:auto;
 }
 
 table{
@@ -161,28 +133,44 @@ table{
 
 th{
     background:#f8fafc;
-    color:#334155;
 }
 
 th,
 td{
-    padding:16px;
+    padding:14px;
     border-bottom:1px solid var(--border);
-    text-align:left;
-    white-space:nowrap;
 }
 
 .meses{
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:15px;
-    margin-top:15px;
 }
 
 .mes-card{
     background:#f8fafc;
-    padding:18px;
-    border-radius:18px;
+    padding:15px;
+    border-radius:15px;
+}
+
+.resumo-box{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.resumo-card{
+    background:#f8fafc;
+    padding:20px;
+    border-radius:20px;
+}
+
+.resumo-item{
+    display:flex;
+    justify-content:space-between;
+    margin-top:10px;
+    border-bottom:1px solid #ddd;
+    padding-bottom:8px;
 }
 
 .cartao{
@@ -193,11 +181,8 @@ td{
     );
 
     color:white;
-
     padding:18px;
-
     border-radius:20px;
-
     margin-top:15px;
 }
 
@@ -220,20 +205,20 @@ td{
     gap:5px;
 }
 
-.btn-edit{
-    background:#f59e0b;
-}
-
-.btn-delete{
-    background:#dc2626;
-}
-
 .btn-small{
     padding:10px;
     border:none;
     border-radius:10px;
     color:white;
     cursor:pointer;
+}
+
+.btn-edit{
+    background:#f59e0b;
+}
+
+.btn-delete{
+    background:#dc2626;
 }
 
 @media(max-width:1100px){
@@ -254,12 +239,16 @@ td{
         grid-template-columns:1fr 1fr;
     }
 
+    .resumo-box{
+        grid-template-columns:1fr;
+    }
+
 }
 
 @media(max-width:700px){
 
     body{
-        padding:12px;
+        padding:10px;
     }
 
     .dashboard{
@@ -274,14 +263,6 @@ td{
         font-size:24px;
     }
 
-    .kpi p{
-        font-size:24px;
-    }
-
-    table{
-        font-size:13px;
-    }
-
 }
 
 </style>
@@ -292,47 +273,35 @@ td{
 
 <div class="header">
 
-    <div>
+<h1>💰 Financeiro Pro</h1>
 
-        <h1>💰 Financeiro Pro</h1>
-
-        <p class="subtitle">
-            Controle financeiro pessoal inteligente
-        </p>
-
-    </div>
+<p class="subtitle">
+Sistema financeiro sincronizado com Firebase
+</p>
 
 </div>
 
 <div class="dashboard">
 
-    <div class="kpi">
-        <h3>Receitas</h3>
-        <p class="green" id="receitasTotal">
-            R$ 0
-        </p>
-    </div>
+<div class="kpi">
+<h3>Receitas</h3>
+<p class="green" id="receitasTotal">R$ 0</p>
+</div>
 
-    <div class="kpi">
-        <h3>Despesas</h3>
-        <p class="red" id="despesasTotal">
-            R$ 0
-        </p>
-    </div>
+<div class="kpi">
+<h3>Despesas</h3>
+<p class="red" id="despesasTotal">R$ 0</p>
+</div>
 
-    <div class="kpi">
-        <h3>Saldo</h3>
-        <p class="blue" id="saldoTotal">
-            R$ 0
-        </p>
-    </div>
+<div class="kpi">
+<h3>Saldo</h3>
+<p class="blue" id="saldoTotal">R$ 0</p>
+</div>
 
-    <div class="kpi">
-        <h3>Cartão</h3>
-        <p class="orange" id="cartaoTotal">
-            R$ 0
-        </p>
-    </div>
+<div class="kpi">
+<h3>Cartão</h3>
+<p class="orange" id="cartaoTotal">R$ 0</p>
+</div>
 
 </div>
 
@@ -342,83 +311,87 @@ td{
 
 <h2>Novo Lançamento</h2>
 
-<input
-    type="text"
-    id="descricao"
-    placeholder="Descrição"
->
+<input type="text" id="descricao" placeholder="Descrição">
 
-<input
-    type="number"
-    id="valor"
-    placeholder="Valor"
->
+<input type="number" id="valor" placeholder="Valor">
 
 <select id="natureza">
 
-    <option value="receita">
-        Receita
-    </option>
-
-    <option value="despesa">
-        Despesa
-    </option>
+<option value="receita">Receita</option>
+<option value="despesa">Despesa</option>
 
 </select>
 
-<select
-    id="tipo"
-    onchange="toggleCampos()"
+<select id="tipo" onchange="toggleCampos()">
+
+<option value="avista">À Vista</option>
+<option value="parcelado">Cartão Parcelado</option>
+<option value="recorrente">Recorrente</option>
+
+</select>
+
+<div id="boxData">
+
+<select id="mes">
+
+<option value="0">Janeiro</option>
+<option value="1">Fevereiro</option>
+<option value="2">Março</option>
+<option value="3">Abril</option>
+<option value="4">Maio</option>
+<option value="5">Junho</option>
+<option value="6">Julho</option>
+<option value="7">Agosto</option>
+<option value="8">Setembro</option>
+<option value="9">Outubro</option>
+<option value="10">Novembro</option>
+<option value="11">Dezembro</option>
+
+</select>
+
+<input
+type="number"
+id="ano"
+value="2026"
+placeholder="Ano"
 >
 
-    <option value="avista">
-        À Vista
-    </option>
-
-    <option value="parcelado">
-        Cartão Parcelado
-    </option>
-
-    <option value="recorrente">
-        Recorrente
-    </option>
-
-</select>
+</div>
 
 <div id="boxCartao" style="display:none;">
 
-    <input
-        type="text"
-        id="cartao"
-        placeholder="Nome do cartão"
-    >
+<input
+type="text"
+id="cartao"
+placeholder="Nome do cartão"
+>
 
-    <input
-        type="number"
-        id="limite"
-        placeholder="Limite do cartão"
-    >
+<input
+type="number"
+id="limite"
+placeholder="Limite do cartão"
+>
 
-    <input
-        type="number"
-        id="parcelas"
-        placeholder="Quantidade parcelas"
-    >
+<input
+type="number"
+id="parcelas"
+placeholder="Quantidade parcelas"
+>
 
 </div>
 
 <div id="boxRecorrencia" style="display:none;">
 
-    <input
-        type="number"
-        id="recorrencia"
-        placeholder="Quantidade meses"
-    >
+<input
+type="number"
+id="recorrencia"
+placeholder="Qtd meses"
+>
 
 </div>
 
 <button onclick="adicionar()">
-    Adicionar
+Adicionar
 </button>
 
 <div id="listaCartoes"></div>
@@ -451,10 +424,33 @@ td{
 
 <h2>Resumo Mensal</h2>
 
-<div
-    class="meses"
-    id="meses"
-></div>
+<div class="meses" id="mesesResumo"></div>
+
+</div>
+
+<div class="card" style="margin-top:20px;">
+
+<h2>Resumo Geral</h2>
+
+<div class="resumo-box">
+
+<div class="resumo-card">
+
+<h3>Receitas</h3>
+
+<div id="listaReceitas"></div>
+
+</div>
+
+<div class="resumo-card">
+
+<h3>Despesas</h3>
+
+<div id="listaDespesas"></div>
+
+</div>
+
+</div>
 
 </div>
 
@@ -477,6 +473,7 @@ td{
 <th>Natureza</th>
 <th>Tipo</th>
 <th>Mês</th>
+<th>Ano</th>
 <th>Ações</th>
 
 </tr>
@@ -489,638 +486,781 @@ td{
 
 </div>
 
-<script>
+<script type="module">
 
-let dados =
-    JSON.parse(
-        localStorage.getItem("financeiro-pro")
-    ) || [];
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    deleteDoc,
+    doc,
+    updateDoc
+
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD8bYo0O_yRhv8x3GFiG4Y7D_a1jzlnigQ",
+
+  authDomain: "controle-99a55.firebaseapp.com",
+
+  projectId: "controle-99a55",
+
+  storageBucket: "controle-99a55.firebasestorage.app",
+
+  messagingSenderId: "402728826885",
+
+  appId: "1:402728826885:web:9469255944e2ba2436846c",
+
+  measurementId: "G-PNPXVV7DQQ"
+
+};
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getFirestore(app);
+
+let dados = [];
 
 const meses = [
-    "Janeiro","Fevereiro","Março","Abril",
-    "Maio","Junho","Julho","Agosto",
-    "Setembro","Outubro","Novembro","Dezembro"
+
+"Janeiro","Fevereiro","Março","Abril",
+"Maio","Junho","Julho","Agosto",
+"Setembro","Outubro","Novembro","Dezembro"
+
 ];
 
-function salvar(){
+window.toggleCampos = function(){
 
-    localStorage.setItem(
-        "financeiro-pro",
-        JSON.stringify(dados)
-    );
+const tipo =
+document.getElementById("tipo").value;
 
-}
+document.getElementById("boxCartao")
+.style.display =
+tipo === "parcelado"
+? "block"
+: "none";
 
-function toggleCampos(){
+document.getElementById("boxRecorrencia")
+.style.display =
+tipo === "recorrente"
+? "block"
+: "none";
 
-    const tipo =
-        document.getElementById("tipo").value;
-
-    document.getElementById("boxCartao")
-        .style.display =
-        tipo === "parcelado"
-        ? "block"
-        : "none";
-
-    document.getElementById("boxRecorrencia")
-        .style.display =
-        tipo === "recorrente"
-        ? "block"
-        : "none";
+document.getElementById("boxData")
+.style.display =
+tipo === "recorrente"
+? "none"
+: "block";
 
 }
 
-function adicionar(){
+window.adicionar = async function(){
 
-    const descricao =
-        document.getElementById("descricao").value;
+const descricao =
+document.getElementById("descricao").value;
 
-    const valor =
-        parseFloat(
-            document.getElementById("valor").value
-        );
+const valor =
+parseFloat(
+document.getElementById("valor").value
+);
 
-    const natureza =
-        document.getElementById("natureza").value;
+const natureza =
+document.getElementById("natureza").value;
 
-    const tipo =
-        document.getElementById("tipo").value;
+const tipo =
+document.getElementById("tipo").value;
 
-    const cartao =
-        document.getElementById("cartao").value;
+const cartao =
+document.getElementById("cartao").value;
 
-    const limite =
-        parseFloat(
-            document.getElementById("limite").value
-        ) || 0;
+const limite =
+parseFloat(
+document.getElementById("limite").value
+) || 0;
 
-    const parcelas =
-        parseInt(
-            document.getElementById("parcelas").value
-        ) || 1;
+const parcelas =
+parseInt(
+document.getElementById("parcelas").value
+) || 1;
 
-    const recorrencia =
-        parseInt(
-            document.getElementById("recorrencia").value
-        ) || 1;
+const recorrencia =
+parseInt(
+document.getElementById("recorrencia").value
+) || 1;
 
-    if(!descricao || !valor){
+let mesBase;
+let anoBase;
 
-        alert("Preencha os campos");
-        return;
+const hoje = new Date();
 
-    }
+if(tipo === "recorrente"){
 
-    const hoje = new Date();
+mesBase = hoje.getMonth();
 
-    if(tipo === "avista"){
+anoBase = hoje.getFullYear();
 
-        dados.push({
+}else{
 
-            id:Date.now(),
+mesBase =
+parseInt(
+document.getElementById("mes").value
+);
 
-            descricao,
+anoBase =
+parseInt(
+document.getElementById("ano").value
+);
 
-            valor,
+}
 
-            natureza,
+if(tipo === "avista"){
 
-            tipo,
+await addDoc(
 
-            cartao,
+collection(db,"lancamentos"),
 
-            limite,
+{
 
-            mes:hoje.getMonth()
+descricao,
+valor,
+natureza,
+tipo,
+mes:mesBase,
+ano:anoBase,
+cartao,
+limite
 
-        });
+}
 
-    }
+);
 
-    if(tipo === "parcelado"){
+}
 
-        const valorParcela =
-            valor / parcelas;
+if(tipo === "parcelado"){
 
-        for(let i = 0; i < parcelas; i++){
+const valorParcela =
+valor / parcelas;
 
-            let mes =
-                (hoje.getMonth() + i) % 12;
+for(let i = 0; i < parcelas; i++){
 
-            dados.push({
+let mes =
+(mesBase + i) % 12;
 
-                id:Date.now()+i,
+let ano =
+anoBase +
+Math.floor((mesBase + i) / 12);
 
-                descricao:
-                    `${descricao} (${i+1}/${parcelas})`,
+await addDoc(
 
-                valor:valorParcela,
+collection(db,"lancamentos"),
 
-                natureza,
+{
 
-                tipo,
+descricao:
+`${descricao} (${i+1}/${parcelas})`,
 
-                cartao,
+valor:valorParcela,
 
-                limite,
+natureza,
 
-                mes
+tipo,
 
-            });
+mes,
 
-        }
+ano,
 
-    }
+cartao,
 
-    if(tipo === "recorrente"){
+limite
 
-        for(let i = 0; i < recorrencia; i++){
+}
 
-            let mes =
-                (hoje.getMonth() + i) % 12;
+);
 
-            dados.push({
+}
 
-                id:Date.now()+i,
+}
 
-                descricao,
+if(tipo === "recorrente"){
 
-                valor,
+for(let i = 0; i < recorrencia; i++){
 
-                natureza,
+let mes =
+(mesBase + i) % 12;
 
-                tipo,
+let ano =
+anoBase +
+Math.floor((mesBase + i) / 12);
 
-                mes
+await addDoc(
 
-            });
+collection(db,"lancamentos"),
 
-        }
+{
 
-    }
+descricao,
+valor,
+natureza,
+tipo,
+mes,
+ano
 
-    salvar();
+}
 
-    render();
+);
 
-    limpar();
+}
+
+}
+
+carregarDados();
+
+limpar();
 
 }
 
 function limpar(){
 
-    document.getElementById("descricao").value = "";
-    document.getElementById("valor").value = "";
-    document.getElementById("cartao").value = "";
-    document.getElementById("limite").value = "";
-    document.getElementById("parcelas").value = "";
-    document.getElementById("recorrencia").value = "";
+document.getElementById("descricao").value="";
+document.getElementById("valor").value="";
+document.getElementById("cartao").value="";
+document.getElementById("limite").value="";
+document.getElementById("parcelas").value="";
+document.getElementById("recorrencia").value="";
 
 }
 
-function excluir(id){
+window.excluir = async function(id){
 
-    if(!confirm("Excluir lançamento?"))
-        return;
+await deleteDoc(
+doc(db,"lancamentos",id)
+);
 
-    dados =
-        dados.filter(d => d.id !== id);
-
-    salvar();
-
-    render();
+carregarDados();
 
 }
 
-function editar(id){
+window.editar = async function(id){
 
-    const item =
-        dados.find(d => d.id === id);
+const item =
+dados.find(d => d.id === id);
 
-    if(!item) return;
+const descricao =
+prompt(
+"Descrição",
+item.descricao
+);
 
-    const descricao =
-        prompt(
-            "Descrição",
-            item.descricao
-        );
+const valor =
+prompt(
+"Valor",
+item.valor
+);
 
-    const valor =
-        prompt(
-            "Valor",
-            item.valor
-        );
+if(descricao !== null){
 
-    if(descricao !== null)
-        item.descricao = descricao;
+await updateDoc(
 
-    if(valor !== null)
-        item.valor = parseFloat(valor);
+doc(db,"lancamentos",id),
 
-    salvar();
+{
 
-    render();
+descricao,
+valor:parseFloat(valor)
+
+}
+
+);
+
+}
+
+carregarDados();
+
+}
+
+async function carregarDados(){
+
+dados = [];
+
+const querySnapshot =
+await getDocs(
+collection(db,"lancamentos")
+);
+
+querySnapshot.forEach(docSnap => {
+
+dados.push({
+
+id:docSnap.id,
+
+...docSnap.data()
+
+});
+
+});
+
+render();
 
 }
 
 function render(){
 
-    let receitas = 0;
-    let despesas = 0;
-    let cartao = 0;
+const tabela =
+document.getElementById("tabela");
 
-    const tabela =
-        document.getElementById("tabela");
+tabela.innerHTML = "";
 
-    tabela.innerHTML = "";
+let receitas = 0;
+let despesas = 0;
+let cartao = 0;
 
-    dados.forEach(d => {
+const receitasResumo = {};
+const despesasResumo = {};
 
-        if(d.natureza === "receita"){
+dados.forEach(d => {
 
-            receitas += d.valor;
+if(d.natureza === "receita"){
 
-        }else{
+receitas += d.valor;
 
-            despesas += d.valor;
+if(!receitasResumo[d.descricao])
+receitasResumo[d.descricao] = 0;
 
-        }
+receitasResumo[d.descricao] += d.valor;
 
-        if(d.tipo === "parcelado"){
+}else{
 
-            cartao += d.valor;
+despesas += d.valor;
 
-        }
+if(!despesasResumo[d.descricao])
+despesasResumo[d.descricao] = 0;
 
-        tabela.innerHTML += `
+despesasResumo[d.descricao] += d.valor;
 
-        <tr>
+}
 
-        <td>${d.descricao}</td>
+if(d.tipo === "parcelado"){
+cartao += d.valor;
+}
 
-        <td>
-            R$ ${d.valor.toFixed(2)}
-        </td>
+tabela.innerHTML += `
 
-        <td>${d.natureza}</td>
+<tr>
 
-        <td>${d.tipo}</td>
+<td>${d.descricao}</td>
 
-        <td>${meses[d.mes]}</td>
+<td>R$ ${d.valor.toFixed(2)}</td>
 
-        <td>
+<td>${d.natureza}</td>
 
-            <div class="acoes">
+<td>${d.tipo}</td>
 
-                <button
-                    class="btn-small btn-edit"
-                    onclick="editar(${d.id})"
-                >
-                    Editar
-                </button>
+<td>${meses[d.mes]}</td>
 
-                <button
-                    class="btn-small btn-delete"
-                    onclick="excluir(${d.id})"
-                >
-                    Excluir
-                </button>
+<td>${d.ano}</td>
 
-            </div>
+<td>
 
-        </td>
+<div class="acoes">
 
-        </tr>
+<button
+class="btn-small btn-edit"
+onclick="editar('${d.id}')"
+>
 
-        `;
+Editar
 
-    });
+</button>
 
-    document.getElementById("receitasTotal")
-        .innerText =
-        `R$ ${receitas.toFixed(2)}`;
+<button
+class="btn-small btn-delete"
+onclick="excluir('${d.id}')"
+>
 
-    document.getElementById("despesasTotal")
-        .innerText =
-        `R$ ${despesas.toFixed(2)}`;
+Excluir
 
-    document.getElementById("saldoTotal")
-        .innerText =
-        `R$ ${(receitas-despesas).toFixed(2)}`;
+</button>
 
-    document.getElementById("cartaoTotal")
-        .innerText =
-        `R$ ${cartao.toFixed(2)}`;
+</div>
 
-    renderMeses();
+</td>
 
-    renderCartoes();
+</tr>
 
-    charts();
+`;
+
+});
+
+document.getElementById("receitasTotal")
+.innerText =
+`R$ ${receitas.toFixed(2)}`;
+
+document.getElementById("despesasTotal")
+.innerText =
+`R$ ${despesas.toFixed(2)}`;
+
+document.getElementById("saldoTotal")
+.innerText =
+`R$ ${(receitas-despesas).toFixed(2)}`;
+
+document.getElementById("cartaoTotal")
+.innerText =
+`R$ ${cartao.toFixed(2)}`;
+
+renderMeses();
+
+renderResumo(
+receitasResumo,
+despesasResumo
+);
+
+renderCartoes();
+
+graficos();
+
+}
+
+function renderResumo(
+receitasResumo,
+despesasResumo
+){
+
+const receitasDiv =
+document.getElementById("listaReceitas");
+
+const despesasDiv =
+document.getElementById("listaDespesas");
+
+receitasDiv.innerHTML = "";
+despesasDiv.innerHTML = "";
+
+Object.keys(receitasResumo)
+.forEach(nome => {
+
+receitasDiv.innerHTML += `
+
+<div class="resumo-item">
+
+<span>${nome}</span>
+
+<strong class="green">
+
+R$ ${receitasResumo[nome].toFixed(2)}
+
+</strong>
+
+</div>
+
+`;
+
+});
+
+Object.keys(despesasResumo)
+.forEach(nome => {
+
+despesasDiv.innerHTML += `
+
+<div class="resumo-item">
+
+<span>${nome}</span>
+
+<strong class="red">
+
+R$ ${despesasResumo[nome].toFixed(2)}
+
+</strong>
+
+</div>
+
+`;
+
+});
 
 }
 
 function renderMeses(){
 
-    const div =
-        document.getElementById("meses");
+const div =
+document.getElementById("mesesResumo");
 
-    div.innerHTML = "";
+div.innerHTML = "";
 
-    for(let i = 0; i < 12; i++){
+for(let i = 0; i < 12; i++){
 
-        let receitas = 0;
-        let despesas = 0;
+let receitas = 0;
+let despesas = 0;
 
-        dados.forEach(d => {
+dados.forEach(d => {
 
-            if(d.mes === i){
+if(d.mes === i){
 
-                if(d.natureza === "receita"){
+if(d.natureza === "receita"){
 
-                    receitas += d.valor;
+receitas += d.valor;
 
-                }else{
+}else{
 
-                    despesas += d.valor;
+despesas += d.valor;
 
-                }
+}
 
-            }
+}
 
-        });
+});
 
-        div.innerHTML += `
+div.innerHTML += `
 
-        <div class="mes-card">
+<div class="mes-card">
 
-            <h3>${meses[i]}</h3>
+<h3>${meses[i]}</h3>
 
-            <p
-                style="
-                    margin-top:10px;
-                    color:#16a34a;
-                "
-            >
-                Receita:
-                R$ ${receitas.toFixed(2)}
-            </p>
+<p style="margin-top:10px;color:#16a34a;">
 
-            <p
-                style="
-                    margin-top:5px;
-                    color:#dc2626;
-                "
-            >
-                Despesa:
-                R$ ${despesas.toFixed(2)}
-            </p>
+Receita:
+R$ ${receitas.toFixed(2)}
 
-            <p
-                style="
-                    margin-top:10px;
-                    font-size:22px;
-                    font-weight:bold;
-                "
-            >
-                Saldo:
-                R$ ${(receitas-despesas).toFixed(2)}
-            </p>
+</p>
 
-        </div>
+<p style="margin-top:5px;color:#dc2626;">
 
-        `;
+Despesa:
+R$ ${despesas.toFixed(2)}
 
-    }
+</p>
+
+<p
+style="
+margin-top:10px;
+font-size:22px;
+font-weight:bold;
+"
+>
+
+Saldo:
+R$ ${(receitas-despesas).toFixed(2)}
+
+</p>
+
+</div>
+
+`;
+
+}
 
 }
 
 function renderCartoes(){
 
-    const div =
-        document.getElementById("listaCartoes");
+const div =
+document.getElementById("listaCartoes");
 
-    div.innerHTML = "";
+div.innerHTML = "";
 
-    let cartoes = {};
+let cartoes = {};
 
-    dados.forEach(d => {
+dados.forEach(d => {
 
-        if(d.cartao){
+if(d.cartao){
 
-            if(!cartoes[d.cartao]){
+if(!cartoes[d.cartao]){
 
-                cartoes[d.cartao] = {
+cartoes[d.cartao] = {
 
-                    total:0,
+total:0,
+limite:d.limite || 0
 
-                    limite:d.limite || 0
+};
 
-                };
+}
 
-            }
+cartoes[d.cartao].total += d.valor;
 
-            cartoes[d.cartao].total += d.valor;
+}
 
-        }
+});
 
-    });
+Object.keys(cartoes)
+.forEach(nome => {
 
-    Object.keys(cartoes).forEach(nome => {
+const usado =
+cartoes[nome].total;
 
-        const usado =
-            cartoes[nome].total;
+const limite =
+cartoes[nome].limite;
 
-        const limite =
-            cartoes[nome].limite;
+const percentual =
+limite > 0
+? (usado/limite)*100
+: 0;
 
-        const percentual =
-            limite > 0
-            ? (usado/limite)*100
-            : 0;
+div.innerHTML += `
 
-        div.innerHTML += `
+<div class="cartao">
 
-        <div class="cartao">
+<h3>${nome}</h3>
 
-            <h3>${nome}</h3>
+<p style="margin-top:10px;">
 
-            <p style="margin-top:10px;">
+R$ ${usado.toFixed(2)}
 
-                R$ ${usado.toFixed(2)}
+/
 
-                /
+R$ ${limite.toFixed(2)}
 
-                R$ ${limite.toFixed(2)}
+</p>
 
-            </p>
+<div class="progress">
 
-            <div class="progress">
+<div
+class="progress-bar"
+style="width:${percentual}%"
+></div>
 
-                <div
-                    class="progress-bar"
-                    style="width:${percentual}%"
-                ></div>
+</div>
 
-            </div>
+</div>
 
-        </div>
+`;
 
-        `;
-
-    });
+});
 
 }
 
 let chart1;
 let chart2;
 
-function charts(){
+function graficos(){
 
-    const receitasMes = [];
-    const despesasMes = [];
+const receitasMes = [];
+const despesasMes = [];
 
-    for(let i = 0; i < 12; i++){
+for(let i = 0; i < 12; i++){
 
-        let r = 0;
-        let d = 0;
+let r = 0;
+let d = 0;
 
-        dados.forEach(item => {
+dados.forEach(item => {
 
-            if(item.mes === i){
+if(item.mes === i){
 
-                if(item.natureza === "receita"){
+if(item.natureza === "receita"){
 
-                    r += item.valor;
+r += item.valor;
 
-                }else{
+}else{
 
-                    d += item.valor;
-
-                }
-
-            }
-
-        });
-
-        receitasMes.push(r);
-        despesasMes.push(d);
-
-    }
-
-    let avista = 0;
-    let parcelado = 0;
-    let recorrente = 0;
-
-    dados.forEach(d => {
-
-        if(d.tipo === "avista")
-            avista += d.valor;
-
-        if(d.tipo === "parcelado")
-            parcelado += d.valor;
-
-        if(d.tipo === "recorrente")
-            recorrente += d.valor;
-
-    });
-
-    if(chart1) chart1.destroy();
-    if(chart2) chart2.destroy();
-
-    chart1 = new Chart(
-
-        document.getElementById("graficoLinha"),
-
-        {
-
-            type:"line",
-
-            data:{
-
-                labels:meses,
-
-                datasets:[
-
-                    {
-
-                        label:"Receitas",
-
-                        data:receitasMes,
-
-                        borderColor:"#16a34a",
-
-                        backgroundColor:"#16a34a"
-
-                    },
-
-                    {
-
-                        label:"Despesas",
-
-                        data:despesasMes,
-
-                        borderColor:"#dc2626",
-
-                        backgroundColor:"#dc2626"
-
-                    }
-
-                ]
-
-            }
-
-        }
-
-    );
-
-    chart2 = new Chart(
-
-        document.getElementById("graficoPizza"),
-
-        {
-
-            type:"doughnut",
-
-            data:{
-
-                labels:[
-                    "À Vista",
-                    "Parcelado",
-                    "Recorrente"
-                ],
-
-                datasets:[
-
-                    {
-
-                        data:[
-                            avista,
-                            parcelado,
-                            recorrente
-                        ],
-
-                        backgroundColor:[
-
-                            "#2563eb",
-                            "#f59e0b",
-                            "#16a34a"
-
-                        ]
-
-                    }
-
-                ]
-
-            }
-
-        }
-
-    );
+d += item.valor;
 
 }
 
-render();
+}
+
+});
+
+receitasMes.push(r);
+despesasMes.push(d);
+
+}
+
+if(chart1) chart1.destroy();
+if(chart2) chart2.destroy();
+
+chart1 = new Chart(
+
+document.getElementById("graficoLinha"),
+
+{
+
+type:"line",
+
+data:{
+
+labels:meses,
+
+datasets:[
+
+{
+
+label:"Receitas",
+
+data:receitasMes,
+
+borderColor:"#16a34a"
+
+},
+
+{
+
+label:"Despesas",
+
+data:despesasMes,
+
+borderColor:"#dc2626"
+
+}
+
+]
+
+}
+
+}
+
+);
+
+chart2 = new Chart(
+
+document.getElementById("graficoPizza"),
+
+{
+
+type:"doughnut",
+
+data:{
+
+labels:[
+"Receitas",
+"Despesas"
+],
+
+datasets:[
+
+{
+
+data:[
+
+receitasMes.reduce((a,b)=>a+b,0),
+
+despesasMes.reduce((a,b)=>a+b,0)
+
+],
+
+backgroundColor:[
+"#16a34a",
+"#dc2626"
+]
+
+}
+
+]
+
+}
+
+}
+
+);
+
+}
+
+carregarDados();
 
 </script>
 
