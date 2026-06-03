@@ -66,6 +66,14 @@
         .empresa-select-group select { flex: 1; }
         .empresa-select-group button { margin: 0; white-space: nowrap; }
         
+        /* Ranking Styles */
+        .ranking-container { margin-top: 15px; }
+        .ranking-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .ranking-table th { background: linear-gradient(135deg, #0d3b66 0%, #1a4d7a 100%); color: #fff; padding: 10px; font-size: 0.85rem; text-align: center; }
+        .ranking-table td { padding: 10px; text-align: center; font-size: 0.85rem; border-bottom: 1px solid #ddd; }
+        .ranking-table tr:hover { background: #f5f5f5; }
+        .primeiro-lugar { background: #c8e6c9; font-weight: bold; }
+        
         /* Modal Excel */
         .modal-excel { 
             position: fixed; 
@@ -171,20 +179,8 @@
             </div>
             
             <div class="card">
-                <h3>📈 Análise Gráfica das Propostas <span class="lei-badge">Art. 25, Lei 14.133/2021</span></h3>
-                <div class="grafico-container">
-                    <div class="grafico-card">
-                        <h4>💰 Comparativo de Valores por Empresa</h4>
-                        <canvas id="graficoBarras"></canvas>
-                        <div class="legenda-grafico">
-                            <h5>📌 INTERPRETAÇÃO DO GRÁFICO DE BARRAS</h5>
-                            <p>Este gráfico apresenta o valor total proposto por cada empresa participante do processo licitatório, considerando todos os itens cotados no Mapa Comparativo de Preços.</p>
-                            <p><strong>Elementos do Gráfico:</strong></p>
-                            <ul><li>Cada barra representa uma empresa participante;</li><li>A altura da barra corresponde ao valor total da proposta (soma de todos os itens);</li><li>Os valores representados no gráficos são referente as propostas enviadas pelas empresas e seus respectivos itens, não necessariamente todas as empresas estão participando de todos os itens.</li></ul>
-                            <p><em>Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Critério de Julgamento pelo Menor Preço.</em></p>
-                        </div>
-                    </div>
-                </div>
+                <h3>🏆 RANKING DAS EMPRESAS POR VALOR TOTAL <span class="lei-badge">Menor Preço - Art. 26</span></h3>
+                <div id="rankingEmpresas"></div>
             </div>
             
             <div class="card">
@@ -266,7 +262,7 @@
         </div>
     </div>
 
-    <!-- MODAL EXCEL - FORA DO CONTAINER PARA FUNCIONAR CORRETAMENTE -->
+    <!-- MODAL EXCEL -->
     <div id="modalExcel" class="modal-excel hidden" inert>
         <div class="modal-excel-content">
             <div class="modal-excel-header">
@@ -322,7 +318,6 @@
     </div>
 
     <script type="module">
-        // Importar Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
@@ -344,10 +339,8 @@
         let processoAtual = null;
         let itens = [];
         let assinatura = {};
-        let graficoBarras = null;
         let empresasCache = new Map();
         
-        // Variáveis para importação Excel
         let excelData = null;
         let excelHeaders = [];
         
@@ -387,6 +380,107 @@
             return { total: totalGeral, itens: itensParticipantes };
         }
         
+        function atualizarRanking() {
+            const rankingDiv = document.getElementById('rankingEmpresas');
+            if (!rankingDiv) return;
+            
+            const empresasValores = new Map();
+            
+            itens.forEach(item => {
+                if (item.cotacoes && item.cotacoes.length > 0) {
+                    item.cotacoes.forEach(cot => {
+                        const valorTotalItem = cot.valor * item.qtd;
+                        if (empresasValores.has(cot.empresa)) {
+                            empresasValores.set(cot.empresa, {
+                                total: empresasValores.get(cot.empresa).total + valorTotalItem,
+                                cnpj: cot.cnpj
+                            });
+                        } else {
+                            empresasValores.set(cot.empresa, {
+                                total: valorTotalItem,
+                                cnpj: cot.cnpj
+                            });
+                        }
+                    });
+                }
+            });
+            
+            if (empresasValores.size === 0) {
+                rankingDiv.innerHTML = '<p style="text-align: center; color: #666;">Nenhuma empresa cadastrada ainda</p>';
+                return;
+            }
+            
+            const rankingArray = Array.from(empresasValores.entries())
+                .map(([nome, dados]) => ({ nome, cnpj: dados.cnpj, total: dados.total }))
+                .sort((a, b) => a.total - b.total);
+            
+            let html = `
+                <div class="ranking-container">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>Posição</th>
+                                <th>Empresa</th>
+                                <th>CNPJ</th>
+                                <th>Valor Total (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            rankingArray.forEach((empresa, index) => {
+                const posicao = index + 1;
+                let posicaoDisplay = '';
+                let classeLinha = '';
+                
+                if (posicao === 1) {
+                    posicaoDisplay = '1º (VENCEDOR)';
+                    classeLinha = 'primeiro-lugar';
+                } else if (posicao === 2) {
+                    posicaoDisplay = '2º';
+                } else if (posicao === 3) {
+                    posicaoDisplay = '3º';
+                } else {
+                    posicaoDisplay = `${posicao}º`;
+                }
+                
+                html += `
+                    <tr class="${classeLinha}">
+                        <td style="font-weight: bold; ${posicao === 1 ? 'background: #c8e6c9;' : ''}">${posicaoDisplay}</td>
+                        <td><strong>${escapeHtml(empresa.nome)}</strong></td>
+                        <td>${empresa.cnpj}</td>
+                        <td style="font-weight: bold; color: #0d3b66;">R$ ${formatarMoeda(empresa.total)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="info-box" style="margin-top: 15px; background: #fff3e0;">
+                        <strong>📊 Critério de Classificação:</strong> Menor preço total por empresa, conforme Art. 26, inciso I da Lei 14.133/2021.
+                        ${rankingArray.length > 0 ? `<br><strong>🏆 Fornecedor com Menor Preço:</strong> ${escapeHtml(rankingArray[0].nome)} - R$ ${formatarMoeda(rankingArray[0].total)}` : ''}
+                    </div>
+                </div>
+            `;
+            
+            rankingDiv.innerHTML = html;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        
         window.mostrarValorFornecedor = function() {
             const vencedorSelect = document.getElementById('vencedorSelect');
             const empresaSelecionada = vencedorSelect.value;
@@ -394,20 +488,20 @@
             const valorTotalElement = document.getElementById('valorTotalFornecedor');
             
             if (empresaSelecionada) {
-                const { total, itens } = calcularValorFornecedor(empresaSelecionada);
+                const { total, itens: itensParticipantes } = calcularValorFornecedor(empresaSelecionada);
                 
-                valorTotalElement.innerHTML = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                valorTotalElement.innerHTML = `R$ ${formatarMoeda(total)}`;
                 valorDisplay.classList.remove('hidden');
                 
-                if (itens.length > 0) {
+                if (itensParticipantes.length > 0) {
                     let detalhesHtml = `<div style="text-align: left; max-height: 400px; overflow-y: auto;">`;
-                    detalhesHtml += `<p><strong>Empresa:</strong> ${empresaSelecionada}</p>`;
-                    detalhesHtml += `<p><strong>Total de Itens Participantes:</strong> ${itens.length}</p>`;
+                    detalhesHtml += `<p><strong>Empresa:</strong> ${escapeHtml(empresaSelecionada)}</p>`;
+                    detalhesHtml += `<p><strong>Total de Itens Participantes:</strong> ${itensParticipantes.length}</p>`;
                     detalhesHtml += `<hr>`;
                     detalhesHtml += `<table style="width: 100%; font-size: 12px; border-collapse: collapse;">`;
                     detalhesHtml += `<tr style="background: #0d3b66; color: white;"><th style="padding: 5px;">Item</th><th style="padding: 5px;">Descrição</th><th style="padding: 5px;">Qtd</th><th style="padding: 5px;">Vl. Unit</th><th style="padding: 5px;">Total</th></tr>`;
                     
-                    itens.forEach((item, idx) => {
+                    itensParticipantes.forEach((item, idx) => {
                         detalhesHtml += `<tr style="border-bottom: 1px solid #ddd;">`;
                         detalhesHtml += `<td style="padding: 5px;">${idx + 1}</td>`;
                         detalhesHtml += `<td style="padding: 5px;">${item.item.descricao.substring(0, 30)}</td>`;
@@ -419,7 +513,7 @@
                     
                     detalhesHtml += `<tr style="background: #c8e6c9; font-weight: bold;">`;
                     detalhesHtml += `<td colspan="4" style="padding: 5px; text-align: right;">TOTAL:</td>`;
-                    detalhesHtml += `<td style="padding: 5px;">R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>`;
+                    detalhesHtml += `<td style="padding: 5px;">R$ ${formatarMoeda(total)}</td>`;
                     detalhesHtml += `</tr>`;
                     detalhesHtml += `</table></div>`;
                     
@@ -589,7 +683,6 @@
             }
         };
         
-        // ========== FUNÇÃO PARA EXCLUIR DUPLICATAS ==========
         window.excluirDuplicatas = async () => {
             if (!processoAtual) {
                 showAlert('Nenhum processo aberto!', 'error');
@@ -770,129 +863,6 @@
             if (result.isConfirmed) { await deleteDoc(doc(db, "cotacoes", id)); await carregarItens(); }
         };
         
-        function atualizarGrafico() {
-            const empresas = new Map();
-            itens.forEach(item => { 
-                item.cotacoes.forEach(cot => { 
-                    const total = cot.valor * item.qtd; 
-                    if (empresas.has(cot.empresa)) { 
-                        empresas.set(cot.empresa, empresas.get(cot.empresa) + total); 
-                    } else { 
-                        empresas.set(cot.empresa, total); 
-                    } 
-                }); 
-            });
-            
-            const labels = Array.from(empresas.keys());
-            const valores = Array.from(empresas.values());
-            const cores = ['#0d3b66', '#1a4d7a', '#2a5f8a', '#3a729a', '#4a85aa', '#5a98ba', '#6aabca', '#7abeda', '#8acbda', '#9adbea'];
-            
-            if (graficoBarras) { 
-                graficoBarras.destroy(); 
-            }
-            
-            const ctx = document.getElementById('graficoBarras').getContext('2d');
-            graficoBarras = new Chart(ctx, { 
-                type: 'bar', 
-                data: { 
-                    labels: labels, 
-                    datasets: [{ 
-                        label: 'Valor Total da Proposta (R$)', 
-                        data: valores, 
-                        backgroundColor: cores, 
-                        borderRadius: 8, 
-                        borderWidth: 0,
-                        barPercentage: 0.7,
-                        categoryPercentage: 0.8
-                    }] 
-                }, 
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: true,
-                    layout: {
-                        padding: {
-                            top: 20,
-                            bottom: 20,
-                            left: 10,
-                            right: 10
-                        }
-                    },
-                    plugins: { 
-                        legend: { 
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        }, 
-                        tooltip: { 
-                            callbacks: { 
-                                label: (ctx) => `Valor Total: R$ ${ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 
-                            } 
-                        } 
-                    }, 
-                    scales: { 
-                        y: { 
-                            beginAtZero: true,
-                            ticks: { 
-                                callback: (v) => `R$ ${v.toLocaleString('pt-BR')}`,
-                                stepSize: calcularStepSize(Math.max(...valores, 0)),
-                                font: {
-                                    size: 10
-                                }
-                            }, 
-                            title: { 
-                                display: true, 
-                                text: 'Valor Total (R$)', 
-                                font: { 
-                                    size: 12,
-                                    weight: 'bold'
-                                } 
-                            },
-                            grid: {
-                                color: '#e0e0e0',
-                                drawBorder: true
-                            }
-                        }, 
-                        x: { 
-                            title: { 
-                                display: true, 
-                                text: 'Empresas Participantes', 
-                                font: { 
-                                    size: 12,
-                                    weight: 'bold'
-                                } 
-                            },
-                            ticks: {
-                                font: {
-                                    size: 11
-                                },
-                                rotation: labels.length > 5 ? 45 : 0,
-                                autoSkip: true,
-                                maxRotation: 45,
-                                minRotation: 0
-                            },
-                            grid: {
-                                display: false
-                            }
-                        } 
-                    }
-                } 
-            });
-        }
-        
-        function calcularStepSize(maxValor) {
-            if (maxValor === 0) return 100;
-            const steps = [100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000];
-            for (let step of steps) {
-                if (maxValor / step <= 10) {
-                    return step;
-                }
-            }
-            return Math.pow(10, Math.floor(Math.log10(maxValor)));
-        }
-        
         window.carregarItens = async () => {
             if (!processoAtual) return;
             try {
@@ -910,7 +880,6 @@
                 vencedorSelect.innerHTML = '<option value="">Selecione o fornecedor vencedor</option>';
                 Array.from(fornecedores).sort().forEach(f => { vencedorSelect.innerHTML += `<option value="${f.replace(/"/g, '&quot;')}">${f}</option>`; });
                 
-                // Atualizar select de itens - OCULTAR ITENS COM 4 OU MAIS COTAÇÕES
                 const itemSelect = document.getElementById('itemSelect');
                 itemSelect.innerHTML = '<option value="">-- Selecione um item --</option>';
                 
@@ -921,16 +890,13 @@
                     const qtdCotacoes = i.cotacoes ? i.cotacoes.length : 0;
                     
                     if (qtdCotacoes < 4) {
-                        // Item com menos de 4 cotações - aparece no select
                         itemSelect.innerHTML += `<option value="${i.id}">${i.codigo} - ${i.descricao.substring(0, 40)} (${qtdCotacoes}/4 cotações)</option>`;
                         itensDisponiveis++;
                     } else {
-                        // Item com 4 ou mais cotações - NÃO aparece no select
                         itensCompletos++;
                     }
                 });
                 
-                // Mostrar/ocultar info box
                 const infoBox = document.getElementById('infoItensCompletos');
                 if (itensCompletos > 0) {
                     infoBox.classList.remove('hidden');
@@ -941,15 +907,10 @@
                 
                 if (itensDisponiveis === 0 && itens.length > 0) {
                     itemSelect.innerHTML += '<option value="" disabled>-- Todos os itens já têm 4 cotações --</option>';
-                    const infoBoxTodos = document.getElementById('infoItensCompletos');
-                    if (infoBoxTodos) {
-                        infoBoxTodos.classList.remove('hidden');
-                        infoBoxTodos.innerHTML = `✅ Todos os ${itens.length} itens já atingiram o limite de 4 cotações!`;
-                    }
                 }
                 
                 render();
-                atualizarGrafico();
+                atualizarRanking();
                 atualizarTotalContrato();
                 
                 document.getElementById('valorFornecedorDisplay').classList.add('hidden');
@@ -1029,7 +990,7 @@
             if (empresaSelecionada && tipoContratacao === 'contrato') {
                 const { total: totalVencedor } = calcularValorFornecedor(empresaSelecionada);
                 const totalContrato = totalVencedor * 12;
-                valorTotalContrato.innerHTML = `R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                valorTotalContrato.innerHTML = `R$ ${formatarMoeda(totalContrato)}`;
                 totalContratoDisplay.classList.remove('hidden');
             } else { totalContratoDisplay.classList.add('hidden'); }
         }
@@ -1214,9 +1175,6 @@
         window.gerarPDF = async () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
-            const canvasGrafico = document.getElementById('graficoBarras');
-            let imgGrafico = null;
-            if (canvasGrafico) { try { imgGrafico = canvasGrafico.toDataURL('image/png', 1.0); } catch(e) {} }
             let y = 15;
             const numeroProcesso = document.getElementById('tituloProcesso').innerText.replace('Processo:', '').trim();
             const dataAtual = new Date().toLocaleDateString('pt-BR');
@@ -1240,9 +1198,68 @@
                 y = doc.lastAutoTable.finalY + 10;
             }
             
-            // Pagina do grafico
-            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("ANALISE GRAFICA DAS PROPOSTAS - Art. 25 da Lei 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28; if (imgGrafico) { doc.addImage(imgGrafico, 'PNG', 10, y, 276, 90); y += 100; } else { y += 10; }
-            doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("INTERPRETACAO DO GRAFICO DE BARRAS", 14, y); y += 7; doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text("Este grafico apresenta o valor total proposto por cada empresa participante do processo licitatorio,", 14, y); y += 5; doc.text("considerando todos os itens cotados no Mapa Comparativo de Precos.", 14, y); y += 8; doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("Elementos do Grafico:", 14, y); y += 5; doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.text("• Cada barra representa uma empresa participante;", 14, y); y += 4; doc.text("• A altura da barra corresponde ao valor total da proposta (soma de todos os itens);", 14, y); y += 4; doc.text("• Os valores representados no grafico sao referentes as propostas enviadas pelas empresas.", 14, y); y += 8; doc.setFontSize(8); doc.setFont(undefined, 'italic'); doc.text("Base Legal: Art. 26, inciso I da Lei 14.133/2021 - Criterio de Julgamento pelo Menor Preco.", 14, y); y += 15;
+            // Página do RANKING
+            doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("RANKING DAS EMPRESAS POR VALOR TOTAL", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28;
+            
+            const empresasValoresPDF = new Map();
+            itens.forEach(item => {
+                if (item.cotacoes && item.cotacoes.length > 0) {
+                    item.cotacoes.forEach(cot => {
+                        const valorTotalItem = cot.valor * item.qtd;
+                        if (empresasValoresPDF.has(cot.empresa)) {
+                            empresasValoresPDF.set(cot.empresa, {
+                                total: empresasValoresPDF.get(cot.empresa).total + valorTotalItem,
+                                cnpj: cot.cnpj
+                            });
+                        } else {
+                            empresasValoresPDF.set(cot.empresa, {
+                                total: valorTotalItem,
+                                cnpj: cot.cnpj
+                            });
+                        }
+                    });
+                }
+            });
+            
+            if (empresasValoresPDF.size > 0) {
+                const rankingArrayPDF = Array.from(empresasValoresPDF.entries())
+                    .map(([nome, dados]) => ({ nome, cnpj: dados.cnpj, total: dados.total }))
+                    .sort((a, b) => a.total - b.total);
+                
+                const rankingBody = rankingArrayPDF.map((emp, idx) => {
+                    const posicao = idx + 1;
+                    let posicaoTexto = `${posicao}º`;
+                    if (posicao === 1) posicaoTexto = "1º (VENCEDOR)";
+                    return [posicaoTexto, emp.nome, emp.cnpj, `R$ ${formatarMoeda(emp.total)}`];
+                });
+                
+                doc.autoTable({
+                    startY: y,
+                    head: [["Posição", "Empresa", "CNPJ", "Valor Total (R$)"]],
+                    body: rankingBody,
+                    styles: { fontSize: 10, cellPadding: 4 },
+                    headStyles: { fillColor: [13, 59, 102], fontSize: 10, fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
+                    margin: { left: 30, right: 30 }
+                });
+                
+                y = doc.lastAutoTable.finalY + 15;
+                
+                if (rankingArrayPDF.length > 0) {
+                    doc.setFillColor(39, 174, 96);
+                    doc.rect(60, y, 180, 20, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`FORNECEDOR COM MENOR PRECO: ${rankingArrayPDF[0].nome}`, 150, y + 13, { align: "center" });
+                    y += 30;
+                    doc.setTextColor(0, 0, 0);
+                }
+            } else {
+                doc.setFontSize(10);
+                doc.text("Nenhuma empresa cadastrada no processo.", 148, y, { align: "center" });
+                y += 20;
+            }
             
             // Pagina de justificativa
             doc.addPage(); y = 15; doc.setFillColor(13, 59, 102); doc.rect(0, 0, 297, 22, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(11); doc.text("JUSTIFICATIVA DA CONTRATACAO - LEI No 14.133/2021", 148, 14, { align: "center" }); doc.setTextColor(0, 0, 0); y = 28;
@@ -1256,49 +1273,14 @@
                 const { total: totalVencedor } = calcularValorFornecedor(vencedor);
                 const totalContrato = totalVencedor * 12;
                 const economiaPercentual = totalGeral > 0 ? ((totalGeral - totalVencedor) / totalGeral * 100).toFixed(2) : "0";
-                justificativa = `Apos analise criteriosa das propostas apresentadas no Mapa Comparativo de Precos, verifica-se que a empresa ${vencedor} apresentou o menor preco global, totalizando R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para o periodo inicial de contratacao.\n\nConsiderando a contratacao por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato sera de R$ ${totalContrato.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}, representando uma economia estimada de ${economiaPercentual}% em relacao a media do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administracao Publica, atendendo aos principios constitucionais da economicidade, eficiencia e vantajosidade, nos termos da Lei no 14.133/2021.`;
+                justificativa = `Apos analise criteriosa das propostas apresentadas no Mapa Comparativo de Precos, verifica-se que a empresa ${vencedor} apresentou o menor preco global, totalizando R$ ${formatarMoeda(totalVencedor)} para o periodo inicial de contratacao.\n\nConsiderando a contratacao por 12 (doze) meses, conforme Art. 28 da Lei 14.133/2021, o valor total do contrato sera de R$ ${formatarMoeda(totalContrato)}, representando uma economia estimada de ${economiaPercentual}% em relacao a media do mercado.\n\nA proposta apresenta-se como a mais vantajosa para a Administracao Publica, atendendo aos principios constitucionais da economicidade, eficiencia e vantajosidade, nos termos da Lei no 14.133/2021.`;
             } else if (tipoContratacao === 'dispensa') {
                 justificativa = `Apos analise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preco global, sendo considerada a proposta mais vantajosa para a Administracao Publica.\n\nTrata-se de processo de dispensa de licitacao fundamentada no Art. 75 da Lei no 14.133/2021, onde nao ha previsao de contrato com vigencia prolongada, aplicando-se o regime de N/A (Nao se Aplica) para fins de estimativa de contrato plurianual.\n\nA proposta atende aos requisitos legais de economicidade e eficiencia, sendo a mais vantajosa para a Administracao no contexto da dispensa licitatoria.`;
             } else { justificativa = `Apos analise das propostas apresentadas, verifica-se que a empresa ${vencedor || "o fornecedor melhor classificado"} apresentou o menor preco global, sendo considerada a proposta mais vantajosa para a Administracao Publica, nos termos da Lei no 14.133/2021.`; }
             const splitText = doc.splitTextToSize(justificativa, 265); doc.text(splitText, 14, y); y += splitText.length * 4 + 12;
             doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text("FUNDAMENTACAO LEGAL:", 14, y); y += 5; doc.setFontSize(7); doc.setFont(undefined, 'normal');
-            const fundamentacao = `- Lei no 14.133/2021 - Nova Lei de Licitacoes e Contratos Administrativos\n- Art. 23, §1o - Mapa Comparativo de Precos\n- Art. 25 - Analise de Propostas\n- Art. 26, inciso I - Criterio de Julgamento pelo Menor Preco\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipoteses de Dispensa de Licitacao\n- Principios da Economicidade, Eficiencia e Vantajosidade (Art. 5o)`;
+            const fundamentacao = `- Lei no 14.133/2021 - Nova Lei de Licitacoes e Contratos Administrativos\n- Art. 23, §1o - Mapa Comparativo de Precos\n- Art. 26, inciso I - Criterio de Julgamento pelo Menor Preco\n- Art. 28 - Contratos Administrativos\n- Art. 75 - Hipoteses de Dispensa de Licitacao\n- Principios da Economicidade, Eficiencia e Vantajosidade (Art. 5o)`;
             const splitFund = doc.splitTextToSize(fundamentacao, 265); doc.text(splitFund, 14, y); y += splitFund.length * 4 + 15;
-            
-            // Destaque do fornecedor vencedor
-            if (vencedor) {
-                const { total: totalVencedor } = calcularValorFornecedor(vencedor);
-                
-                const boxY = y;
-                doc.setFillColor(39, 174, 96);
-                doc.rect(40, boxY - 5, 217, 35, 'F');
-                
-                doc.setDrawColor(243, 156, 18);
-                doc.setLineWidth(1.5);
-                doc.rect(40, boxY - 5, 217, 35);
-                
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text("FORNECEDOR COM MENOR PREÇO", 148, boxY + 5, { align: "center" });
-                
-                doc.setFontSize(13);
-                doc.text(vencedor, 148, boxY + 15, { align: "center" });
-                
-                doc.setFontSize(14);
-                doc.text(`R$ ${totalVencedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 148, boxY + 25, { align: "center" });
-                
-                y = boxY + 45;
-            } else {
-                const boxY = y;
-                doc.setFillColor(243, 156, 18);
-                doc.rect(40, boxY - 5, 217, 20, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(11);
-                doc.setFont(undefined, 'bold');
-                doc.text("NENHUM FORNECEDOR VENCEDOR SELECIONADO", 148, boxY + 8, { align: "center" });
-                y = boxY + 30;
-            }
             
             // Assinatura
             doc.setDrawColor(0);
