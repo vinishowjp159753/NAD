@@ -41,6 +41,20 @@
             min-height: 100vh;
         }
 
+        /* ===== LOGO ===== */
+        .logo-espep {
+            height: 45px;
+            width: auto;
+            margin-right: 10px;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo-espep-login {
+            height: 80px;
+            width: auto;
+            margin-bottom: 10px;
+        }
+
         /* ===== NAVBAR ===== */
         .navbar-espep {
             background: linear-gradient(90deg, var(--espep-primary) 0%, var(--espep-secondary) 100%);
@@ -53,6 +67,15 @@
             font-weight: 700;
             font-size: 1.8rem;
             letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-espep .navbar-brand img {
+            height: 40px;
+            width: auto;
+            margin-right: 12px;
+            filter: brightness(0) invert(1);
         }
 
         .navbar-espep .navbar-brand i {
@@ -222,41 +245,6 @@
             transform: scale(1.01);
         }
 
-        /* ===== STATUS BADGES ===== */
-        .badge-status {
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .badge-pendente {
-            background: #ffeaa7;
-            color: #d63031;
-        }
-
-        .badge-andamento {
-            background: #74b9ff;
-            color: #0984e3;
-        }
-
-        .badge-concluido {
-            background: #55efc4;
-            color: #00b894;
-        }
-
-        .badge-urgente {
-            background: #ff7675;
-            color: #d63031;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-
         /* ===== LOGIN ===== */
         .login-container {
             min-height: 100vh;
@@ -301,18 +289,16 @@
             margin-bottom: 2rem;
         }
 
-        .login-card .logo i {
-            font-size: 4rem;
-            color: var(--espep-accent);
-            background: rgba(243, 156, 18, 0.1);
-            padding: 20px;
-            border-radius: 50%;
+        .login-card .logo img {
+            height: 100px;
+            width: auto;
+            margin-bottom: 10px;
         }
 
         .login-card .logo h3 {
             color: var(--espep-primary);
             font-weight: 700;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
 
         .login-card .logo p {
@@ -381,9 +367,17 @@
                 font-size: 1.2rem;
             }
             
+            .navbar-espep .navbar-brand img {
+                height: 30px;
+            }
+            
             .login-card {
                 padding: 2rem;
                 margin: 1rem;
+            }
+            
+            .login-card .logo img {
+                height: 70px;
             }
             
             .card-espep .card-body {
@@ -414,9 +408,9 @@
 <div id="loginPage" class="login-container">
     <div class="login-card fade-in">
         <div class="logo">
-            <i class="fas fa-flask"></i>
-            <h3>ESPEP</h3>
-            <p>Sistema de Demandas</p>
+            <img src="img/LOGOESPEP.png" alt="ESPEP Logo" class="logo-espep-login">
+            <h3>Sistema de Demandas</h3>
+            <p>ESPEP - Escola de Formação</p>
         </div>
         
         <form id="loginForm">
@@ -459,7 +453,8 @@
     <nav class="navbar navbar-espep navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-flask"></i> ESPEP
+                <img src="img/LOGOESPEP.png" alt="ESPEP Logo">
+                ESPEP
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -503,11 +498,15 @@
                 <div class="card-body">
                     <form id="demandaForm" class="form-espep">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label><i class="fas fa-tag"></i> Título</label>
-                                <input type="text" class="form-control" id="demandaTitulo" placeholder="Ex: Manutenção do servidor" required>
+                            <div class="col-md-4">
+                                <label><i class="fas fa-barcode"></i> Código</label>
+                                <input type="text" class="form-control" id="demandaCodigo" placeholder="Ex: DEM-001" required>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label><i class="fas fa-hashtag"></i> Quantidade</label>
+                                <input type="number" class="form-control" id="demandaQuantidade" placeholder="Ex: 10" min="1" required>
+                            </div>
+                            <div class="col-md-4">
                                 <label><i class="fas fa-list"></i> Categoria</label>
                                 <select class="form-select" id="demandaCategoria" required>
                                     <option value="">Selecione...</option>
@@ -519,22 +518,9 @@
                                     <option value="outros">Outros</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label><i class="fas fa-flag"></i> Prioridade</label>
-                                <select class="form-select" id="demandaPrioridade">
-                                    <option value="baixa">Baixa</option>
-                                    <option value="media" selected>Média</option>
-                                    <option value="alta">Alta</option>
-                                    <option value="urgente">Urgente</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label><i class="fas fa-calendar"></i> Prazo</label>
-                                <input type="date" class="form-control" id="demandaPrazo">
-                            </div>
                             <div class="col-12">
                                 <label><i class="fas fa-align-left"></i> Descrição</label>
-                                <textarea class="form-control" id="demandaDescricao" rows="3" placeholder="Descreva sua demanda..." required></textarea>
+                                <textarea class="form-control" id="demandaDescricao" rows="3" placeholder="Descreva a demanda..." required></textarea>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-espep" id="btnSalvarDemanda">
@@ -565,18 +551,17 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Título</th>
+                                    <th>Código</th>
+                                    <th>Quantidade</th>
                                     <th>Categoria</th>
-                                    <th>Prioridade</th>
-                                    <th>Status</th>
-                                    <th>Prazo</th>
+                                    <th>Descrição</th>
                                     <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="demandasBody">
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">
+                                    <td colspan="7" class="text-center py-4">
                                         <div class="loading-spinner"></div>
                                         <p class="mt-2 text-muted">Carregando demandas...</p>
                                     </td>
@@ -607,10 +592,10 @@
                     <div class="stat-card" style="border-left-color: #3498db;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="stat-number" id="totalPendentes">0</div>
-                                <div class="stat-label">Pendentes</div>
+                                <div class="stat-number" id="totalPorCategoria">0</div>
+                                <div class="stat-label">Categorias</div>
                             </div>
-                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-icon"><i class="fas fa-tags"></i></div>
                         </div>
                     </div>
                 </div>
@@ -618,10 +603,10 @@
                     <div class="stat-card" style="border-left-color: #27ae60;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="stat-number" id="totalConcluidas">0</div>
-                                <div class="stat-label">Concluídas</div>
+                                <div class="stat-number" id="totalQuantidade">0</div>
+                                <div class="stat-label">Total Itens</div>
                             </div>
-                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
                         </div>
                     </div>
                 </div>
@@ -629,10 +614,10 @@
                     <div class="stat-card" style="border-left-color: #e74c3c;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="stat-number" id="totalUrgentes">0</div>
-                                <div class="stat-label">Urgentes</div>
+                                <div class="stat-number" id="totalSetores">0</div>
+                                <div class="stat-label">Setores</div>
                             </div>
-                            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
                     </div>
                 </div>
@@ -658,18 +643,17 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Setor</th>
-                                    <th>Título</th>
+                                    <th>Código</th>
+                                    <th>Quantidade</th>
                                     <th>Categoria</th>
-                                    <th>Prioridade</th>
-                                    <th>Status</th>
-                                    <th>Prazo</th>
+                                    <th>Descrição</th>
                                     <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="adminBody">
                                 <tr>
-                                    <td colspan="9" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <div class="loading-spinner"></div>
                                         <p class="mt-2 text-muted">Carregando dados...</p>
                                     </td>
@@ -698,8 +682,12 @@
                 <form id="editarForm">
                     <input type="hidden" id="editId">
                     <div class="mb-3">
-                        <label>Título</label>
-                        <input type="text" class="form-control" id="editTitulo" required>
+                        <label>Código</label>
+                        <input type="text" class="form-control" id="editCodigo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Quantidade</label>
+                        <input type="number" class="form-control" id="editQuantidade" min="1" required>
                     </div>
                     <div class="mb-3">
                         <label>Categoria</label>
@@ -711,27 +699,6 @@
                             <option value="pessoal">Pessoal</option>
                             <option value="outros">Outros</option>
                         </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Prioridade</label>
-                        <select class="form-select" id="editPrioridade">
-                            <option value="baixa">Baixa</option>
-                            <option value="media">Média</option>
-                            <option value="alta">Alta</option>
-                            <option value="urgente">Urgente</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Status</label>
-                        <select class="form-select" id="editStatus">
-                            <option value="pendente">Pendente</option>
-                            <option value="andamento">Em Andamento</option>
-                            <option value="concluido">Concluído</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Prazo</label>
-                        <input type="date" class="form-control" id="editPrazo">
                     </div>
                     <div class="mb-3">
                         <label>Descrição</label>
@@ -822,7 +789,6 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     const setor = document.getElementById('loginSetor').value;
     const senha = document.getElementById('loginSenha').value;
     
-    // VALIDAÇÃO SIMPLES
     if (!setor) {
         mostrarNotificacao('Selecione um setor!', 'error');
         return;
@@ -835,13 +801,11 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         return;
     }
     
-    // LOGIN BEM SUCEDIDO
     setorAtual = setor;
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('mainSystem').style.display = 'block';
     document.getElementById('userNameDisplay').textContent = setor.toUpperCase();
     
-    // Mostrar admin apenas para admin
     if (setor === 'admin') {
         document.getElementById('adminNavItem').style.display = 'block';
         document.getElementById('navAdmin').click();
@@ -892,7 +856,7 @@ async function carregarDemandas() {
         const tbody = document.getElementById('demandasBody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-4">
+                <td colspan="7" class="text-center py-4">
                     <div class="loading-spinner"></div>
                     <p class="mt-2 text-muted">Carregando demandas...</p>
                 </td>
@@ -912,31 +876,9 @@ async function carregarDemandas() {
         renderizarDemandas();
     } catch (error) {
         console.error('Erro:', error);
-        // Dados de exemplo para teste
-        demandas = [
-            {
-                id: '1',
-                titulo: 'Manutenção do servidor',
-                categoria: 'servicos',
-                prioridade: 'alta',
-                status: 'pendente',
-                prazo: '2026-08-15',
-                data: new Date().toISOString(),
-                descricao: 'Servidor com problemas'
-            },
-            {
-                id: '2',
-                titulo: 'Troca de peças',
-                categoria: 'maquinas',
-                prioridade: 'media',
-                status: 'andamento',
-                prazo: '2026-07-30',
-                data: new Date().toISOString(),
-                descricao: 'Impressora com defeito'
-            }
-        ];
+        demandas = [];
         renderizarDemandas();
-        mostrarNotificacao('Usando dados de exemplo (offline)', 'info');
+        mostrarNotificacao('Erro ao carregar dados', 'error');
     }
 }
 
@@ -955,7 +897,7 @@ function renderizarDemandas() {
     if (demandasFiltradas.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="7" class="text-center text-muted py-4">
                     <i class="fas fa-inbox fa-2x d-block mb-2"></i>
                     ${filtroCategoria ? `Nenhuma demanda na categoria "${filtroCategoria}"` : 'Nenhuma demanda encontrada'}
                 </td>
@@ -965,22 +907,13 @@ function renderizarDemandas() {
     }
     
     demandasFiltradas.forEach((demanda, index) => {
-        const statusClass = {
-            'pendente': 'badge-pendente',
-            'andamento': 'badge-andamento',
-            'concluido': 'badge-concluido'
-        }[demanda.status] || 'badge-pendente';
-        
-        const prioridadeClass = demanda.prioridade === 'urgente' ? 'badge-urgente' : '';
-        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${index + 1}</td>
-            <td><strong>${demanda.titulo}</strong></td>
+            <td><strong>${demanda.codigo || 'SEM-COD'}</strong></td>
+            <td>${demanda.quantidade || 0}</td>
             <td><span class="badge bg-info">${demanda.categoria}</span></td>
-            <td><span class="badge ${prioridadeClass || 'bg-secondary'}">${demanda.prioridade}</span></td>
-            <td><span class="badge-status ${statusClass}">${demanda.status}</span></td>
-            <td>${demanda.prazo || 'Sem prazo'}</td>
+            <td>${demanda.descricao || ''}</td>
             <td>${new Date(demanda.data).toLocaleDateString('pt-BR')}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-editar" data-id="${demanda.id}">
@@ -994,7 +927,6 @@ function renderizarDemandas() {
         tbody.appendChild(tr);
     });
     
-    // Eventos
     document.querySelectorAll('.btn-editar').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = this.dataset.id;
@@ -1025,12 +957,10 @@ document.getElementById('demandaForm').addEventListener('submit', async function
     
     const demanda = {
         setor: setorAtual,
-        titulo: document.getElementById('demandaTitulo').value,
+        codigo: document.getElementById('demandaCodigo').value,
+        quantidade: parseInt(document.getElementById('demandaQuantidade').value) || 0,
         categoria: document.getElementById('demandaCategoria').value,
-        prioridade: document.getElementById('demandaPrioridade').value,
-        prazo: document.getElementById('demandaPrazo').value || null,
         descricao: document.getElementById('demandaDescricao').value,
-        status: 'pendente',
         data: new Date().toISOString()
     };
     
@@ -1041,11 +971,7 @@ document.getElementById('demandaForm').addEventListener('submit', async function
         await carregarDemandas();
     } catch (error) {
         console.error('Erro:', error);
-        // Salvar localmente
-        demanda.id = Date.now().toString();
-        demandas.unshift(demanda);
-        renderizarDemandas();
-        mostrarNotificacao('Salvo localmente (offline)', 'info');
+        mostrarNotificacao('Erro ao salvar demanda', 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> Salvar Demanda';
@@ -1057,11 +983,9 @@ document.getElementById('demandaForm').addEventListener('submit', async function
 // =============================================
 function abrirModalEditar(demanda) {
     document.getElementById('editId').value = demanda.id;
-    document.getElementById('editTitulo').value = demanda.titulo;
-    document.getElementById('editCategoria').value = demanda.categoria;
-    document.getElementById('editPrioridade').value = demanda.prioridade;
-    document.getElementById('editStatus').value = demanda.status || 'pendente';
-    document.getElementById('editPrazo').value = demanda.prazo || '';
+    document.getElementById('editCodigo').value = demanda.codigo || '';
+    document.getElementById('editQuantidade').value = demanda.quantidade || 0;
+    document.getElementById('editCategoria').value = demanda.categoria || 'servicos';
     document.getElementById('editDescricao').value = demanda.descricao || '';
     
     new bootstrap.Modal(document.getElementById('modalEditar')).show();
@@ -1070,11 +994,9 @@ function abrirModalEditar(demanda) {
 document.getElementById('btnSalvarEdicao').addEventListener('click', async function() {
     const id = document.getElementById('editId').value;
     const dadosAtualizados = {
-        titulo: document.getElementById('editTitulo').value,
+        codigo: document.getElementById('editCodigo').value,
+        quantidade: parseInt(document.getElementById('editQuantidade').value) || 0,
         categoria: document.getElementById('editCategoria').value,
-        prioridade: document.getElementById('editPrioridade').value,
-        status: document.getElementById('editStatus').value,
-        prazo: document.getElementById('editPrazo').value || null,
         descricao: document.getElementById('editDescricao').value
     };
     
@@ -1088,14 +1010,7 @@ document.getElementById('btnSalvarEdicao').addEventListener('click', async funct
         }
     } catch (error) {
         console.error('Erro:', error);
-        // Atualizar localmente
-        const index = demandas.findIndex(d => d.id === id);
-        if (index !== -1) {
-            demandas[index] = { ...demandas[index], ...dadosAtualizados };
-            renderizarDemandas();
-        }
-        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-        mostrarNotificacao('Atualizado localmente', 'info');
+        mostrarNotificacao('Erro ao atualizar', 'error');
     }
 });
 
@@ -1112,9 +1027,7 @@ async function excluirDemanda(id) {
         }
     } catch (error) {
         console.error('Erro:', error);
-        demandas = demandas.filter(d => d.id !== id);
-        renderizarDemandas();
-        mostrarNotificacao('Excluída localmente', 'info');
+        mostrarNotificacao('Erro ao excluir', 'error');
     }
 }
 
@@ -1128,7 +1041,7 @@ async function carregarAdmin() {
         const tbody = document.getElementById('adminBody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center py-4">
+                <td colspan="8" class="text-center py-4">
                     <div class="loading-spinner"></div>
                     <p class="mt-2 text-muted">Carregando dados...</p>
                 </td>
@@ -1163,7 +1076,7 @@ function renderizarAdmin() {
     if (todasDemandas.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center text-muted py-4">
+                <td colspan="8" class="text-center text-muted py-4">
                     <i class="fas fa-inbox fa-2x d-block mb-2"></i>
                     Nenhuma demanda
                 </td>
@@ -1173,23 +1086,14 @@ function renderizarAdmin() {
     }
     
     todasDemandas.forEach((demanda, index) => {
-        const statusClass = {
-            'pendente': 'badge-pendente',
-            'andamento': 'badge-andamento',
-            'concluido': 'badge-concluido'
-        }[demanda.status] || 'badge-pendente';
-        
-        const prioridadeClass = demanda.prioridade === 'urgente' ? 'badge-urgente' : '';
-        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${index + 1}</td>
             <td><span class="badge bg-primary">${demanda.setor}</span></td>
-            <td><strong>${demanda.titulo}</strong></td>
+            <td><strong>${demanda.codigo || 'SEM-COD'}</strong></td>
+            <td>${demanda.quantidade || 0}</td>
             <td><span class="badge bg-info">${demanda.categoria}</span></td>
-            <td><span class="badge ${prioridadeClass || 'bg-secondary'}">${demanda.prioridade}</span></td>
-            <td><span class="badge-status ${statusClass}">${demanda.status}</span></td>
-            <td>${demanda.prazo || 'Sem prazo'}</td>
+            <td>${demanda.descricao || ''}</td>
             <td>${new Date(demanda.data).toLocaleDateString('pt-BR')}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-editar-admin" data-id="${demanda.id}">
@@ -1222,13 +1126,15 @@ function renderizarAdmin() {
 }
 
 function atualizarStats() {
-    document.getElementById('totalDemandas').textContent = todasDemandas.length;
-    document.getElementById('totalPendentes').textContent = 
-        todasDemandas.filter(d => d.status === 'pendente' || d.status === 'andamento').length;
-    document.getElementById('totalConcluidas').textContent = 
-        todasDemandas.filter(d => d.status === 'concluido').length;
-    document.getElementById('totalUrgentes').textContent = 
-        todasDemandas.filter(d => d.prioridade === 'urgente').length;
+    const total = todasDemandas.length;
+    const categorias = new Set(todasDemandas.map(d => d.categoria)).size;
+    const quantidadeTotal = todasDemandas.reduce((sum, d) => sum + (d.quantidade || 0), 0);
+    const setores = new Set(todasDemandas.map(d => d.setor)).size;
+    
+    document.getElementById('totalDemandas').textContent = total;
+    document.getElementById('totalPorCategoria').textContent = categorias;
+    document.getElementById('totalQuantidade').textContent = quantidadeTotal;
+    document.getElementById('totalSetores').textContent = setores;
 }
 
 // =============================================
@@ -1242,13 +1148,11 @@ document.getElementById('btnExportarExcel').addEventListener('click', function()
     
     const dados = todasDemandas.map(d => ({
         'Setor': d.setor,
-        'Título': d.titulo,
+        'Código': d.codigo || '',
+        'Quantidade': d.quantidade || 0,
         'Categoria': d.categoria,
-        'Prioridade': d.prioridade,
-        'Status': d.status,
-        'Prazo': d.prazo || 'Sem prazo',
-        'Data': new Date(d.data).toLocaleDateString('pt-BR'),
-        'Descrição': d.descricao || ''
+        'Descrição': d.descricao || '',
+        'Data': new Date(d.data).toLocaleDateString('pt-BR')
     }));
     
     const wb = XLSX.utils.book_new();
@@ -1296,7 +1200,6 @@ document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', functi
 console.log('🚀 ESPEP Sistema de Demandas');
 console.log('💡 Senha: 123456');
 console.log('👤 Setores: nuset, rh, financeiro, tecnologia, administracao, admin');
-console.log('📋 Os dados são salvos no Firebase Firestore');
 </script>
 
 </body>
