@@ -41,20 +41,6 @@
             min-height: 100vh;
         }
 
-        /* ===== LOGO ===== */
-        .logo-espep {
-            height: 45px;
-            width: auto;
-            margin-right: 10px;
-            filter: brightness(0) invert(1);
-        }
-
-        .logo-espep-login {
-            height: 80px;
-            width: auto;
-            margin-bottom: 10px;
-        }
-
         /* ===== NAVBAR ===== */
         .navbar-espep {
             background: linear-gradient(90deg, var(--espep-primary) 0%, var(--espep-secondary) 100%);
@@ -76,11 +62,6 @@
             width: auto;
             margin-right: 12px;
             filter: brightness(0) invert(1);
-        }
-
-        .navbar-espep .navbar-brand i {
-            color: var(--espep-accent);
-            margin-right: 10px;
         }
 
         .navbar-espep .nav-link {
@@ -408,7 +389,7 @@
 <div id="loginPage" class="login-container">
     <div class="login-card fade-in">
         <div class="logo">
-            <img src="img/LOGOESPEP.png" alt="ESPEP Logo" class="logo-espep-login">
+            <img src="img/LOGOESPEP.png" alt="ESPEP Logo">
             <h3>Sistema de Demandas</h3>
             <p>ESPEP - Escola de Formação</p>
         </div>
@@ -849,7 +830,7 @@ document.getElementById('btnLogout').addEventListener('click', function() {
 });
 
 // =============================================
-// CARREGAR DEMANDAS DO SETOR
+// CARREGAR DEMANDAS DO SETOR (SEM orderBy)
 // =============================================
 async function carregarDemandas() {
     try {
@@ -863,14 +844,21 @@ async function carregarDemandas() {
             </tr>
         `;
         
+        // SEM orderBy para evitar erro de índice
         const snapshot = await db.collection('demandas')
             .where('setor', '==', setorAtual)
-            .orderBy('data', 'desc')
             .get();
         
         demandas = [];
         snapshot.forEach(doc => {
             demandas.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Ordenar manualmente (mais recente primeiro)
+        demandas.sort((a, b) => {
+            if (a.data < b.data) return 1;
+            if (a.data > b.data) return -1;
+            return 0;
         });
         
         renderizarDemandas();
@@ -1032,7 +1020,7 @@ async function excluirDemanda(id) {
 }
 
 // =============================================
-// ADMIN
+// ADMIN (SEM orderBy)
 // =============================================
 async function carregarAdmin() {
     if (setorAtual !== 'admin') return;
@@ -1048,7 +1036,7 @@ async function carregarAdmin() {
             </tr>
         `;
         
-        let query = db.collection('demandas').orderBy('data', 'desc');
+        let query = db.collection('demandas');
         
         if (filtroSetorAdmin) {
             query = query.where('setor', '==', filtroSetorAdmin);
@@ -1059,6 +1047,13 @@ async function carregarAdmin() {
         todasDemandas = [];
         snapshot.forEach(doc => {
             todasDemandas.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Ordenar manualmente (mais recente primeiro)
+        todasDemandas.sort((a, b) => {
+            if (a.data < b.data) return 1;
+            if (a.data > b.data) return -1;
+            return 0;
         });
         
         renderizarAdmin();
@@ -1200,6 +1195,7 @@ document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', functi
 console.log('🚀 ESPEP Sistema de Demandas');
 console.log('💡 Senha: 123456');
 console.log('👤 Setores: nuset, rh, financeiro, tecnologia, administracao, admin');
+console.log('✅ Versão sem orderBy - funcionando sem índices!');
 </script>
 
 </body>
