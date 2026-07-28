@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ESPEP - PCA 2027</title>
     
-    <!-- Firebase apenas para o banco de dados -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <!-- Bibliotecas -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <style>
@@ -160,6 +163,12 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
             color: white;
+        }
+
+        .btn-sm-custom {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 8px;
         }
 
         /* ===== FORMULÁRIO ===== */
@@ -342,6 +351,124 @@
             z-index: 9999;
         }
 
+        /* ===== NAV TABS ===== */
+        .nav-tabs .nav-link {
+            color: var(--espep-dark);
+            font-weight: 600;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: rgba(0, 51, 102, 0.05);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: var(--espep-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+        }
+
+        .nav-tabs .nav-link i {
+            margin-right: 8px;
+        }
+
+        /* ===== SENHA ===== */
+        .senha-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            border-left: 4px solid var(--espep-accent);
+        }
+
+        .senha-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .senha-card .setor-nome {
+            font-weight: 700;
+            color: var(--espep-primary);
+            font-size: 1.1rem;
+        }
+
+        .senha-card .senha-atual {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* ===== HISTÓRICO ===== */
+        .historico-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .historico-item:hover {
+            background: rgba(0, 51, 102, 0.03);
+        }
+
+        .historico-item .badge-historico {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+        }
+
+        .historico-item .data-historico {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        /* ===== NOTIFICAÇÕES ===== */
+        .notificacao-badge {
+            position: relative;
+        }
+
+        .notificacao-badge .badge-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* ===== ANEXOS ===== */
+        .anexo-item {
+            display: inline-block;
+            background: #f8f9fa;
+            padding: 5px 12px;
+            border-radius: 50px;
+            margin: 3px;
+            font-size: 0.85rem;
+        }
+
+        .anexo-item i {
+            margin-right: 5px;
+            color: var(--espep-accent);
+        }
+
+        .anexo-item .btn-remove-anexo {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
         /* ===== RESPONSIVO ===== */
         @media (max-width: 768px) {
             .navbar-espep .navbar-brand {
@@ -367,6 +494,11 @@
             
             .stat-card .stat-number {
                 font-size: 1.8rem;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 8px 15px;
+                font-size: 0.9rem;
             }
         }
 
@@ -402,9 +534,9 @@
                     <option value="nuset">NUSET</option>
                     <option value="rh">RH</option>
                     <option value="financeiro">Financeiro</option>
-                    <option value="tecnologia">Almoxarifado</option>
-                    <option value="administracao">Superintendência</option>
-                    <option value="administracao">Serviços Gerais</option>
+                    <option value="almoxarifado">Almoxarifado</option>
+                    <option value="superintendencia">Superintendência</option>
+                    <option value="servicosgerais">Serviços Gerais</option>
                     <option value="admin">Administrador</option>
                 </select>
             </div>
@@ -452,6 +584,12 @@
                             <i class="fas fa-chart-line"></i> Admin
                         </a>
                     </li>
+                    <li class="nav-item notificacao-badge" id="notificacaoItem" style="display: none;">
+                        <a class="nav-link" href="#" id="navNotificacoes">
+                            <i class="fas fa-bell"></i> 
+                            <span id="notificacaoCount" class="badge-count" style="display: none;">0</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <span class="user-badge" id="userBadge">
                             <i class="fas fa-user-circle"></i> <span id="userNameDisplay">Setor</span>
@@ -496,12 +634,19 @@
                                     <option value="software">Software</option>
                                     <option value="infraestrutura">Infraestrutura</option>
                                     <option value="pessoal">Pessoal</option>
+                                    <option value="alimentacao">Alimentação</option>
+                                    <option value="almoxarifado">Almoxarifado</option>
                                     <option value="outros">Outros</option>
                                 </select>
                             </div>
                             <div class="col-12">
                                 <label><i class="fas fa-align-left"></i> Descrição</label>
                                 <textarea class="form-control" id="demandaDescricao" rows="3" placeholder="Descreva a demanda..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label><i class="fas fa-paperclip"></i> Anexos (opcional)</label>
+                                <input type="file" class="form-control" id="demandaAnexo" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
+                                <small class="text-muted">Formatos permitidos: JPG, PNG, PDF, DOC, XLS</small>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-espep" id="btnSalvarDemanda">
@@ -536,13 +681,14 @@
                                     <th>Quantidade</th>
                                     <th>Categoria</th>
                                     <th>Descrição</th>
+                                    <th>Anexos</th>
                                     <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="demandasBody">
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <div class="loading-spinner"></div>
                                         <p class="mt-2 text-muted">Carregando demandas...</p>
                                     </td>
@@ -556,91 +702,220 @@
 
         <!-- ====== PÁGINA ADMIN ====== -->
         <div id="adminPage" style="display: none;">
-            <!-- Stats -->
-            <div class="row mb-4 fade-in">
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stat-number" id="totalDemandas">0</div>
-                                <div class="stat-label">Total Demandas</div>
-                            </div>
-                            <div class="stat-icon"><i class="fas fa-tasks"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card" style="border-left-color: #3498db;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stat-number" id="totalPorCategoria">0</div>
-                                <div class="stat-label">Categorias</div>
-                            </div>
-                            <div class="stat-icon"><i class="fas fa-tags"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card" style="border-left-color: #27ae60;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stat-number" id="totalQuantidade">0</div>
-                                <div class="stat-label">Total Itens</div>
-                            </div>
-                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card" style="border-left-color: #e74c3c;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="stat-number" id="totalSetores">0</div>
-                                <div class="stat-label">Setores</div>
-                            </div>
-                            <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
+            <!-- TABS ADMIN -->
+            <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tabDemandas" data-bs-toggle="tab" data-bs-target="#contentDemandas" type="button" role="tab">
+                        <i class="fas fa-tasks"></i> Demandas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tabSenhas" data-bs-toggle="tab" data-bs-target="#contentSenhas" type="button" role="tab">
+                        <i class="fas fa-key"></i> Senhas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tabHistorico" data-bs-toggle="tab" data-bs-target="#contentHistorico" type="button" role="tab">
+                        <i class="fas fa-history"></i> Histórico
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tabRelatorios" data-bs-toggle="tab" data-bs-target="#contentRelatorios" type="button" role="tab">
+                        <i class="fas fa-file-alt"></i> Relatórios
+                    </button>
+                </li>
+            </ul>
 
-            <!-- Tabela Admin -->
-            <div class="card-espep fade-in">
-                <div class="card-header">
-                    <i class="fas fa-database"></i> Todas as Demandas
-                    <div class="float-end">
-                        <button class="btn btn-sm btn-light me-2" id="btnFiltrarSetorAdmin">
-                            <i class="fas fa-filter"></i> Filtrar por Setor
-                        </button>
-                        <button class="btn btn-sm btn-success" id="btnExportarExcel">
-                            <i class="fas fa-file-excel"></i> Exportar Excel
-                        </button>
+            <div class="tab-content">
+                <!-- TAB DEMANDAS -->
+                <div class="tab-pane fade show active" id="contentDemandas" role="tabpanel">
+                    <!-- Stats -->
+                    <div class="row mb-4 fade-in">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-number" id="totalDemandas">0</div>
+                                        <div class="stat-label">Total Demandas</div>
+                                    </div>
+                                    <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card" style="border-left-color: #3498db;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-number" id="totalPorCategoria">0</div>
+                                        <div class="stat-label">Categorias</div>
+                                    </div>
+                                    <div class="stat-icon"><i class="fas fa-tags"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card" style="border-left-color: #27ae60;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-number" id="totalQuantidade">0</div>
+                                        <div class="stat-label">Total Itens</div>
+                                    </div>
+                                    <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card" style="border-left-color: #e74c3c;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-number" id="totalSetores">0</div>
+                                        <div class="stat-label">Setores</div>
+                                    </div>
+                                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela Admin -->
+                    <div class="card-espep fade-in">
+                        <div class="card-header">
+                            <i class="fas fa-database"></i> Todas as Demandas
+                            <div class="float-end">
+                                <button class="btn btn-sm btn-light me-2" id="btnFiltrarSetorAdmin">
+                                    <i class="fas fa-filter"></i> Filtrar
+                                </button>
+                                <button class="btn btn-sm btn-success" id="btnExportarExcel">
+                                    <i class="fas fa-file-excel"></i> Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-espep" id="tabelaAdmin">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Setor</th>
+                                            <th>Código</th>
+                                            <th>Quantidade</th>
+                                            <th>Categoria</th>
+                                            <th>Descrição</th>
+                                            <th>Anexos</th>
+                                            <th>Data</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminBody">
+                                        <tr>
+                                            <td colspan="9" class="text-center py-4">
+                                                <div class="loading-spinner"></div>
+                                                <p class="mt-2 text-muted">Carregando dados...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-espep" id="tabelaAdmin">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Setor</th>
-                                    <th>Código</th>
-                                    <th>Quantidade</th>
-                                    <th>Categoria</th>
-                                    <th>Descrição</th>
-                                    <th>Data</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminBody">
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        <div class="loading-spinner"></div>
-                                        <p class="mt-2 text-muted">Carregando dados...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                <!-- TAB SENHAS -->
+                <div class="tab-pane fade" id="contentSenhas" role="tabpanel">
+                    <div class="card-espep fade-in">
+                        <div class="card-header">
+                            <i class="fas fa-key"></i> Gerenciar Senhas dos Setores
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-4">
+                                <i class="fas fa-info-circle"></i> 
+                                Gerencie as senhas de acesso de cada setor.
+                            </p>
+                            
+                            <div id="senhasContainer">
+                                <div class="text-center py-4">
+                                    <div class="loading-spinner"></div>
+                                    <p class="mt-2 text-muted">Carregando senhas...</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button class="btn btn-espep" id="btnResetarSenhas">
+                                    <i class="fas fa-undo"></i> Resetar Todas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB HISTÓRICO -->
+                <div class="tab-pane fade" id="contentHistorico" role="tabpanel">
+                    <div class="card-espep fade-in">
+                        <div class="card-header">
+                            <i class="fas fa-history"></i> Histórico de Alterações
+                            <div class="float-end">
+                                <button class="btn btn-sm btn-light" id="btnLimparHistorico">
+                                    <i class="fas fa-trash"></i> Limpar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="historicoContainer">
+                                <div class="text-center py-4">
+                                    <div class="loading-spinner"></div>
+                                    <p class="mt-2 text-muted">Carregando histórico...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB RELATÓRIOS -->
+                <div class="tab-pane fade" id="contentRelatorios" role="tabpanel">
+                    <div class="card-espep fade-in">
+                        <div class="card-header">
+                            <i class="fas fa-file-alt"></i> Relatórios Avançados
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                            <h5>Relatório Mensal</h5>
+                                            <p class="text-muted">Exportar todas as demandas do mês atual em PDF</p>
+                                            <button class="btn btn-espep" id="btnRelatorioMensalPDF">
+                                                <i class="fas fa-file-pdf"></i> Gerar PDF
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+                                            <h5>Relatório por Setor</h5>
+                                            <p class="text-muted">Exportar demandas filtradas por setor em Excel</p>
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <select class="form-select" id="selectSetorRelatorio" style="max-width: 200px;">
+                                                    <option value="">Todos</option>
+                                                    <option value="nuset">NUSET</option>
+                                                    <option value="rh">RH</option>
+                                                    <option value="financeiro">Financeiro</option>
+                                                    <option value="almoxarifado">Almoxarifado</option>
+                                                    <option value="superintendencia">Superintendência</option>
+                                                    <option value="servicosgerais">Serviços Gerais</option>
+                                                </select>
+                                                <button class="btn btn-success" id="btnRelatorioSetorExcel">
+                                                    <i class="fas fa-file-excel"></i> Exportar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -650,10 +925,10 @@
 </div>
 
 <!-- ============================================ -->
-<!-- ====== MODAL EDITAR ====== -->
+<!-- ====== MODAL EDITAR DEMANDA ====== -->
 <!-- ============================================ -->
 <div class="modal fade" id="modalEditar" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" style="background: var(--espep-primary); color: white;">
                 <h5 class="modal-title"><i class="fas fa-edit"></i> Editar Demanda</h5>
@@ -676,14 +951,21 @@
                             <option value="servicos">Serviços</option>
                             <option value="maquinas">Máquinas</option>
                             <option value="software">Software</option>
-                            <option value="infraestrutura">Alimentação</option>
+                            <option value="infraestrutura">Infraestrutura</option>
                             <option value="pessoal">Pessoal</option>
-                            <option value="outros">Almoxarifado</option>
+                            <option value="alimentacao">Alimentação</option>
+                            <option value="almoxarifado">Almoxarifado</option>
+                            <option value="outros">Outros</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label>Descrição</label>
                         <textarea class="form-control" id="editDescricao" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Anexos</label>
+                        <div id="editAnexosContainer"></div>
+                        <input type="file" class="form-control mt-2" id="editAnexoNovo" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
                     </div>
                 </form>
             </div>
@@ -691,6 +973,67 @@
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button class="btn btn-espep" id="btnSalvarEdicao">
                     <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- ====== MODAL EDITAR SENHA ====== -->
+<!-- ============================================ -->
+<div class="modal fade" id="modalEditarSenha" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: var(--espep-primary); color: white;">
+                <h5 class="modal-title"><i class="fas fa-key"></i> Alterar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarSenhaForm">
+                    <input type="hidden" id="editSenhaSetor">
+                    <div class="mb-3">
+                        <label>Setor</label>
+                        <input type="text" class="form-control" id="editSenhaSetorNome" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label>Nova Senha</label>
+                        <input type="text" class="form-control" id="editSenhaNova" placeholder="Digite a nova senha" required minlength="4">
+                        <small class="text-muted">Mínimo 4 caracteres</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-espep" id="btnSalvarSenha">
+                    <i class="fas fa-save"></i> Salvar Senha
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- ====== MODAL NOTIFICAÇÕES ====== -->
+<!-- ============================================ -->
+<div class="modal fade" id="modalNotificacoes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: var(--espep-primary); color: white;">
+                <h5 class="modal-title"><i class="fas fa-bell"></i> Notificações</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="notificacoesContainer">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Nenhuma notificação</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button class="btn btn-espep" id="btnLimparNotificacoes">
+                    <i class="fas fa-check-double"></i> Marcar todas como lidas
                 </button>
             </div>
         </div>
@@ -714,7 +1057,7 @@
 
 <script>
 // =============================================
-// CONFIGURAÇÃO DO FIREBASE (APENAS BANCO DE DADOS)
+// CONFIGURAÇÃO DO FIREBASE
 // =============================================
 const firebaseConfig = {
     apiKey: "AIzaSyBXf5zPUu2gZZyscZg9GxAi_2Unt46X--M",
@@ -729,6 +1072,7 @@ const firebaseConfig = {
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 // =============================================
 // VARIÁVEIS GLOBAIS
@@ -738,6 +1082,26 @@ let demandas = [];
 let todasDemandas = [];
 let filtroCategoria = '';
 let filtroSetorAdmin = '';
+let senhasSetores = {};
+let notificacoes = [];
+let historico = [];
+let anexosDemanda = [];
+
+// LISTA DE SETORES
+const SETORES = [
+    'nuset', 'rh', 'financeiro', 'almoxarifado', 
+    'superintendencia', 'servicosgerais', 'admin'
+];
+
+const SETORES_LABELS = {
+    'nuset': 'NUSET',
+    'rh': 'RH',
+    'financeiro': 'Financeiro',
+    'almoxarifado': 'Almoxarifado',
+    'superintendencia': 'Superintendência',
+    'servicosgerais': 'Serviços Gerais',
+    'admin': 'Administrador'
+};
 
 // =============================================
 // FUNÇÕES DE NOTIFICAÇÃO
@@ -762,7 +1126,363 @@ function mostrarNotificacao(mensagem, tipo = 'success') {
 }
 
 // =============================================
-// LOGIN - SUPER SIMPLES
+// HISTÓRICO
+// =============================================
+async function registrarHistorico(acao, detalhes) {
+    try {
+        const historicoRef = db.collection('historico');
+        await historicoRef.add({
+            acao: acao,
+            setor: setorAtual,
+            setorNome: SETORES_LABELS[setorAtual] || setorAtual,
+            detalhes: detalhes,
+            data: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Erro ao registrar histórico:', error);
+    }
+}
+
+async function carregarHistorico() {
+    try {
+        const snapshot = await db.collection('historico')
+            .orderBy('data', 'desc')
+            .limit(100)
+            .get();
+        
+        historico = [];
+        snapshot.forEach(doc => {
+            historico.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderizarHistorico();
+    } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        renderizarHistorico();
+    }
+}
+
+function renderizarHistorico() {
+    const container = document.getElementById('historicoContainer');
+    container.innerHTML = '';
+    
+    if (historico.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Nenhum registro de histórico</p>
+            </div>
+        `;
+        return;
+    }
+    
+    historico.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'historico-item d-flex justify-content-between align-items-center';
+        div.innerHTML = `
+            <div>
+                <strong>${item.acao}</strong>
+                <br>
+                <small class="text-muted">
+                    <i class="fas fa-user"></i> ${item.setorNome} 
+                    <i class="fas fa-clock ms-2"></i> ${new Date(item.data).toLocaleString('pt-BR')}
+                </small>
+                ${item.detalhes ? `<br><small class="text-secondary">${item.detalhes}</small>` : ''}
+            </div>
+            <span class="badge bg-primary badge-historico">${item.setor}</span>
+        `;
+        container.appendChild(div);
+    });
+}
+
+document.getElementById('btnLimparHistorico').addEventListener('click', async function() {
+    if (!confirm('Tem certeza que deseja limpar todo o histórico?')) return;
+    
+    try {
+        const snapshot = await db.collection('historico').get();
+        const batch = db.batch();
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        mostrarNotificacao('Histórico limpo!', 'success');
+        carregarHistorico();
+    } catch (error) {
+        console.error('Erro ao limpar histórico:', error);
+        mostrarNotificacao('Erro ao limpar histórico', 'error');
+    }
+});
+
+// =============================================
+// NOTIFICAÇÕES
+// =============================================
+async function criarNotificacao(mensagem, tipo = 'info') {
+    try {
+        const notifRef = db.collection('notificacoes');
+        await notifRef.add({
+            mensagem: mensagem,
+            tipo: tipo,
+            lida: false,
+            data: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Erro ao criar notificação:', error);
+    }
+}
+
+async function carregarNotificacoes() {
+    try {
+        const snapshot = await db.collection('notificacoes')
+            .where('lida', '==', false)
+            .orderBy('data', 'desc')
+            .get();
+        
+        notificacoes = [];
+        snapshot.forEach(doc => {
+            notificacoes.push({ id: doc.id, ...doc.data() });
+        });
+        
+        atualizarBadgeNotificacoes();
+    } catch (error) {
+        console.error('Erro ao carregar notificações:', error);
+    }
+}
+
+function atualizarBadgeNotificacoes() {
+    const count = notificacoes.length;
+    const badge = document.getElementById('notificacaoCount');
+    const item = document.getElementById('notificacaoItem');
+    
+    if (count > 0) {
+        badge.style.display = 'inline';
+        badge.textContent = count;
+        item.style.display = 'block';
+    } else {
+        badge.style.display = 'none';
+        item.style.display = 'none';
+    }
+}
+
+// Escutar notificações em tempo real
+function ouvirNotificacoes() {
+    db.collection('notificacoes')
+        .where('lida', '==', false)
+        .onSnapshot((snapshot) => {
+            notificacoes = [];
+            snapshot.forEach(doc => {
+                notificacoes.push({ id: doc.id, ...doc.data() });
+            });
+            atualizarBadgeNotificacoes();
+            
+            // Mostrar toast para novas notificações
+            if (snapshot.docChanges().length > 0) {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        mostrarNotificacao(`🔔 ${data.mensagem}`, 'info');
+                    }
+                });
+            }
+        });
+}
+
+document.getElementById('navNotificacoes').addEventListener('click', function(e) {
+    e.preventDefault();
+    abrirModalNotificacoes();
+});
+
+function abrirModalNotificacoes() {
+    const container = document.getElementById('notificacoesContainer');
+    container.innerHTML = '';
+    
+    if (notificacoes.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <p class="text-muted">Todas as notificações lidas!</p>
+            </div>
+        `;
+    } else {
+        notificacoes.forEach(notif => {
+            const div = document.createElement('div');
+            div.className = 'historico-item';
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-circle text-primary me-2" style="font-size: 8px;"></i>
+                        ${notif.mensagem}
+                        <br>
+                        <small class="text-muted">${new Date(notif.data).toLocaleString('pt-BR')}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success btn-marcar-lida" data-id="${notif.id}">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        
+        document.querySelectorAll('.btn-marcar-lida').forEach(btn => {
+            btn.addEventListener('click', function() {
+                marcarNotificacaoLida(this.dataset.id);
+            });
+        });
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalNotificacoes')).show();
+}
+
+async function marcarNotificacaoLida(id) {
+    try {
+        await db.collection('notificacoes').doc(id).update({ lida: true });
+        carregarNotificacoes();
+        abrirModalNotificacoes();
+    } catch (error) {
+        console.error('Erro ao marcar notificação:', error);
+    }
+}
+
+document.getElementById('btnLimparNotificacoes').addEventListener('click', async function() {
+    try {
+        const snapshot = await db.collection('notificacoes')
+            .where('lida', '==', false)
+            .get();
+        
+        const batch = db.batch();
+        snapshot.forEach(doc => {
+            batch.update(doc.ref, { lida: true });
+        });
+        await batch.commit();
+        
+        carregarNotificacoes();
+        mostrarNotificacao('Todas as notificações marcadas como lidas!', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalNotificacoes')).hide();
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarNotificacao('Erro ao marcar notificações', 'error');
+    }
+});
+
+// =============================================
+// GERENCIAR SENHAS
+// =============================================
+async function carregarSenhas() {
+    try {
+        const docRef = db.collection('configuracoes').doc('senhas');
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            senhasSetores = doc.data();
+        } else {
+            senhasSetores = {};
+            SETORES.forEach(setor => {
+                senhasSetores[setor] = '123456';
+            });
+            await docRef.set(senhasSetores);
+        }
+        
+        renderizarSenhas();
+    } catch (error) {
+        console.error('Erro ao carregar senhas:', error);
+        SETORES.forEach(setor => {
+            senhasSetores[setor] = '123456';
+        });
+        renderizarSenhas();
+    }
+}
+
+function renderizarSenhas() {
+    const container = document.getElementById('senhasContainer');
+    container.innerHTML = '';
+    
+    SETORES.forEach(setor => {
+        const senha = senhasSetores[setor] || '123456';
+        const label = SETORES_LABELS[setor] || setor;
+        
+        const div = document.createElement('div');
+        div.className = 'senha-card d-flex justify-content-between align-items-center';
+        div.innerHTML = `
+            <div>
+                <div class="setor-nome"><i class="fas fa-building"></i> ${label}</div>
+                <div class="senha-atual">
+                    <i class="fas fa-lock"></i> Senha: <strong>${senha}</strong>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-warning btn-editar-senha" data-setor="${setor}">
+                    <i class="fas fa-edit"></i> Alterar
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    
+    document.querySelectorAll('.btn-editar-senha').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const setor = this.dataset.setor;
+            abrirModalEditarSenha(setor);
+        });
+    });
+}
+
+function abrirModalEditarSenha(setor) {
+    document.getElementById('editSenhaSetor').value = setor;
+    document.getElementById('editSenhaSetorNome').value = SETORES_LABELS[setor] || setor;
+    document.getElementById('editSenhaNova').value = '';
+    document.getElementById('editSenhaNova').focus();
+    
+    new bootstrap.Modal(document.getElementById('modalEditarSenha')).show();
+}
+
+document.getElementById('btnSalvarSenha').addEventListener('click', async function() {
+    const setor = document.getElementById('editSenhaSetor').value;
+    const novaSenha = document.getElementById('editSenhaNova').value.trim();
+    
+    if (!novaSenha || novaSenha.length < 4) {
+        mostrarNotificacao('A senha deve ter pelo menos 4 caracteres!', 'error');
+        return;
+    }
+    
+    try {
+        const senhaAntiga = senhasSetores[setor] || '123456';
+        senhasSetores[setor] = novaSenha;
+        await db.collection('configuracoes').doc('senhas').set(senhasSetores);
+        
+        await registrarHistorico(
+            `Senha alterada: ${SETORES_LABELS[setor]}`,
+            `Senha antiga: ${senhaAntiga} → Nova: ${novaSenha}`
+        );
+        
+        mostrarNotificacao(`Senha do setor ${SETORES_LABELS[setor]} atualizada! ✅`, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalEditarSenha')).hide();
+        renderizarSenhas();
+    } catch (error) {
+        console.error('Erro ao salvar senha:', error);
+        mostrarNotificacao('Erro ao salvar senha', 'error');
+    }
+});
+
+document.getElementById('btnResetarSenhas').addEventListener('click', async function() {
+    if (!confirm('Tem certeza que deseja resetar TODAS as senhas para 123456?')) return;
+    
+    try {
+        SETORES.forEach(setor => {
+            senhasSetores[setor] = '123456';
+        });
+        await db.collection('configuracoes').doc('senhas').set(senhasSetores);
+        
+        await registrarHistorico('Todas as senhas resetadas', 'Resetadas para 123456');
+        
+        mostrarNotificacao('Todas as senhas foram resetadas! 🔄', 'success');
+        renderizarSenhas();
+    } catch (error) {
+        console.error('Erro ao resetar senhas:', error);
+        mostrarNotificacao('Erro ao resetar senhas', 'error');
+    }
+});
+
+// =============================================
+// LOGIN
 // =============================================
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -775,8 +1495,9 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         return;
     }
     
-    if (senha !== '123456') {
-        mostrarNotificacao('Senha incorreta! Use 123456', 'error');
+    const senhaCorreta = senhasSetores[setor] || '123456';
+    if (senha !== senhaCorreta) {
+        mostrarNotificacao('Senha incorreta!', 'error');
         document.getElementById('loginSenha').value = '';
         document.getElementById('loginSenha').focus();
         return;
@@ -785,17 +1506,20 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     setorAtual = setor;
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('mainSystem').style.display = 'block';
-    document.getElementById('userNameDisplay').textContent = setor.toUpperCase();
+    document.getElementById('userNameDisplay').textContent = SETORES_LABELS[setor] || setor.toUpperCase();
     
     if (setor === 'admin') {
         document.getElementById('adminNavItem').style.display = 'block';
         document.getElementById('navAdmin').click();
+        carregarHistorico();
+        carregarNotificacoes();
+        ouvirNotificacoes();
     } else {
         document.getElementById('adminNavItem').style.display = 'none';
         document.getElementById('navDemandas').click();
     }
     
-    mostrarNotificacao(`Bem-vindo, ${setor.toUpperCase()}! 🎉`, 'success');
+    mostrarNotificacao(`Bem-vindo, ${SETORES_LABELS[setor] || setor.toUpperCase()}! 🎉`, 'success');
 });
 
 // =============================================
@@ -817,6 +1541,9 @@ document.getElementById('navAdmin').addEventListener('click', function(e) {
     document.getElementById('demandasPage').style.display = 'none';
     document.getElementById('adminPage').style.display = 'block';
     carregarAdmin();
+    carregarSenhas();
+    carregarHistorico();
+    carregarNotificacoes();
 });
 
 document.getElementById('btnLogout').addEventListener('click', function() {
@@ -830,21 +1557,20 @@ document.getElementById('btnLogout').addEventListener('click', function() {
 });
 
 // =============================================
-// CARREGAR DEMANDAS DO SETOR (SEM orderBy)
+// CARREGAR DEMANDAS
 // =============================================
 async function carregarDemandas() {
     try {
         const tbody = document.getElementById('demandasBody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center py-4">
+                <td colspan="8" class="text-center py-4">
                     <div class="loading-spinner"></div>
                     <p class="mt-2 text-muted">Carregando demandas...</p>
                 </td>
             </tr>
         `;
         
-        // SEM orderBy para evitar erro de índice
         const snapshot = await db.collection('demandas')
             .where('setor', '==', setorAtual)
             .get();
@@ -854,7 +1580,6 @@ async function carregarDemandas() {
             demandas.push({ id: doc.id, ...doc.data() });
         });
         
-        // Ordenar manualmente (mais recente primeiro)
         demandas.sort((a, b) => {
             if (a.data < b.data) return 1;
             if (a.data > b.data) return -1;
@@ -885,7 +1610,7 @@ function renderizarDemandas() {
     if (demandasFiltradas.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-muted py-4">
+                <td colspan="8" class="text-center text-muted py-4">
                     <i class="fas fa-inbox fa-2x d-block mb-2"></i>
                     ${filtroCategoria ? `Nenhuma demanda na categoria "${filtroCategoria}"` : 'Nenhuma demanda encontrada'}
                 </td>
@@ -902,6 +1627,7 @@ function renderizarDemandas() {
             <td>${demanda.quantidade || 0}</td>
             <td><span class="badge bg-info">${demanda.categoria}</span></td>
             <td>${demanda.descricao || ''}</td>
+            <td>${demanda.anexos ? `<i class="fas fa-paperclip"></i> ${demanda.anexos.length}` : '-'}</td>
             <td>${new Date(demanda.data).toLocaleDateString('pt-BR')}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-editar" data-id="${demanda.id}">
@@ -934,7 +1660,7 @@ function renderizarDemandas() {
 }
 
 // =============================================
-// ADICIONAR DEMANDA
+// ADICIONAR DEMANDA COM ANEXOS
 // =============================================
 document.getElementById('demandaForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -943,17 +1669,50 @@ document.getElementById('demandaForm').addEventListener('submit', async function
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
     
+    const arquivos = document.getElementById('demandaAnexo').files;
+    const anexosUrls = [];
+    
+    // Upload dos anexos
+    for (let i = 0; i < arquivos.length; i++) {
+        const file = arquivos[i];
+        const path = `anexos/${Date.now()}_${file.name}`;
+        const uploadTask = storage.ref(path).put(file);
+        
+        try {
+            await uploadTask;
+            const url = await storage.ref(path).getDownloadURL();
+            anexosUrls.push({ nome: file.name, url: url, path: path });
+        } catch (error) {
+            console.error('Erro no upload:', error);
+            mostrarNotificacao(`Erro ao enviar ${file.name}`, 'error');
+        }
+    }
+    
     const demanda = {
         setor: setorAtual,
         codigo: document.getElementById('demandaCodigo').value,
         quantidade: parseInt(document.getElementById('demandaQuantidade').value) || 0,
         categoria: document.getElementById('demandaCategoria').value,
         descricao: document.getElementById('demandaDescricao').value,
+        anexos: anexosUrls,
         data: new Date().toISOString()
     };
     
     try {
         await db.collection('demandas').add(demanda);
+        
+        // Registrar histórico
+        await registrarHistorico(
+            `Nova demanda criada: ${demanda.codigo}`,
+            `Setor: ${SETORES_LABELS[setorAtual]}, Categoria: ${demanda.categoria}, Quantidade: ${demanda.quantidade}`
+        );
+        
+        // Notificar admin
+        await criarNotificacao(
+            `📋 Nova demanda criada por ${SETORES_LABELS[setorAtual]}: ${demanda.codigo}`,
+            'nova_demanda'
+        );
+        
         mostrarNotificacao('Demanda adicionada! ✅', 'success');
         this.reset();
         await carregarDemandas();
@@ -976,6 +1735,23 @@ function abrirModalEditar(demanda) {
     document.getElementById('editCategoria').value = demanda.categoria || 'servicos';
     document.getElementById('editDescricao').value = demanda.descricao || '';
     
+    // Mostrar anexos existentes
+    const container = document.getElementById('editAnexosContainer');
+    container.innerHTML = '';
+    if (demanda.anexos && demanda.anexos.length > 0) {
+        demanda.anexos.forEach((anexo, index) => {
+            const div = document.createElement('div');
+            div.className = 'anexo-item';
+            div.innerHTML = `
+                <i class="fas fa-file"></i> ${anexo.nome}
+                <button class="btn-remove-anexo" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        });
+    }
+    
     new bootstrap.Modal(document.getElementById('modalEditar')).show();
 }
 
@@ -988,8 +1764,36 @@ document.getElementById('btnSalvarEdicao').addEventListener('click', async funct
         descricao: document.getElementById('editDescricao').value
     };
     
+    // Upload de novos anexos
+    const arquivosNovos = document.getElementById('editAnexoNovo').files;
+    const anexosNovos = [];
+    
+    for (let i = 0; i < arquivosNovos.length; i++) {
+        const file = arquivosNovos[i];
+        const path = `anexos/${Date.now()}_${file.name}`;
+        const uploadTask = storage.ref(path).put(file);
+        
+        try {
+            await uploadTask;
+            const url = await storage.ref(path).getDownloadURL();
+            anexosNovos.push({ nome: file.name, url: url, path: path });
+        } catch (error) {
+            console.error('Erro no upload:', error);
+        }
+    }
+    
+    if (anexosNovos.length > 0) {
+        dadosAtualizados.anexos = anexosNovos;
+    }
+    
     try {
         await db.collection('demandas').doc(id).update(dadosAtualizados);
+        
+        await registrarHistorico(
+            `Demanda atualizada: ${dadosAtualizados.codigo}`,
+            `Categoria: ${dadosAtualizados.categoria}, Quantidade: ${dadosAtualizados.quantidade}`
+        );
+        
         mostrarNotificacao('Atualizado! ✅', 'success');
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
         await carregarDemandas();
@@ -1007,7 +1811,14 @@ document.getElementById('btnSalvarEdicao').addEventListener('click', async funct
 // =============================================
 async function excluirDemanda(id) {
     try {
+        const demanda = demandas.find(d => d.id === id);
         await db.collection('demandas').doc(id).delete();
+        
+        await registrarHistorico(
+            `Demanda excluída: ${demanda?.codigo || id}`,
+            `Setor: ${SETORES_LABELS[setorAtual]}`
+        );
+        
         mostrarNotificacao('Excluída! 🗑️', 'success');
         await carregarDemandas();
         if (setorAtual === 'admin') {
@@ -1020,7 +1831,7 @@ async function excluirDemanda(id) {
 }
 
 // =============================================
-// ADMIN (SEM orderBy)
+// ADMIN
 // =============================================
 async function carregarAdmin() {
     if (setorAtual !== 'admin') return;
@@ -1029,7 +1840,7 @@ async function carregarAdmin() {
         const tbody = document.getElementById('adminBody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-4">
+                <td colspan="9" class="text-center py-4">
                     <div class="loading-spinner"></div>
                     <p class="mt-2 text-muted">Carregando dados...</p>
                 </td>
@@ -1049,7 +1860,6 @@ async function carregarAdmin() {
             todasDemandas.push({ id: doc.id, ...doc.data() });
         });
         
-        // Ordenar manualmente (mais recente primeiro)
         todasDemandas.sort((a, b) => {
             if (a.data < b.data) return 1;
             if (a.data > b.data) return -1;
@@ -1071,7 +1881,7 @@ function renderizarAdmin() {
     if (todasDemandas.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="9" class="text-center text-muted py-4">
                     <i class="fas fa-inbox fa-2x d-block mb-2"></i>
                     Nenhuma demanda
                 </td>
@@ -1084,11 +1894,12 @@ function renderizarAdmin() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${index + 1}</td>
-            <td><span class="badge bg-primary">${demanda.setor}</span></td>
+            <td><span class="badge bg-primary">${SETORES_LABELS[demanda.setor] || demanda.setor}</span></td>
             <td><strong>${demanda.codigo || 'SEM-COD'}</strong></td>
             <td>${demanda.quantidade || 0}</td>
             <td><span class="badge bg-info">${demanda.categoria}</span></td>
             <td>${demanda.descricao || ''}</td>
+            <td>${demanda.anexos ? `<i class="fas fa-paperclip"></i> ${demanda.anexos.length}` : '-'}</td>
             <td>${new Date(demanda.data).toLocaleDateString('pt-BR')}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-editar-admin" data-id="${demanda.id}">
@@ -1142,7 +1953,7 @@ document.getElementById('btnExportarExcel').addEventListener('click', function()
     }
     
     const dados = todasDemandas.map(d => ({
-        'Setor': d.setor,
+        'Setor': SETORES_LABELS[d.setor] || d.setor,
         'Código': d.codigo || '',
         'Quantidade': d.quantidade || 0,
         'Categoria': d.categoria,
@@ -1158,10 +1969,98 @@ document.getElementById('btnExportarExcel').addEventListener('click', function()
 });
 
 // =============================================
+// RELATÓRIO PDF
+// =============================================
+document.getElementById('btnRelatorioMensalPDF').addEventListener('click', function() {
+    if (todasDemandas.length === 0) {
+        mostrarNotificacao('Sem dados para gerar relatório!', 'error');
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    
+    // Título
+    doc.setFontSize(18);
+    doc.setTextColor(0, 51, 102);
+    doc.text('ESPEP - Relatório de Demandas', 14, 20);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    doc.text(`Data: ${hoje}`, 14, 30);
+    doc.text(`Total de Demandas: ${todasDemandas.length}`, 14, 37);
+    
+    // Tabela
+    const headers = [['#', 'Setor', 'Código', 'Qtd', 'Categoria', 'Descrição', 'Data']];
+    const dados = todasDemandas.map((d, i) => [
+        i + 1,
+        SETORES_LABELS[d.setor] || d.setor,
+        d.codigo || '',
+        d.quantidade || 0,
+        d.categoria,
+        d.descricao || '',
+        new Date(d.data).toLocaleDateString('pt-BR')
+    ]);
+    
+    doc.autoTable({
+        head: headers,
+        body: dados,
+        startY: 45,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [0, 51, 102] },
+        columnStyles: {
+            0: { cellWidth: 15 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 30 },
+            3: { cellWidth: 20 },
+            4: { cellWidth: 30 },
+            5: { cellWidth: 60 },
+            6: { cellWidth: 25 }
+        }
+    });
+    
+    doc.save(`relatorio_demandas_${new Date().toISOString().split('T')[0]}.pdf`);
+    mostrarNotificacao('PDF gerado com sucesso! 📄', 'success');
+});
+
+// =============================================
+// RELATÓRIO POR SETOR EXCEL
+// =============================================
+document.getElementById('btnRelatorioSetorExcel').addEventListener('click', function() {
+    const setorFiltro = document.getElementById('selectSetorRelatorio').value;
+    
+    let dadosFiltrados = todasDemandas;
+    if (setorFiltro) {
+        dadosFiltrados = todasDemandas.filter(d => d.setor === setorFiltro);
+    }
+    
+    if (dadosFiltrados.length === 0) {
+        mostrarNotificacao('Nenhum dado para o setor selecionado!', 'error');
+        return;
+    }
+    
+    const dados = dadosFiltrados.map(d => ({
+        'Setor': SETORES_LABELS[d.setor] || d.setor,
+        'Código': d.codigo || '',
+        'Quantidade': d.quantidade || 0,
+        'Categoria': d.categoria,
+        'Descrição': d.descricao || '',
+        'Data': new Date(d.data).toLocaleDateString('pt-BR')
+    }));
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(dados);
+    XLSX.utils.book_append_sheet(wb, ws, 'Demandas');
+    XLSX.writeFile(wb, `relatorio_${setorFiltro || 'todos'}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    mostrarNotificacao('Relatório exportado! 📊', 'success');
+});
+
+// =============================================
 // FILTROS
 // =============================================
 document.getElementById('btnFiltrarCategoria').addEventListener('click', function() {
-    const categoria = prompt('Categoria (servicos, maquinas, software, infraestrutura, pessoal, outros):');
+    const categoria = prompt('Categoria (servicos, maquinas, software, infraestrutura, pessoal, alimentacao, almoxarifado, outros):');
     if (categoria === null) return;
     
     if (categoria.trim() === '') {
@@ -1178,7 +2077,7 @@ document.getElementById('btnLimparFiltro').addEventListener('click', function() 
 });
 
 document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', function() {
-    const setor = prompt('Setor (nuset, rh, financeiro, tecnologia, administracao):');
+    const setor = prompt('Setor (nuset, rh, financeiro, almoxarifado, superintendencia, servicosgerais):');
     if (setor === null) return;
     
     if (setor.trim() === '') {
@@ -1192,10 +2091,13 @@ document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', functi
 // =============================================
 // INICIALIZAR
 // =============================================
-console.log('🚀 ESPEP Sistema de Demandas');
-console.log('💡 Senha: 123456');
-console.log('👤 Setores: nuset, rh, financeiro, tecnologia, administracao, admin');
-console.log('✅ Versão sem orderBy - funcionando sem índices!');
+console.log('🚀 ESPEP Sistema de Demandas - PCA 2027');
+console.log('👤 Setores:', Object.values(SETORES_LABELS).join(', '));
+console.log('✅ Versão com: Histórico | Notificações | Anexos | Relatórios');
+console.log('📊 Relatórios: PDF e Excel disponíveis no Admin');
+
+// Carregar senhas antes do login
+carregarSenhas();
 </script>
 
 </body>
