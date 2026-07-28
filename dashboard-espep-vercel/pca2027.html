@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESPEP - Sistema de Demandas</title>
+    <title>ESPEP - PCA 2027</title>
     
     <!-- Firebase apenas para o banco de dados -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -390,7 +390,7 @@
     <div class="login-card fade-in">
         <div class="logo">
             <img src="img/LOGOESPEP.png" alt="ESPEP Logo">
-            <h3>Sistema de Demandas</h3>
+            <h3>PCA 2027</h3>
             <p>ESPEP - Escola de Formação</p>
         </div>
         
@@ -402,15 +402,15 @@
                     <option value="nuset">NUSET</option>
                     <option value="rh">RH</option>
                     <option value="financeiro">Financeiro</option>
-                    <option value="tecnologia">Tecnologia</option>
-                    <option value="administracao">Administração</option>
+                    <option value="tecnologia">Almoxarifado</option>
+                    <option value="administracao">Superintendência</option>
+                    <option value="administracao">Serviços Gerais</option>
                     <option value="admin">Administrador</option>
                 </select>
             </div>
             <div class="mb-3">
                 <label class="form-label"><i class="fas fa-lock"></i> Senha</label>
                 <input type="password" class="form-control" id="loginSenha" placeholder="Digite sua senha" required>
-                <small class="text-muted">💡 Senha padrão: <strong>123456</strong></small>
             </div>
             <button type="submit" class="btn btn-espep w-100" id="btnLogin">
                 <i class="fas fa-sign-in-alt"></i> Entrar
@@ -676,9 +676,9 @@
                             <option value="servicos">Serviços</option>
                             <option value="maquinas">Máquinas</option>
                             <option value="software">Software</option>
-                            <option value="infraestrutura">Infraestrutura</option>
+                            <option value="infraestrutura">Alimentação</option>
                             <option value="pessoal">Pessoal</option>
-                            <option value="outros">Outros</option>
+                            <option value="outros">Almoxarifado</option>
                         </select>
                     </div>
                     <div class="mb-3">
