@@ -8,7 +8,6 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <!-- Bibliotecas -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -446,29 +445,6 @@
             100% { transform: scale(1); }
         }
 
-        /* ===== ANEXOS ===== */
-        .anexo-item {
-            display: inline-block;
-            background: #f8f9fa;
-            padding: 5px 12px;
-            border-radius: 50px;
-            margin: 3px;
-            font-size: 0.85rem;
-        }
-
-        .anexo-item i {
-            margin-right: 5px;
-            color: var(--espep-accent);
-        }
-
-        .anexo-item .btn-remove-anexo {
-            background: none;
-            border: none;
-            color: #e74c3c;
-            margin-left: 5px;
-            cursor: pointer;
-        }
-
         /* ===== RESPONSIVO ===== */
         @media (max-width: 768px) {
             .navbar-espep .navbar-brand {
@@ -644,11 +620,6 @@
                                 <textarea class="form-control" id="demandaDescricao" rows="3" placeholder="Descreva a demanda..." required></textarea>
                             </div>
                             <div class="col-12">
-                                <label><i class="fas fa-paperclip"></i> Anexos (opcional)</label>
-                                <input type="file" class="form-control" id="demandaAnexo" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
-                                <small class="text-muted">Formatos permitidos: JPG, PNG, PDF, DOC, XLS</small>
-                            </div>
-                            <div class="col-12">
                                 <button type="submit" class="btn btn-espep" id="btnSalvarDemanda">
                                     <i class="fas fa-save"></i> Salvar Demanda
                                 </button>
@@ -681,14 +652,13 @@
                                     <th>Quantidade</th>
                                     <th>Categoria</th>
                                     <th>Descrição</th>
-                                    <th>Anexos</th>
                                     <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="demandasBody">
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">
+                                    <td colspan="7" class="text-center py-4">
                                         <div class="loading-spinner"></div>
                                         <p class="mt-2 text-muted">Carregando demandas...</p>
                                     </td>
@@ -802,14 +772,13 @@
                                             <th>Quantidade</th>
                                             <th>Categoria</th>
                                             <th>Descrição</th>
-                                            <th>Anexos</th>
                                             <th>Data</th>
                                             <th>Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody id="adminBody">
                                         <tr>
-                                            <td colspan="9" class="text-center py-4">
+                                            <td colspan="8" class="text-center py-4">
                                                 <div class="loading-spinner"></div>
                                                 <p class="mt-2 text-muted">Carregando dados...</p>
                                             </td>
@@ -928,7 +897,7 @@
 <!-- ====== MODAL EDITAR DEMANDA ====== -->
 <!-- ============================================ -->
 <div class="modal fade" id="modalEditar" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header" style="background: var(--espep-primary); color: white;">
                 <h5 class="modal-title"><i class="fas fa-edit"></i> Editar Demanda</h5>
@@ -961,11 +930,6 @@
                     <div class="mb-3">
                         <label>Descrição</label>
                         <textarea class="form-control" id="editDescricao" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label>Anexos</label>
-                        <div id="editAnexosContainer"></div>
-                        <input type="file" class="form-control mt-2" id="editAnexoNovo" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx">
                     </div>
                 </form>
             </div>
@@ -1072,7 +1036,6 @@ const firebaseConfig = {
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 // =============================================
 // VARIÁVEIS GLOBAIS
@@ -1085,7 +1048,6 @@ let filtroSetorAdmin = '';
 let senhasSetores = {};
 let notificacoes = [];
 let historico = [];
-let anexosDemanda = [];
 
 // LISTA DE SETORES
 const SETORES = [
@@ -1274,7 +1236,6 @@ function ouvirNotificacoes() {
             });
             atualizarBadgeNotificacoes();
             
-            // Mostrar toast para novas notificações
             if (snapshot.docChanges().length > 0) {
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
@@ -1564,7 +1525,7 @@ async function carregarDemandas() {
         const tbody = document.getElementById('demandasBody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-4">
+                <td colspan="7" class="text-center py-4">
                     <div class="loading-spinner"></div>
                     <p class="mt-2 text-muted">Carregando demandas...</p>
                 </td>
@@ -1610,7 +1571,7 @@ function renderizarDemandas() {
     if (demandasFiltradas.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="7" class="text-center text-muted py-4">
                     <i class="fas fa-inbox fa-2x d-block mb-2"></i>
                     ${filtroCategoria ? `Nenhuma demanda na categoria "${filtroCategoria}"` : 'Nenhuma demanda encontrada'}
                 </td>
@@ -1627,7 +1588,6 @@ function renderizarDemandas() {
             <td>${demanda.quantidade || 0}</td>
             <td><span class="badge bg-info">${demanda.categoria}</span></td>
             <td>${demanda.descricao || ''}</td>
-            <td>${demanda.anexos ? `<i class="fas fa-paperclip"></i> ${demanda.anexos.length}` : '-'}</td>
             <td>${new Date(demanda.data).toLocaleDateString('pt-BR')}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-editar" data-id="${demanda.id}">
@@ -1660,7 +1620,7 @@ function renderizarDemandas() {
 }
 
 // =============================================
-// ADICIONAR DEMANDA COM ANEXOS
+// ADICIONAR DEMANDA
 // =============================================
 document.getElementById('demandaForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -1669,45 +1629,23 @@ document.getElementById('demandaForm').addEventListener('submit', async function
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
     
-    const arquivos = document.getElementById('demandaAnexo').files;
-    const anexosUrls = [];
-    
-    // Upload dos anexos
-    for (let i = 0; i < arquivos.length; i++) {
-        const file = arquivos[i];
-        const path = `anexos/${Date.now()}_${file.name}`;
-        const uploadTask = storage.ref(path).put(file);
-        
-        try {
-            await uploadTask;
-            const url = await storage.ref(path).getDownloadURL();
-            anexosUrls.push({ nome: file.name, url: url, path: path });
-        } catch (error) {
-            console.error('Erro no upload:', error);
-            mostrarNotificacao(`Erro ao enviar ${file.name}`, 'error');
-        }
-    }
-    
     const demanda = {
         setor: setorAtual,
         codigo: document.getElementById('demandaCodigo').value,
         quantidade: parseInt(document.getElementById('demandaQuantidade').value) || 0,
         categoria: document.getElementById('demandaCategoria').value,
         descricao: document.getElementById('demandaDescricao').value,
-        anexos: anexosUrls,
         data: new Date().toISOString()
     };
     
     try {
         await db.collection('demandas').add(demanda);
         
-        // Registrar histórico
         await registrarHistorico(
             `Nova demanda criada: ${demanda.codigo}`,
             `Setor: ${SETORES_LABELS[setorAtual]}, Categoria: ${demanda.categoria}, Quantidade: ${demanda.quantidade}`
         );
         
-        // Notificar admin
         await criarNotificacao(
             `📋 Nova demanda criada por ${SETORES_LABELS[setorAtual]}: ${demanda.codigo}`,
             'nova_demanda'
@@ -1735,23 +1673,6 @@ function abrirModalEditar(demanda) {
     document.getElementById('editCategoria').value = demanda.categoria || 'servicos';
     document.getElementById('editDescricao').value = demanda.descricao || '';
     
-    // Mostrar anexos existentes
-    const container = document.getElementById('editAnexosContainer');
-    container.innerHTML = '';
-    if (demanda.anexos && demanda.anexos.length > 0) {
-        demanda.anexos.forEach((anexo, index) => {
-            const div = document.createElement('div');
-            div.className = 'anexo-item';
-            div.innerHTML = `
-                <i class="fas fa-file"></i> ${anexo.nome}
-                <button class="btn-remove-anexo" data-index="${index}">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            container.appendChild(div);
-        });
-    }
-    
     new bootstrap.Modal(document.getElementById('modalEditar')).show();
 }
 
@@ -1763,28 +1684,6 @@ document.getElementById('btnSalvarEdicao').addEventListener('click', async funct
         categoria: document.getElementById('editCategoria').value,
         descricao: document.getElementById('editDescricao').value
     };
-    
-    // Upload de novos anexos
-    const arquivosNovos = document.getElementById('editAnexoNovo').files;
-    const anexosNovos = [];
-    
-    for (let i = 0; i < arquivosNovos.length; i++) {
-        const file = arquivosNovos[i];
-        const path = `anexos/${Date.now()}_${file.name}`;
-        const uploadTask = storage.ref(path).put(file);
-        
-        try {
-            await uploadTask;
-            const url = await storage.ref(path).getDownloadURL();
-            anexosNovos.push({ nome: file.name, url: url, path: path });
-        } catch (error) {
-            console.error('Erro no upload:', error);
-        }
-    }
-    
-    if (anexosNovos.length > 0) {
-        dadosAtualizados.anexos = anexosNovos;
-    }
     
     try {
         await db.collection('demandas').doc(id).update(dadosAtualizados);
@@ -1840,7 +1739,7 @@ async function carregarAdmin() {
         const tbody = document.getElementById('adminBody');
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center py-4">
+                <td colspan="8" class="text-center py-4">
                     <div class="loading-spinner"></div>
                     <p class="mt-2 text-muted">Carregando dados...</p>
                 </td>
@@ -1881,7 +1780,7 @@ function renderizarAdmin() {
     if (todasDemandas.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center text-muted py-4">
+                <td colspan="8" class="text-center text-muted py-4">
                     <i class="fas fa-inbox fa-2x d-block mb-2"></i>
                     Nenhuma demanda
                 </td>
@@ -1899,7 +1798,6 @@ function renderizarAdmin() {
             <td>${demanda.quantidade || 0}</td>
             <td><span class="badge bg-info">${demanda.categoria}</span></td>
             <td>${demanda.descricao || ''}</td>
-            <td>${demanda.anexos ? `<i class="fas fa-paperclip"></i> ${demanda.anexos.length}` : '-'}</td>
             <td>${new Date(demanda.data).toLocaleDateString('pt-BR')}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-editar-admin" data-id="${demanda.id}">
@@ -1980,7 +1878,6 @@ document.getElementById('btnRelatorioMensalPDF').addEventListener('click', funct
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
     
-    // Título
     doc.setFontSize(18);
     doc.setTextColor(0, 51, 102);
     doc.text('ESPEP - Relatório de Demandas', 14, 20);
@@ -1991,7 +1888,6 @@ document.getElementById('btnRelatorioMensalPDF').addEventListener('click', funct
     doc.text(`Data: ${hoje}`, 14, 30);
     doc.text(`Total de Demandas: ${todasDemandas.length}`, 14, 37);
     
-    // Tabela
     const headers = [['#', 'Setor', 'Código', 'Qtd', 'Categoria', 'Descrição', 'Data']];
     const dados = todasDemandas.map((d, i) => [
         i + 1,
@@ -2093,10 +1989,9 @@ document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', functi
 // =============================================
 console.log('🚀 ESPEP Sistema de Demandas - PCA 2027');
 console.log('👤 Setores:', Object.values(SETORES_LABELS).join(', '));
-console.log('✅ Versão com: Histórico | Notificações | Anexos | Relatórios');
+console.log('✅ Versão com: Histórico | Notificações | Relatórios');
 console.log('📊 Relatórios: PDF e Excel disponíveis no Admin');
 
-// Carregar senhas antes do login
 carregarSenhas();
 </script>
 
