@@ -320,6 +320,10 @@
             color: #e74c3c !important;
         }
 
+        .localizacao-status .text-warning {
+            color: #f39c12 !important;
+        }
+
         /* ===== ADMIN DASHBOARD ===== */
         .stat-card {
             background: white;
@@ -555,7 +559,7 @@
         
         <div class="text-center mt-3">
             <small class="text-muted">
-                <i class="fas fa-shield-alt"></i> Sistema ESPEP
+                <i class="fas fa-shield-alt"></i> Sistema ESPEP - Acesso restrito à João Pessoa
             </small>
         </div>
     </div>
@@ -1121,6 +1125,13 @@ let notificacoes = [];
 let historico = [];
 let localizacaoAtual = null;
 let localizacoes = [];
+let localizacaoVerificada = false;
+let localizacaoPermitida = false;
+
+// Coordenadas de João Pessoa (aproximado - Centro)
+const JOAO_PESSOA_LAT = -7.1195;
+const JOAO_PESSOA_LNG = -34.8450;
+const RAIO_KM = 15; // Raio de 15km para considerar "em João Pessoa"
 
 // LISTA DE SETORES
 const SETORES = [
@@ -1139,6 +1150,21 @@ const SETORES_LABELS = {
 };
 
 // =============================================
+// FUNÇÃO PARA CALCULAR DISTÂNCIA (Haversine)
+// =============================================
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Raio da Terra em km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// =============================================
 // LOCALIZAÇÃO
 // =============================================
 function obterLocalizacao() {
@@ -1148,6 +1174,8 @@ function obterLocalizacao() {
     if (!navigator.geolocation) {
         textoSpan.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Geolocalização não suportada';
         statusDiv.querySelector('i').className = 'fas fa-exclamation-triangle text-danger';
+        localizacaoVerificada = true;
+        localizacaoPermitida = false;
         return;
     }
     
@@ -1156,55 +1184,69 @@ function obterLocalizacao() {
             const { latitude, longitude } = position.coords;
             localizacaoAtual = { latitude, longitude };
             
-            // Buscar endereço pela API de geocoding reversa
+            // Verificar se está em João Pessoa
+            const distancia = calcularDistancia(latitude, longitude, JOAO_PESSOA_LAT, JOAO_PESSOA_LNG);
+            const estaEmJoaoPessoa = distancia <= RAIO_KM;
+            localizacaoPermitida = estaEmJoaoPessoa;
+            localizacaoVerificada = true;
+            
+            // Buscar endereço
+            let endereco = '';
             try {
                 const response = await fetch(
                     `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
                 );
                 const data = await response.json();
-                
-                let endereco = '';
                 if (data.display_name) {
                     endereco = data.display_name.split(', ').slice(0, 3).join(', ');
                 }
-                
-                textoSpan.innerHTML = `
-                    <i class="fas fa-check-circle text-success"></i> 
-                    Localização obtida: ${endereco || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
-                `;
-                statusDiv.querySelector('i').className = 'fas fa-check-circle text-success';
-                
-                // Salvar no banco
-                await salvarLocalizacao(setorAtual || 'anonimo', latitude, longitude, endereco);
-                
             } catch (error) {
                 console.error('Erro ao obter endereço:', error);
+            }
+            
+            // Atualizar UI
+            if (estaEmJoaoPessoa) {
                 textoSpan.innerHTML = `
                     <i class="fas fa-check-circle text-success"></i> 
-                    Localização: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}
+                    ✅ Localização em João Pessoa - ${endereco || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
+                    <br><small class="text-muted">Distância: ${distancia.toFixed(1)}km do centro</small>
                 `;
                 statusDiv.querySelector('i').className = 'fas fa-check-circle text-success';
+            } else {
+                textoSpan.innerHTML = `
+                    <i class="fas fa-times-circle text-danger"></i> 
+                    ❌ Acesso bloqueado! Você precisa estar em João Pessoa.
+                    <br><small class="text-muted">Distância: ${distancia.toFixed(1)}km do centro (limite: ${RAIO_KM}km)</small>
+                `;
+                statusDiv.querySelector('i').className = 'fas fa-times-circle text-danger';
+            }
+            
+            // Salvar localização no banco
+            if (setorAtual && setorAtual !== '') {
+                await salvarLocalizacao(setorAtual, latitude, longitude, endereco, estaEmJoaoPessoa);
             }
         },
         function(error) {
             console.error('Erro de geolocalização:', error);
             let mensagem = 'Localização não disponível';
-            if (error.code === 1) mensagem = 'Permissão negada pelo usuário';
-            else if (error.code === 2) mensagem = 'Localização indisponível';
-            else if (error.code === 3) mensagem = 'Tempo esgotado';
+            if (error.code === 1) mensagem = 'Permissão negada pelo usuário - Acesso bloqueado';
+            else if (error.code === 2) mensagem = 'Localização indisponível - Acesso bloqueado';
+            else if (error.code === 3) mensagem = 'Tempo esgotado - Tente novamente';
             
             textoSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger"></i> ${mensagem}`;
             statusDiv.querySelector('i').className = 'fas fa-exclamation-triangle text-danger';
+            localizacaoVerificada = true;
+            localizacaoPermitida = false;
         },
         {
             enableHighAccuracy: true,
-            timeout: 10000,
+            timeout: 15000,
             maximumAge: 0
         }
     );
 }
 
-async function salvarLocalizacao(setor, latitude, longitude, endereco) {
+async function salvarLocalizacao(setor, latitude, longitude, endereco, permitida) {
     try {
         const ipResponse = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipResponse.json();
@@ -1217,10 +1259,11 @@ async function salvarLocalizacao(setor, latitude, longitude, endereco) {
             longitude: longitude,
             endereco: endereco || '',
             ip: ip,
+            permitida: permitida,
             data: new Date().toISOString()
         });
         
-        console.log('📍 Localização registrada:', { setor, latitude, longitude, ip });
+        console.log('📍 Localização registrada:', { setor, latitude, longitude, permitida, ip });
     } catch (error) {
         console.error('Erro ao salvar localização:', error);
     }
@@ -1261,6 +1304,10 @@ function renderizarLocalizacoes() {
     }
     
     localizacoes.forEach((item, index) => {
+        const statusBadge = item.permitida !== false ? 
+            '<span class="badge bg-success">✅ Permitido</span>' : 
+            '<span class="badge bg-danger">❌ Bloqueado</span>';
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${index + 1}</td>
@@ -1270,9 +1317,7 @@ function renderizarLocalizacoes() {
             <td>
                 ${item.endereco || `${item.latitude?.toFixed(6)}, ${item.longitude?.toFixed(6)}` || 'N/A'}
             </td>
-            <td>
-                <span class="badge bg-success">✅ Confirmado</span>
-            </td>
+            <td>${statusBadge}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -1290,7 +1335,8 @@ document.getElementById('btnExportarLocalizacao').addEventListener('click', func
         'IP': d.ip || 'N/A',
         'Latitude': d.latitude || 'N/A',
         'Longitude': d.longitude || 'N/A',
-        'Endereço': d.endereco || 'N/A'
+        'Endereço': d.endereco || 'N/A',
+        'Status': d.permitida !== false ? 'Permitido' : 'Bloqueado'
     }));
     
     const wb = XLSX.utils.book_new();
@@ -1677,7 +1723,7 @@ document.getElementById('btnResetarSenhas').addEventListener('click', async func
 });
 
 // =============================================
-// LOGIN
+// LOGIN COM VERIFICAÇÃO DE LOCALIZAÇÃO
 // =============================================
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -1687,6 +1733,17 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     
     if (!setor) {
         mostrarNotificacao('Selecione um setor!', 'error');
+        return;
+    }
+    
+    // VERIFICAR LOCALIZAÇÃO
+    if (!localizacaoVerificada) {
+        mostrarNotificacao('⚠️ Aguarde a verificação de localização...', 'error');
+        return;
+    }
+    
+    if (!localizacaoPermitida) {
+        mostrarNotificacao('❌ Acesso bloqueado! Você precisa estar em João Pessoa para acessar o sistema.', 'error');
         return;
     }
     
@@ -1700,13 +1757,14 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     
     setorAtual = setor;
     
-    // Salvar localização do login
+    // Salvar localização do login (já foi salva antes, mas vamos garantir)
     if (localizacaoAtual) {
         await salvarLocalizacao(
             setor,
             localizacaoAtual.latitude,
             localizacaoAtual.longitude,
-            document.getElementById('localizacaoTexto').textContent || ''
+            document.getElementById('localizacaoTexto').textContent || '',
+            true
         );
     }
     
@@ -1762,6 +1820,8 @@ document.getElementById('btnLogout').addEventListener('click', function() {
         document.getElementById('loginSenha').value = '';
         mostrarNotificacao('Você saiu do sistema.', 'info');
         // Reiniciar localização
+        localizacaoVerificada = false;
+        localizacaoPermitida = false;
         obterLocalizacao();
     }
 });
@@ -2237,9 +2297,9 @@ document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', functi
 // INICIALIZAR
 // =============================================
 console.log('🚀 ESPEP Sistema de Demandas - PCA 2027');
+console.log('📍 Acesso restrito à João Pessoa - PB');
+console.log(`📍 Raio de ${RAIO_KM}km do centro`);
 console.log('👤 Setores:', Object.values(SETORES_LABELS).join(', '));
-console.log('📍 Localização será solicitada no login');
-console.log('📊 Relatórios: PDF e Excel disponíveis no Admin');
 
 // Carregar senhas e iniciar localização
 carregarSenhas();
