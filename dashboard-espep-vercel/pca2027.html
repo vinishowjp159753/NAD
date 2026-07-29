@@ -295,6 +295,31 @@
             font-size: 0.9rem;
         }
 
+        /* ===== LOCALIZAÇÃO ===== */
+        .localizacao-status {
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            margin-top: 10px;
+        }
+
+        .localizacao-status .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .localizacao-status .text-success {
+            color: #27ae60 !important;
+        }
+
+        .localizacao-status .text-danger {
+            color: #e74c3c !important;
+        }
+
         /* ===== ADMIN DASHBOARD ===== */
         .stat-card {
             background: white;
@@ -336,10 +361,6 @@
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* ===== TOAST ===== */
@@ -520,7 +541,14 @@
                 <label class="form-label"><i class="fas fa-lock"></i> Senha</label>
                 <input type="password" class="form-control" id="loginSenha" placeholder="Digite sua senha" required>
             </div>
-            <button type="submit" class="btn btn-espep w-100" id="btnLogin">
+            
+            <!-- Status da Localização -->
+            <div class="localizacao-status" id="localizacaoStatus">
+                <i class="fas fa-spinner fa-spin"></i> 
+                <span id="localizacaoTexto">Obtendo localização...</span>
+            </div>
+            
+            <button type="submit" class="btn btn-espep w-100 mt-3" id="btnLogin">
                 <i class="fas fa-sign-in-alt"></i> Entrar
             </button>
         </form>
@@ -693,6 +721,11 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tabRelatorios" data-bs-toggle="tab" data-bs-target="#contentRelatorios" type="button" role="tab">
                         <i class="fas fa-file-alt"></i> Relatórios
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tabLocalizacao" data-bs-toggle="tab" data-bs-target="#contentLocalizacao" type="button" role="tab">
+                        <i class="fas fa-map-marker-alt"></i> Localizações
                     </button>
                 </li>
             </ul>
@@ -887,6 +920,44 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- TAB LOCALIZAÇÃO -->
+                <div class="tab-pane fade" id="contentLocalizacao" role="tabpanel">
+                    <div class="card-espep fade-in">
+                        <div class="card-header">
+                            <i class="fas fa-map-marker-alt"></i> Acessos por Localização
+                            <div class="float-end">
+                                <button class="btn btn-sm btn-success" id="btnExportarLocalizacao">
+                                    <i class="fas fa-file-excel"></i> Exportar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-espep" id="tabelaLocalizacao">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Setor</th>
+                                            <th>Data/Hora</th>
+                                            <th>IP</th>
+                                            <th>Localização</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="localizacaoBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <div class="loading-spinner"></div>
+                                                <p class="mt-2 text-muted">Carregando dados de localização...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1048,6 +1119,8 @@ let filtroSetorAdmin = '';
 let senhasSetores = {};
 let notificacoes = [];
 let historico = [];
+let localizacaoAtual = null;
+let localizacoes = [];
 
 // LISTA DE SETORES
 const SETORES = [
@@ -1064,6 +1137,168 @@ const SETORES_LABELS = {
     'servicosgerais': 'Serviços Gerais',
     'admin': 'Administrador'
 };
+
+// =============================================
+// LOCALIZAÇÃO
+// =============================================
+function obterLocalizacao() {
+    const statusDiv = document.getElementById('localizacaoStatus');
+    const textoSpan = document.getElementById('localizacaoTexto');
+    
+    if (!navigator.geolocation) {
+        textoSpan.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Geolocalização não suportada';
+        statusDiv.querySelector('i').className = 'fas fa-exclamation-triangle text-danger';
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            const { latitude, longitude } = position.coords;
+            localizacaoAtual = { latitude, longitude };
+            
+            // Buscar endereço pela API de geocoding reversa
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+                );
+                const data = await response.json();
+                
+                let endereco = '';
+                if (data.display_name) {
+                    endereco = data.display_name.split(', ').slice(0, 3).join(', ');
+                }
+                
+                textoSpan.innerHTML = `
+                    <i class="fas fa-check-circle text-success"></i> 
+                    Localização obtida: ${endereco || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
+                `;
+                statusDiv.querySelector('i').className = 'fas fa-check-circle text-success';
+                
+                // Salvar no banco
+                await salvarLocalizacao(setorAtual || 'anonimo', latitude, longitude, endereco);
+                
+            } catch (error) {
+                console.error('Erro ao obter endereço:', error);
+                textoSpan.innerHTML = `
+                    <i class="fas fa-check-circle text-success"></i> 
+                    Localização: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}
+                `;
+                statusDiv.querySelector('i').className = 'fas fa-check-circle text-success';
+            }
+        },
+        function(error) {
+            console.error('Erro de geolocalização:', error);
+            let mensagem = 'Localização não disponível';
+            if (error.code === 1) mensagem = 'Permissão negada pelo usuário';
+            else if (error.code === 2) mensagem = 'Localização indisponível';
+            else if (error.code === 3) mensagem = 'Tempo esgotado';
+            
+            textoSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger"></i> ${mensagem}`;
+            statusDiv.querySelector('i').className = 'fas fa-exclamation-triangle text-danger';
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+async function salvarLocalizacao(setor, latitude, longitude, endereco) {
+    try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        const ip = ipData.ip || 'Desconhecido';
+        
+        await db.collection('localizacoes').add({
+            setor: setor,
+            setorNome: SETORES_LABELS[setor] || setor,
+            latitude: latitude,
+            longitude: longitude,
+            endereco: endereco || '',
+            ip: ip,
+            data: new Date().toISOString()
+        });
+        
+        console.log('📍 Localização registrada:', { setor, latitude, longitude, ip });
+    } catch (error) {
+        console.error('Erro ao salvar localização:', error);
+    }
+}
+
+async function carregarLocalizacoes() {
+    try {
+        const snapshot = await db.collection('localizacoes')
+            .orderBy('data', 'desc')
+            .limit(100)
+            .get();
+        
+        localizacoes = [];
+        snapshot.forEach(doc => {
+            localizacoes.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderizarLocalizacoes();
+    } catch (error) {
+        console.error('Erro ao carregar localizações:', error);
+    }
+}
+
+function renderizarLocalizacoes() {
+    const tbody = document.getElementById('localizacaoBody');
+    tbody.innerHTML = '';
+    
+    if (localizacoes.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="fas fa-map-marker-alt fa-2x d-block mb-2"></i>
+                    Nenhum registro de localização
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    localizacoes.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td><span class="badge bg-primary">${item.setorNome || item.setor}</span></td>
+            <td>${new Date(item.data).toLocaleString('pt-BR')}</td>
+            <td><small>${item.ip || 'N/A'}</small></td>
+            <td>
+                ${item.endereco || `${item.latitude?.toFixed(6)}, ${item.longitude?.toFixed(6)}` || 'N/A'}
+            </td>
+            <td>
+                <span class="badge bg-success">✅ Confirmado</span>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+document.getElementById('btnExportarLocalizacao').addEventListener('click', function() {
+    if (localizacoes.length === 0) {
+        mostrarNotificacao('Sem dados para exportar!', 'error');
+        return;
+    }
+    
+    const dados = localizacoes.map(d => ({
+        'Setor': d.setorNome || d.setor,
+        'Data/Hora': new Date(d.data).toLocaleString('pt-BR'),
+        'IP': d.ip || 'N/A',
+        'Latitude': d.latitude || 'N/A',
+        'Longitude': d.longitude || 'N/A',
+        'Endereço': d.endereco || 'N/A'
+    }));
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(dados);
+    XLSX.utils.book_append_sheet(wb, ws, 'Localizações');
+    XLSX.writeFile(wb, `localizacoes_${new Date().toISOString().split('T')[0]}.xlsx`);
+    mostrarNotificacao('Localizações exportadas! 📊', 'success');
+});
 
 // =============================================
 // FUNÇÕES DE NOTIFICAÇÃO
@@ -1225,7 +1460,6 @@ function atualizarBadgeNotificacoes() {
     }
 }
 
-// Escutar notificações em tempo real
 function ouvirNotificacoes() {
     db.collection('notificacoes')
         .where('lida', '==', false)
@@ -1445,7 +1679,7 @@ document.getElementById('btnResetarSenhas').addEventListener('click', async func
 // =============================================
 // LOGIN
 // =============================================
-document.getElementById('loginForm').addEventListener('submit', function(e) {
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const setor = document.getElementById('loginSetor').value;
@@ -1465,6 +1699,17 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     }
     
     setorAtual = setor;
+    
+    // Salvar localização do login
+    if (localizacaoAtual) {
+        await salvarLocalizacao(
+            setor,
+            localizacaoAtual.latitude,
+            localizacaoAtual.longitude,
+            document.getElementById('localizacaoTexto').textContent || ''
+        );
+    }
+    
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('mainSystem').style.display = 'block';
     document.getElementById('userNameDisplay').textContent = SETORES_LABELS[setor] || setor.toUpperCase();
@@ -1475,6 +1720,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         carregarHistorico();
         carregarNotificacoes();
         ouvirNotificacoes();
+        carregarLocalizacoes();
     } else {
         document.getElementById('adminNavItem').style.display = 'none';
         document.getElementById('navDemandas').click();
@@ -1505,6 +1751,7 @@ document.getElementById('navAdmin').addEventListener('click', function(e) {
     carregarSenhas();
     carregarHistorico();
     carregarNotificacoes();
+    carregarLocalizacoes();
 });
 
 document.getElementById('btnLogout').addEventListener('click', function() {
@@ -1514,6 +1761,8 @@ document.getElementById('btnLogout').addEventListener('click', function() {
         document.getElementById('loginSetor').value = '';
         document.getElementById('loginSenha').value = '';
         mostrarNotificacao('Você saiu do sistema.', 'info');
+        // Reiniciar localização
+        obterLocalizacao();
     }
 });
 
@@ -1989,10 +2238,12 @@ document.getElementById('btnFiltrarSetorAdmin').addEventListener('click', functi
 // =============================================
 console.log('🚀 ESPEP Sistema de Demandas - PCA 2027');
 console.log('👤 Setores:', Object.values(SETORES_LABELS).join(', '));
-console.log('✅ Versão com: Histórico | Notificações | Relatórios');
+console.log('📍 Localização será solicitada no login');
 console.log('📊 Relatórios: PDF e Excel disponíveis no Admin');
 
+// Carregar senhas e iniciar localização
 carregarSenhas();
+obterLocalizacao();
 </script>
 
 </body>
